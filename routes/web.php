@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SessionExamController;
+use App\Http\Controllers\ExamenController;
+use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\EnseignantController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -17,7 +20,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::resource('sessions', SessionExamController::class);
-    // Route::get('/sessions', [SessionExamController::class, 'index'])->name('sessions.index');
+    Route::resource('examens', ExamenController::class);
+    Route::resource('departments', DepartmentController::class);
+    Route::resource('enseignants', EnseignantController::class);
 });
 
 require __DIR__.'/auth.php';

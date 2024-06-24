@@ -36,6 +36,13 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Lien pour planifier les examens -->
+                    <div class="mt-8">
+                        <a href="{{ route('examens.create') }}" class="btn btn-primary">
+                            Planifier des Examens
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
