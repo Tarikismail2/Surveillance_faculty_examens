@@ -26,6 +26,7 @@ class DepartmentController extends Controller
         return redirect()->route('departments.index')->with('success', 'Department created successfully.');
     }
 
+
     public function edit(Department $department)
     {
         return view('departments.edit', compact('department'));

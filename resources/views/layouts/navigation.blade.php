@@ -30,12 +30,8 @@
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex custom-translate-left">
                         <x-nav-link href="/sessions" :active="request()->routeIs('/sessions')">Session</x-nav-link>
                         <x-nav-link href="/departments" :active="request()->routeIs('/departments')">Departement</x-nav-link>
-                        <x-nav-link href="/locales" :active="request()->routeIs('/locales')">Locale</x-nav-link>
-                        <x-nav-link href="/enseignants" :active="request()->routeIs('/enseignants')">Locale</x-nav-link>
-                        {{-- <x-nav-link href="#" :active="request()->routeIs('trainers.html')">Trainers</x-nav-link>
-                        <x-nav-link href="#" :active="request()->routeIs('events.html')">Events</x-nav-link>
-                        <x-nav-link href="#" :active="request()->routeIs('pricing.html')">Pricing</x-nav-link>
-                        <x-nav-link href="#" :active="request()->routeIs('contact.html')">Contact</x-nav-link> --}}
+                        <x-nav-link href="/enseignants" :active="request()->routeIs('/enseignants')">Enseignant</x-nav-link>
+                        <x-nav-link href="/salles" :active="request()->routeIs('/locales')">Locale</x-nav-link>
                     </div>
                 </div>
 

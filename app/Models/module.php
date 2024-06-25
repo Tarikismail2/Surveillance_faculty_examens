@@ -11,7 +11,7 @@ class Module extends Model
 
     protected $fillable = [
         'nom',
-        'departement_id'
+        'id_department'
     ];
 
     public function examens()

@@ -9,10 +9,10 @@ class Enseignant extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'email', 'department_id'];
+    protected $fillable = ['name', 'email', 'id_department'];
 
     public function department()
     {
-        return $this->belongsTo(Department::class);
+        return $this->belongsTo(Department::class, 'id_department');
     }
 }

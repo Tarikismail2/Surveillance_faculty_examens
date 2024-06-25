@@ -23,7 +23,7 @@
                             <tr>
                                 <td class="border px-4 py-2">{{ $enseignant->name }}</td>
                                 <td class="border px-4 py-2">{{ $enseignant->email }}</td>
-                                <td class="border px-4 py-2">{{ $enseignant->department->name }}</td>
+                                <td class="border px-4 py-2">{{ $enseignant->department_name }}</td>
                                 <td class="border px-4 py-2">
                                     <a href="{{ route('enseignants.edit', $enseignant->id) }}" class="btn btn-warning">{{ __('Modifier') }}</a>
                                     <form action="{{ route('enseignants.destroy', $enseignant->id) }}" method="POST" class="inline-block">

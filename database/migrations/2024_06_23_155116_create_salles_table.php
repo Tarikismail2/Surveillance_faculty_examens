@@ -10,7 +10,7 @@ class CreateSallesTable extends Migration
     {
         Schema::create('salles', function (Blueprint $table) {
             $table->id();
-            $table->string('nom');
+            $table->string('name');
             $table->integer('capacite');
             $table->timestamps();
         });

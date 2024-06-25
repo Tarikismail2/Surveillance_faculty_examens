@@ -12,7 +12,14 @@ class EnseignantController extends Controller
 {
     public function index()
     {
-        $enseignants = Enseignant::with('department')->get();
+        $enseignants = Enseignant::all();
+
+        $departments = Department::all()->keyBy('id_department');
+
+        foreach ($enseignants as $enseignant) {
+            $enseignant->department_name = $departments->has($enseignant->id_department) ? $departments[$enseignant->id_department]->name : 'N/A';
+        }
+
         return view('enseignants.index', compact('enseignants'));
     }
 
@@ -27,7 +34,7 @@ class EnseignantController extends Controller
         $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:enseignants',
-            'department_id' => 'required|exists:departments,id',
+            'id_department' => 'required|exists:departments,id_department',
         ]);
 
         Enseignant::create($request->all());
@@ -45,7 +52,7 @@ class EnseignantController extends Controller
         $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:enseignants,email,' . $enseignant->id,
-            'department_id' => 'required|exists:departments,id',
+            'id_department' => 'required|exists:departments,id_department',
         ]);
 
         $enseignant->update($request->all());

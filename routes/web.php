@@ -5,6 +5,7 @@ use App\Http\Controllers\SessionExamController;
 use App\Http\Controllers\ExamenController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EnseignantController;
+use App\Http\Controllers\SalleController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -23,6 +24,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('examens', ExamenController::class);
     Route::resource('departments', DepartmentController::class);
     Route::resource('enseignants', EnseignantController::class);
+    Route::resource('salles', SalleController::class);
 });
 
 require __DIR__.'/auth.php';
