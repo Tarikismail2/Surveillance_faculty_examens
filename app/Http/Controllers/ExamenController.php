@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Examen;
 use App\Models\Module;
 use App\Models\Salle;
-use App\Models\Personne;
+use App\Models\Enseignant;
 use Illuminate\Http\Request;
 
 class ExamenController extends Controller
@@ -20,8 +20,8 @@ class ExamenController extends Controller
     {
         $modules = Module::all();
         $salles = Salle::all();
-        $personnes = Personne::all();
-        return view('examens.create', compact('modules', 'salles', 'personnes'));
+        $enseignants = Enseignant::all();
+        return view('examens.create', compact('modules', 'salles', 'enseignants'));
     }
 
     public function store(Request $request)
@@ -34,8 +34,8 @@ class ExamenController extends Controller
     {
         $modules = Module::all();
         $salles = Salle::all();
-        $personnes = Personne::all();
-        return view('examens.edit', compact('examen', 'modules', 'salles', 'personnes'));
+        $enseignants = Enseignant::all();
+        return view('examens.edit', compact('examen', 'modules', 'salles', 'enseignants'));
     }
 
     public function update(Request $request, Examen $examen)

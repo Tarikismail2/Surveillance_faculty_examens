@@ -15,7 +15,7 @@ class Examen extends Model
         'heure_fin',
         'id_module',
         'id_salle',
-        'id_personne'
+        'id_enseignant'
     ];
 
     public function module()
@@ -28,8 +28,9 @@ class Examen extends Model
         return $this->belongsTo(Salle::class, 'id_salle');
     }
 
-    public function personne()
+    public function enseignant()
     {
-        return $this->belongsTo(Personne::class, 'id_personne');
+        return $this->belongsTo(Enseignant::class, 'id_enseignant');
     }
 }
+

@@ -18,4 +18,8 @@ class Module extends Model
     {
         return $this->hasMany(Examen::class, 'id_module');
     }
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'id_department');
+    }
 }

@@ -13,6 +13,11 @@ class Department extends Model
 
     public function enseignants()
     {
-        return $this->hasMany(Enseignant::class);
+        return $this->hasMany(Enseignant::class, 'id_department');
+    }
+
+    public function modules()
+    {
+        return $this->hasMany(Module::class, 'id_department');
     }
 }

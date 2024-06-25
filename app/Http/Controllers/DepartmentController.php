@@ -44,4 +44,11 @@ class DepartmentController extends Controller
         $department->delete();
         return redirect()->route('departments.index')->with('success', 'Department deleted successfully.');
     }
+
+    public function show(Department $department)
+    {
+        $department->load('enseignants', 'modules');
+
+        return view('departments.show', compact('department'));
+    }
 }

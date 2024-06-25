@@ -16,9 +16,13 @@
                             </div>
                         </div>
                         <div class="flex items-center">
-                            <a href="{{ route('sessions.index') }}" class="ml-4 text-sm text-gray-700 underline">Retour à la liste</a>
+                            <a href="{{ route('sessions.index') }}" class="inline-block bg-gray-200 hover:bg-gray-300 text-gray-800 hover:text-gray-900 rounded-md py-2 px-4 transition-colors duration-300 ease-in-out">
+                                Retour à la liste
+                            </a>
                         </div>
                     </div>
+
+                    <hr class="my-4">
 
                     <div class="ml-12 mt-6">
                         <div class="flex">
@@ -37,9 +41,10 @@
                         </div>
                     </div>
 
-                    <!-- Lien pour planifier les examens -->
+                    <hr class="my-4">
+
                     <div class="mt-8">
-                        <a href="{{ route('examens.create') }}" class="btn btn-primary">
+                        <a href="{{ route('examens.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                             Planifier des Examens
                         </a>
                     </div>
