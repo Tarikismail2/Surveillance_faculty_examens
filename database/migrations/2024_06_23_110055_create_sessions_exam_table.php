@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('session_exams', function (Blueprint $table) {
-            $table->id('id_session');
+            $table->id('id');
             $table->string('type');
             $table->date('date_debut');
             $table->date('date_fin');
@@ -20,9 +20,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('session_exams');

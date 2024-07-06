@@ -10,7 +10,10 @@ class CreateModulesTable extends Migration
     {
         Schema::create('modules', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('code_elp')->unique();
+            $table->string('lib_elp');
+            $table->string('version_etape');
+            $table->string('code_etape');
             $table->unsignedBigInteger('id_department');
             $table->foreign('id_department')->references('id_department')->on('departments')->onDelete('cascade');
             $table->timestamps();

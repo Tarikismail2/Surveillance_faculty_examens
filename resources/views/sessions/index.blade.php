@@ -38,7 +38,7 @@
                             @foreach($sessions as $session)
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ $session->id_session }}</div>
+                                    <div class="text-sm text-gray-900">{{ $session->id }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">{{ $session->type }}</div>
@@ -50,9 +50,9 @@
                                     <div class="text-sm text-gray-900">{{ $session->date_fin }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <a href="{{ route('sessions.show', $session->id_session) }}" class="text-blue-600 hover:text-blue-900 mr-2">{{ __('Voir') }}</a>
-                                    <a href="{{ route('sessions.edit', $session->id_session) }}" class="text-yellow-600 hover:text-yellow-900 mr-2">{{ __('Modifier') }}</a>
-                                    <form action="{{ route('sessions.destroy', $session->id_session) }}" method="POST" class="inline-block">
+                                    <a href="{{ route('sessions.show', $session->id) }}" class="text-blue-600 hover:text-blue-900 mr-2">{{ __('Voir') }}</a>
+                                    <a href="{{ route('sessions.edit', $session->id) }}" class="text-yellow-600 hover:text-yellow-900 mr-2">{{ __('Modifier') }}</a>
+                                    <form action="{{ route('sessions.destroy', $session->id) }}" method="POST" class="inline-block">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-red-600 hover:text-red-900">{{ __('Supprimer') }}</button>

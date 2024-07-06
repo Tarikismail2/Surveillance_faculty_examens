@@ -10,13 +10,13 @@ class SessionExam extends Model
 
     use HasFactory;
 
-    protected $primaryKey = 'id_session';
+    protected $primaryKey = 'id';
 
     protected $fillable = [
         'type',
         'date_debut',
         'date_fin',
-        'id_session',
+        'id',
     ];
 
 }

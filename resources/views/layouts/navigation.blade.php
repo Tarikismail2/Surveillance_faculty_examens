@@ -28,10 +28,12 @@
 
                     <!-- Mentor Template Navigation -->
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex custom-translate-left">
-                        <x-nav-link href="/sessions" :active="request()->routeIs('/sessions')">Session</x-nav-link>
-                        <x-nav-link href="/departments" :active="request()->routeIs('/departments')">Departement</x-nav-link>
-                        <x-nav-link href="/enseignants" :active="request()->routeIs('/enseignants')">Enseignant</x-nav-link>
-                        <x-nav-link href="/salles" :active="request()->routeIs('/locales')">Locale</x-nav-link>
+                        <x-nav-link href="/sessions" :active="request()->routeIs('sessions')">Session</x-nav-link>
+                        <x-nav-link href="/departments" :active="request()->routeIs('departments')">Departement</x-nav-link>
+                        <x-nav-link href="/enseignants" :active="request()->routeIs('enseignants')">Enseignant</x-nav-link>
+                        <x-nav-link href="/salles" :active="request()->routeIs('locales')">Locale</x-nav-link>
+                        <x-nav-link href="/import" :active="request()->routeIs('upload.process')">importData</x-nav-link>
+                        <x-nav-link href="/examens/pdf" :active="request()->routeIs('examens.pdf')">PDF</x-nav-link>
                     </div>
                 </div>
 
@@ -92,13 +94,12 @@
                 <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                     {{ __('Dashboard') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link href="index.html" :active="request()->routeIs('index.html')">Home</x-responsive-nav-link>
-                <x-responsive-nav-link href="about.html" :active="request()->routeIs('about.html')">About</x-responsive-nav-link>
-                <x-responsive-nav-link href="courses.html" :active="request()->routeIs('courses.html')">Courses</x-responsive-nav-link>
-                <x-responsive-nav-link href="trainers.html" :active="request()->routeIs('trainers.html')">Trainers</x-responsive-nav-link>
-                <x-responsive-nav-link href="events.html" :active="request()->routeIs('events.html')">Events</x-responsive-nav-link>
-                <x-responsive-nav-link href="pricing.html" :active="request()->routeIs('pricing.html')">Pricing</x-responsive-nav-link>
-                <x-responsive-nav-link href="contact.html" :active="request()->routeIs('contact.html')">Contact</x-responsive-nav-link>
+                <x-nav-link href="/sessions" :active="request()->routeIs('sessions')">Session</x-nav-link>
+                <x-nav-link href="/departments" :active="request()->routeIs('departments')">Departement</x-nav-link>
+                <x-nav-link href="/enseignants" :active="request()->routeIs('enseignants')">Enseignant</x-nav-link>
+                <x-nav-link href="/salles" :active="request()->routeIs('locales')">Locale</x-nav-link>
+                <x-nav-link href="/import" :active="request()->routeIs('import.form')">importData</x-nav-link>
+                <x-nav-link href="/examens/pdf" :active="request()->routeIs('examens_pdf')">PDF</x-nav-link>
             </div>
             <!-- Responsive Settings Options -->
             <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">

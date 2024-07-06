@@ -9,14 +9,8 @@ class Examen extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'date',
-        'heure_debut',
-        'heure_fin',
-        'id_module',
-        'id_salle',
-        'id_enseignant'
-    ];
+    protected $fillable = ['date', 'heure_debut', 'heure_fin', 'id_module', 'id_salle', 'id_enseignant', 'id_session'];
+
 
     public function module()
     {
@@ -32,5 +26,5 @@ class Examen extends Model
     {
         return $this->belongsTo(Enseignant::class, 'id_enseignant');
     }
+    
 }
-

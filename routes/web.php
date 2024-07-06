@@ -6,6 +6,7 @@ use App\Http\Controllers\ExamenController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EnseignantController;
 use App\Http\Controllers\SalleController;
+use App\Http\Controllers\ImportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -29,13 +30,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/examens/{examen}/edit', [ExamenController::class, 'edit'])->name('examens.edit');
     Route::put('/examens/{examen}', [ExamenController::class, 'update'])->name('examens.update');
     Route::delete('/examens/{examen}', [ExamenController::class, 'destroy'])->name('examens.destroy');
+    Route::get('/examens/pdf/{idEnseignant}', [ExamenController::class, 'generatePdfForEnseignant'])
+        ->name('examens_pdf');
 
     Route::resource('departments', DepartmentController::class);
     Route::get('departments/{department}', [DepartmentController::class, 'show'])->name('departments.show');
 
     Route::resource('enseignants', EnseignantController::class);
-    
+
     Route::resource('salles', SalleController::class);
+
+    Route::get('/import', [ImportController::class, 'showForm'])->name('import.form');
+    Route::post('/import', [ImportController::class, 'import'])->name('import.process');
+    // Route::post('/upload', [ImportController::class, 'process'])->name('upload.process');
+
 });
 
 require __DIR__ . '/auth.php';

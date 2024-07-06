@@ -15,28 +15,42 @@
                     </div>
                 @endif
 
+                <div class="mb-4 flex justify-end">
+                    <a href="{{ route('sessions.index') }}"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Retour au session
+                    </a>
+                </div>
+
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Date
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Heure de Début
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Heure de Fin
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Module
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Salle
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Enseignant
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col"
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Actions
                             </th>
                         </tr>
@@ -54,7 +68,7 @@
                                     {{ $examen->heure_fin }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    {{ $examen->module->name }}
+                                    {{ $examen->module->lib_elp }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     {{ $examen->salle->name }}
@@ -63,11 +77,14 @@
                                     {{ $examen->enseignant->name }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <a href="{{ route('examens.edit', $examen->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-2">Modifier</a>
-                                    <form action="{{ route('examens.destroy', $examen->id) }}" method="POST" class="inline">
+                                    <a href="{{ route('examens.edit', $examen->id) }}"
+                                        class="text-indigo-600 hover:text-indigo-900 mr-2">Modifier</a>
+                                    <form action="{{ route('examens.destroy', $examen->id) }}" method="POST"
+                                        class="inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-900">Supprimer</button>
+                                        <button type="submit"
+                                            class="text-red-600 hover:text-red-900">Supprimer</button>
                                     </form>
                                 </td>
                             </tr>
