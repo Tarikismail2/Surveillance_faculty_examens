@@ -53,7 +53,7 @@
                     <div class="mt-8">
                         <a href="{{ route('examens.index') }}"
                             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                            Voir les sessions
+                            Voir les examens
                         </a>
                     </div>
                 </div>

@@ -16,7 +16,6 @@ class Salle extends Model
 
     public function examens()
     {
-        return $this->hasMany(Examen::class, 'id_salle');
+        return $this->belongsToMany(Examen::class, 'examen_salle', 'id_salle', 'id_examen');
     }
 }
-

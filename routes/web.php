@@ -7,6 +7,7 @@ use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EnseignantController;
 use App\Http\Controllers\SalleController;
 use App\Http\Controllers\ImportController;
+use App\Http\Controllers\ModuleController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -43,6 +44,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/import', [ImportController::class, 'showForm'])->name('import.form');
     Route::post('/import', [ImportController::class, 'import'])->name('import.process');
     // Route::post('/upload', [ImportController::class, 'process'])->name('upload.process');
+
+    Route::get('/examens/getModulesByFiliere/{id_filiere}', [ExamenController::class, 'getModulesByFiliere']);
 
 });
 

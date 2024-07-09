@@ -14,13 +14,7 @@ class Module extends Model
         'lib_elp',
         'version_etape',
         'code_etape',
-        'id_department',
     ];
-
-    public function department()
-    {
-        return $this->belongsTo(Department::class, 'id_department');
-    }
 
     public function inscriptions()
     {
@@ -30,5 +24,10 @@ class Module extends Model
     public function examens()
     {
         return $this->hasMany(Examen::class, 'id_module');
+    }
+
+    public function filiere()
+    {
+        return $this->belongsTo(Filiere::class);
     }
 }

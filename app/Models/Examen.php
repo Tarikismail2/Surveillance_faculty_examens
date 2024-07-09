@@ -17,14 +17,18 @@ class Examen extends Model
         return $this->belongsTo(Module::class, 'id_module');
     }
 
-    public function salle()
-    {
-        return $this->belongsTo(Salle::class, 'id_salle');
-    }
+    // public function salle()
+    // {
+    //     return $this->belongsTo(Salle::class, 'id_salle');
+    // }
 
     public function enseignant()
     {
         return $this->belongsTo(Enseignant::class, 'id_enseignant');
     }
-    
+
+    public function salles()
+    {
+        return $this->belongsToMany(Salle::class, 'examen_salle', 'id_examen', 'id_salle');
+    }
 }

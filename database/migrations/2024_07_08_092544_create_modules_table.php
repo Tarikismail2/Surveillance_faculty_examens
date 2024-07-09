@@ -14,8 +14,8 @@ class CreateModulesTable extends Migration
             $table->string('lib_elp');
             $table->string('version_etape');
             $table->string('code_etape');
-            $table->unsignedBigInteger('id_department');
-            $table->foreign('id_department')->references('id_department')->on('departments')->onDelete('cascade');
+            $table->unsignedBigInteger('id_filiere')->nullable();
+            $table->foreign('id_filiere')->references('id')->on('filieres')->onDelete('cascade');
             $table->timestamps();
         });
     }
