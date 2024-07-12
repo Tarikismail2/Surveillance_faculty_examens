@@ -18,4 +18,20 @@ class Salle extends Model
     {
         return $this->belongsToMany(Examen::class, 'examen_salle', 'id_salle', 'id_examen');
     }
+
+    public function enseignants($examenId)
+    {
+        return $this->belongsToMany(Enseignant::class, 'examen_salle_enseignant', 'id_salle', 'id_enseignant')
+                    ->withPivot('id_examen')
+                    ->wherePivot('id_examen', $examenId);
+    }
+    
+    public function surveillants()
+    {
+        return $this->belongsToMany(Enseignant::class, 'examen_salle_enseignant', 'id_salle', 'id_enseignant');
+    }
+
+    
+    
 }
+

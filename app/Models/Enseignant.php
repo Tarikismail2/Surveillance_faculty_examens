@@ -15,4 +15,17 @@ class Enseignant extends Model
     {
         return $this->belongsTo(Department::class, 'id_department');
     }
+
+    public function salles()
+    {
+        return $this->belongsToMany(Salle::class, 'examen_salle_enseignant')
+            ->withPivot('id_examen')
+            ->withTimestamps();
+    }
+    public function examens()
+    {
+        return $this->belongsToMany(Examen::class, 'examen_salle_enseignant', 'id_enseignant', 'id_examen')
+            ->withPivot('id_salle')
+            ->withTimestamps();
+    }
 }

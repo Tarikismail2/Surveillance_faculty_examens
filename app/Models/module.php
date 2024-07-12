@@ -28,6 +28,7 @@ class Module extends Model
 
     public function filiere()
     {
-        return $this->belongsTo(Filiere::class);
+        return $this->belongsTo(Filiere::class, 'code_etape');
     }
+
 }

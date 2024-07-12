@@ -6,8 +6,9 @@ use App\Http\Controllers\ExamenController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EnseignantController;
 use App\Http\Controllers\SalleController;
-use App\Http\Controllers\ImportController;
 use App\Http\Controllers\ModuleController;
+use App\Http\Controllers\ImportController;
+use App\Http\Controllers\PlanificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -46,6 +47,25 @@ Route::middleware('auth')->group(function () {
     // Route::post('/upload', [ImportController::class, 'process'])->name('upload.process');
 
     Route::get('/examens/getModulesByFiliere/{id_filiere}', [ExamenController::class, 'getModulesByFiliere']);
+
+    //Affectation des surveillants sur les locaux   
+    Route::get('/examens/{examen}', [ExamenController::class, 'show'])->name('examens.show');
+    Route::get('/examens/{id}/show-invigilators', [ExamenController::class, 'showAssignInvigilatorsForm'])->name('examens.showAssignInvigilatorsForm');
+    Route::post('/examens/{examen}/assign-invigilators', [ExamenController::class, 'assignInvigilators'])->name('examens.assignInvigilators');
+    Route::get('/examens/{examen}/edit-invigilators', [ExamenController::class, 'editInvigilators'])->name('examens.editInvigilators');
+    Route::post('/examens/{examen}/update-invigilators', [ExamenController::class, 'updateInvigilators'])->name('examens.updateInvigilators');
+
+
+    //Affichage globale de la planification des examens
+    Route::get('/api/examens/{sessionId}/schedule', [PlanificationController::class, 'getExamsBySession']);
+    Route::get('/examens/schedule', [PlanificationController::class, 'showExams'])->name('examens.schedule');
+    Route::get('/global', [PlanificationController::class, 'showGlobalPlan'])->name('examens.global');
+
+
+    //download du planification
+    Route::get('/global/pdf', 'App\Http\Controllers\PlanificationController@downloadGlobalSchedulePDF')->name('examens.global.pdf');
+    Route::get('/examens/global/pdf/{id_session}', [PlanificationController::class, 'downloadSurveillancePDF'])->name('examens_global.pdf');
+
 
 });
 

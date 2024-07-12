@@ -1,4 +1,3 @@
-<!-- resources/views/examens/index.blade.php -->
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
@@ -17,8 +16,8 @@
 
                 <div class="mb-4 flex justify-end">
                     <a href="{{ route('sessions.index') }}"
-                       class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                        Retour au session
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Retour aux sessions
                     </a>
                 </div>
 
@@ -58,45 +57,65 @@
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Actions
                                 </th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Affectation des surveillants
+                                </th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach ($examens as $examen)
                                 <tr>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        {{ $examen->date }}
+                                        {{ $examen->date ?? 'N/A' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        {{ $examen->heure_debut }}
+                                        {{ $examen->heure_debut ?? 'N/A' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        {{ $examen->heure_fin }}
+                                        {{ $examen->heure_fin ?? 'N/A' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        {{ $examen->module->lib_elp }}
+                                        {{ optional($examen->module)->lib_elp ?? 'N/A' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        {{ $examen->module->code_etape ?? 'N/A' }}
+                                        {{ optional($examen->module)->code_etape ?? 'N/A' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @foreach ($examen->salles as $salle)
-                                            {{ $salle->name}},
+                                            {{ $salle->name }},
                                         @endforeach
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        {{ $examen->enseignant->name }}
+                                        {{ optional($examen->enseignant)->name ?? 'N/A' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <a href="{{ route('examens.edit', $examen->id) }}"
-                                           class="text-indigo-600 hover:text-indigo-900 mr-2">Modifier</a>
-                                        <form action="{{ route('examens.destroy', $examen->id) }}" method="POST" class="inline">
+                                            class="text-indigo-600 hover:text-indigo-900 mr-2">Modifier</a>
+                                        <form action="{{ route('examens.destroy', $examen->id) }}" method="POST"
+                                            class="inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900">Supprimer</button>
+                                            <button type="submit"
+                                                class="text-red-600 hover:text-red-900">Supprimer</button>
                                         </form>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if ($examen->hasAssignedInvigilators())
+                                            <a href="{{ route('examens.show', $examen->id) }}"
+                                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                                Voir Affectation
+                                            </a>
+                                        @else
+                                            <a href="{{ route('examens.showAssignInvigilatorsForm', $examen->id) }}"
+                                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                                Affectation
+                                            </a>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
+
                         </tbody>
                     </table>
                 </div>

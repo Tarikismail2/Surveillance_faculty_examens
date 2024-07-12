@@ -13,6 +13,8 @@ class Filiere extends Model
 
     public function modules()
     {
-        return $this->hasMany(Module::class);
+        return $this->hasMany(Module::class, 'code_etape', 'code_etape');
     }
+
+    
 }

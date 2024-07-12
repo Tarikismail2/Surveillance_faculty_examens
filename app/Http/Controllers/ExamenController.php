@@ -12,7 +12,10 @@ use App\Models\Filiere;
 use PDF;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Illuminate\Console\View\Components\Alert;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Psy\Readline\Hoa\Console;
 
 class ExamenController extends Controller
 {
@@ -22,12 +25,14 @@ class ExamenController extends Controller
         return view('examens.index', compact('examens'));
     }
 
+
     public function create()
     {
         $salles = Salle::all();
         $enseignants = Enseignant::all();
         $sessions = SessionExam::all();
         $filieres = Filiere::all();
+
         return view('examens.create', compact('salles', 'enseignants', 'sessions', 'filieres'));
     }
 
@@ -81,10 +86,32 @@ class ExamenController extends Controller
             })
             ->whereHas('module', function ($query) use ($request) {
                 $query->where('code_etape', $request->id_filiere);
-            })->exists();
+            })
+            ->whereHas('salles', function ($query) use ($request) {
+                $query->where('salles.id', $request->id_salle);
+            })
+            ->exists();
 
         if ($overlappingExam) {
             return back()->withErrors(['error' => 'Il existe déjà un examen pour cette filière dans la même durée.']);
+        }
+
+        // Validation pour empêcher l'affectation d'une salle déjà occupée
+        $occupiedSalle = Examen::where('date', $request->date)
+            ->where(function ($query) use ($request, $heure_debut, $heure_fin) {
+                $query->whereBetween('heure_debut', [$request->heure_debut, $request->heure_fin])
+                    ->orWhereBetween('heure_fin', [$request->heure_debut, $request->heure_fin])
+                    ->orWhere(function ($query) use ($request) {
+                        $query->where('heure_debut', '<=', $request->heure_debut)
+                            ->where('heure_fin', '>=', $request->heure_fin);
+                    });
+            })
+            ->whereHas('salles', function ($query) use ($request) {
+                $query->where('salles.id', $request->id_salle);
+            })->exists();
+
+        if ($occupiedSalle) {
+            return back()->withErrors(['error' => 'Cette salle est déjà occupée pendant cette période.']);
         }
 
         $salles_ids = array_filter(array_merge([$request->id_salle], $request->additional_salles ?? []));
@@ -120,15 +147,18 @@ class ExamenController extends Controller
 
     public function edit(Examen $examen)
     {
-        $modules = Module::whereDoesntHave('examens', function ($query) use ($examen) {
-            $query->where('id', '!=', $examen->id);
-        })->get();
+        $examen->load('filiere', 'module');
+
+        // Autres chargements de données nécessaires
+        $modules = Module::all();
         $salles = Salle::all();
         $enseignants = Enseignant::all();
         $sessions = SessionExam::all();
         $filieres = Filiere::all();
+
         return view('examens.edit', compact('examen', 'modules', 'salles', 'enseignants', 'sessions', 'filieres'));
     }
+
 
     public function update(Request $request, Examen $examen)
     {
@@ -188,6 +218,25 @@ class ExamenController extends Controller
             return back()->withErrors(['error' => 'Il existe déjà un examen pour cette filière dans la même durée.']);
         }
 
+        // Validation pour empêcher l'affectation d'une salle déjà occupée
+        $occupiedSalle = Examen::where('date', $request->date)
+            ->where('id', '!=', $examen->id)
+            ->where(function ($query) use ($request, $heure_debut, $heure_fin) {
+                $query->whereBetween('heure_debut', [$request->heure_debut, $request->heure_fin])
+                    ->orWhereBetween('heure_fin', [$request->heure_debut, $request->heure_fin])
+                    ->orWhere(function ($query) use ($request) {
+                        $query->where('heure_debut', '<=', $request->heure_debut)
+                            ->where('heure_fin', '>=', $request->heure_fin);
+                    });
+            })
+            ->whereHas('salles', function ($query) use ($request) {
+                $query->where('salles.id', $request->id_salle);
+            })->exists();
+
+        if ($occupiedSalle) {
+            return back()->withErrors(['error' => 'Cette salle est déjà occupée pendant cette période.']);
+        }
+
         $salles_ids = array_filter(array_merge([$request->id_salle], $request->additional_salles ?? []));
         $capacite_totale = Salle::whereIn('id', $salles_ids)->sum('capacite');
         $module = Module::findOrFail($request->id_module);
@@ -211,6 +260,7 @@ class ExamenController extends Controller
             'id_session' => $request->id_session,
         ]);
 
+        // Attacher les salles supplémentaires
         $examen->salles()->sync($salles_ids);
 
         return redirect()->route('examens.index')->with('success', 'Examen mis à jour avec succès.');
@@ -232,6 +282,253 @@ class ExamenController extends Controller
         return response()->json($modules);
     }
 
+
+
+    // Distribution the surveillants
+    public function show($id)
+    {
+        $examen = Examen::findOrFail($id);
+
+        // Charger les salles affectées avec leurs enseignants pour cet examen
+        $sallesAffectees = Salle::whereExists(function ($query) use ($id) {
+            $query->select('*')
+                ->from('examens')
+                ->join('examen_salle_enseignant', 'examens.id', '=', 'examen_salle_enseignant.id_examen')
+                ->whereColumn('salles.id', 'examen_salle_enseignant.id_salle')
+                ->where('examens.id', $id);
+        })->get();
+
+        // Charger les enseignants pour chaque salle
+        foreach ($sallesAffectees as $salle) {
+            $salle->enseignants = $salle->enseignants($id)->get();
+        }
+
+        return view('examens.show', [
+            'examen' => $examen,
+            'sallesAffectees' => $sallesAffectees,
+        ]);
+    }
+
+
+    public function showAssignInvigilatorsForm($id)
+    {
+        $examen = Examen::findOrFail($id);
+        $salles = Salle::all();
+        $enseignants = DB::table('enseignants')->get(); // Assume you have a table named 'enseignants'
+
+        return view('examens.assign-invigilators', compact('examen', 'salles', 'enseignants'));
+    }
+
+    public function assignInvigilators(Request $request, $id)
+    {
+        $examen = Examen::findOrFail($id);
+        $date = $examen->date;
+        $heure_debut = strtotime($examen->heure_debut);
+        $heure_fin = strtotime($examen->heure_fin);
+
+        $errors = [];
+
+        // Vérifier les conditions pour chaque enseignant et chaque salle avant toute affectation
+        foreach ($request->enseignants as $salleId => $enseignantIds) {
+            foreach ($enseignantIds as $enseignantId) {
+                // Check if the invigilator is already assigned to the same room for this exam
+                $existingRoomAssignment = DB::table('examen_salle_enseignant')
+                    ->where('id_enseignant', $enseignantId)
+                    ->where('id_examen', $id)
+                    ->where('id_salle', $salleId)
+                    ->exists();
+
+                if ($existingRoomAssignment) {
+                    $errors[] = "L'enseignant {$enseignantId} est déjà affecté à la salle {$salleId} pour cet examen.";
+                    continue;
+                }
+
+                // Check if the invigilator is already assigned to another room for this exam
+                $existingAssignment = DB::table('examen_salle_enseignant')
+                    ->where('id_enseignant', $enseignantId)
+                    ->where('id_examen', $id)
+                    ->exists();
+
+                if ($existingAssignment) {
+                    $errors[] = "L'enseignant {$enseignantId} est déjà affecté à une autre salle pour cet examen.";
+                    continue;
+                }
+
+                // Check for overlapping assignments
+                $overlappingAssignments = DB::table('examen_salle_enseignant')
+                    ->join('examens', 'examen_salle_enseignant.id_examen', '=', 'examens.id')
+                    ->where('examen_salle_enseignant.id_enseignant', $enseignantId)
+                    ->where('examens.date', $date)
+                    ->where(function ($query) use ($heure_debut, $heure_fin) {
+                        $query->whereBetween('examens.heure_debut', [date('H:i', $heure_debut), date('H:i', $heure_fin)])
+                            ->orWhereBetween('examens.heure_fin', [date('H:i', $heure_debut), date('H:i', $heure_fin)])
+                            ->orWhere(function ($query) use ($heure_debut, $heure_fin) {
+                                $query->where('examens.heure_debut', '<=', date('H:i', $heure_debut))
+                                    ->where('examens.heure_fin', '>=', date('H:i', $heure_fin));
+                            });
+                    })
+                    ->exists();
+
+                if ($overlappingAssignments) {
+                    $errors[] = "L'enseignant {$enseignantId} est déjà affecté à une autre salle pendant cette période.";
+                    continue;
+                }
+
+                // Check daily assignments limit
+                $dailyAssignments = DB::table('examen_salle_enseignant')
+                    ->join('examens', 'examen_salle_enseignant.id_examen', '=', 'examens.id')
+                    ->where('examen_salle_enseignant.id_enseignant', $enseignantId)
+                    ->where('examens.date', $date)
+                    ->count();
+
+                if ($dailyAssignments >= 2) {
+                    $errors[] = "L'enseignant {$enseignantId} ne peut pas superviser plus de deux examens par jour.";
+                    continue;
+                }
+            }
+        }
+
+        // Si des erreurs sont trouvées, retourner en arrière avec les erreurs
+        if (!empty($errors)) {
+            return back()->withErrors($errors);
+        }
+
+        // Si aucune erreur, procéder à l'affectation des surveillants
+        foreach ($request->enseignants as $salleId => $enseignantIds) {
+            foreach ($enseignantIds as $enseignantId) {
+                // Insérer seulement si l'enseignant n'est pas déjà affecté à cette salle pour cet examen
+                if (!DB::table('examen_salle_enseignant')
+                    ->where('id_examen', $examen->id)
+                    ->where('id_salle', $salleId)
+                    ->where('id_enseignant', $enseignantId)
+                    ->exists()) {
+                    DB::table('examen_salle_enseignant')->insert([
+                        'id_examen' => $examen->id,
+                        'id_salle' => $salleId,
+                        'id_enseignant' => $enseignantId,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+        }
+
+        return redirect()->route('examens.show', $examen->id)->with('success', 'Les surveillants ont été assignés avec succès.');
+    }
+
+
+
+    public function editInvigilators($id)
+    {
+        $examen = Examen::findOrFail($id);
+        $salles = Salle::whereHas('examens', function ($query) use ($id) {
+            $query->where('examens.id', $id);
+        })->get();
+
+        // Loop through the salles to fetch enseignants for the specific examen
+        foreach ($salles as $salle) {
+            $salle->enseignants = $salle->enseignants($id)->get();
+        }
+
+        $enseignants = Enseignant::all(); // Fetch all enseignants to populate the select options
+
+        return view('examens.edit_invigilators', compact('examen', 'salles', 'enseignants'));
+    }
+
+    public function updateInvigilators(Request $request, $id)
+    {
+        $examen = Examen::findOrFail($id);
+        $date = $examen->date;
+        $heure_debut = strtotime($examen->heure_debut);
+        $heure_fin = strtotime($examen->heure_fin);
+
+        $errors = [];
+
+        // Vérifier les conditions pour chaque enseignant et chaque salle avant toute affectation
+        foreach ($request->enseignants as $id_salle => $enseignantIds) {
+            foreach ($enseignantIds as $id_enseignant) {
+                // Check if the invigilator is already assigned to the same room for this exam
+                $existingRoomAssignment = DB::table('examen_salle_enseignant')
+                    ->where('id_enseignant', $id_enseignant)
+                    ->where('id_examen', $id)
+                    ->where('id_salle', $id_salle)
+                    ->exists();
+
+                if ($existingRoomAssignment) {
+                    $errors[] = "L'enseignant {$id_enseignant} est déjà affecté à la salle {$id_salle} pour cet examen.";
+                    continue;
+                }
+
+                // Check if the invigilator is already assigned to another room for this exam
+                $existingAssignment = DB::table('examen_salle_enseignant')
+                    ->where('id_enseignant', $id_enseignant)
+                    ->where('id_examen', $id)
+                    ->exists();
+
+                if ($existingAssignment) {
+                    $errors[] = "L'enseignant {$id_enseignant} est déjà affecté à une autre salle pour cet examen.";
+                    continue;
+                }
+
+                // Check for overlapping assignments
+                $overlappingAssignments = DB::table('examen_salle_enseignant')
+                    ->join('examens', 'examen_salle_enseignant.id_examen', '=', 'examens.id')
+                    ->where('examen_salle_enseignant.id_enseignant', $id_enseignant)
+                    ->where('examens.date', $date)
+                    ->where(function ($query) use ($heure_debut, $heure_fin) {
+                        $query->whereBetween('examens.heure_debut', [date('H:i', $heure_debut), date('H:i', $heure_fin)])
+                            ->orWhereBetween('examens.heure_fin', [date('H:i', $heure_debut), date('H:i', $heure_fin)])
+                            ->orWhere(function ($query) use ($heure_debut, $heure_fin) {
+                                $query->where('examens.heure_debut', '<=', date('H:i', $heure_debut))
+                                    ->where('examens.heure_fin', '>=', date('H:i', $heure_fin));
+                            });
+                    })
+                    ->exists();
+
+                if ($overlappingAssignments) {
+                    $errors[] = "L'enseignant {$id_enseignant} est déjà affecté à une autre salle pendant cette période.";
+                    continue;
+                }
+
+                // Check daily assignments limit
+                $dailyAssignments = DB::table('examen_salle_enseignant')
+                    ->join('examens', 'examen_salle_enseignant.id_examen', '=', 'examens.id')
+                    ->where('examen_salle_enseignant.id_enseignant', $id_enseignant)
+                    ->where('examens.date', $date)
+                    ->count();
+
+                if ($dailyAssignments >= 2) {
+                    $errors[] = "L'enseignant {$id_enseignant} ne peut pas superviser plus de deux examens par jour.";
+                    continue;
+                }
+            }
+        }
+
+        // Si des erreurs sont trouvées, retourner en arrière avec les erreurs
+        if (!empty($errors)) {
+            return back()->withErrors($errors);
+        }
+
+        // Supprimer les affectations existantes pour cet examen
+        DB::table('examen_salle_enseignant')->where('id_examen', $examen->id)->delete();
+
+        // Réinsérer les nouvelles affectations
+        foreach ($request->enseignants as $id_salle => $invigilator_ids) {
+            foreach ($invigilator_ids as $id_enseignant) {
+                DB::table('examen_salle_enseignant')->insert([
+                    'id_examen' => $examen->id,
+                    'id_salle' => $id_salle,
+                    'id_enseignant' => $id_enseignant,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+
+        return redirect()->route('examens.show', $examen->id)->with('success', 'Les surveillants ont été mis à jour avec succès.');
+    }
+
+
     public function generatePdfForEnseignant($idEnseignant)
     {
         $enseignant = Enseignant::findOrFail($idEnseignant);
@@ -248,4 +545,5 @@ class ExamenController extends Controller
 
         return $dompdf->stream("examens_enseignant_{$enseignant->name}.pdf");
     }
+    
 }

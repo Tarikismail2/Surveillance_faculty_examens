@@ -50,13 +50,18 @@
                                     <div class="text-sm text-gray-900">{{ $session->date_fin }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <a href="{{ route('sessions.show', $session->id) }}" class="text-blue-600 hover:text-blue-900 mr-2">{{ __('Voir') }}</a>
-                                    <a href="{{ route('sessions.edit', $session->id) }}" class="text-yellow-600 hover:text-yellow-900 mr-2">{{ __('Modifier') }}</a>
+                                    <a href="{{ route('sessions.edit', $session->id) }}" class="text-Blue:300 hover:text-yellow-600 mr-2">{{ __('Modifier') }}</a>
                                     <form action="{{ route('sessions.destroy', $session->id) }}" method="POST" class="inline-block">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-red-600 hover:text-red-900">{{ __('Supprimer') }}</button>
                                     </form>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <a href="{{ route('sessions.show', $session->id) }}"
+                                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                        Configuration de la Session
+                                    </a>
                                 </td>
                             </tr>
                             @endforeach

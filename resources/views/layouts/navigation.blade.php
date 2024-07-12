@@ -33,7 +33,7 @@
                         <x-nav-link href="/enseignants" :active="request()->routeIs('enseignants')">Enseignant</x-nav-link>
                         <x-nav-link href="/salles" :active="request()->routeIs('locales')">Locale</x-nav-link>
                         <x-nav-link href="/import" :active="request()->routeIs('upload.process')">importData</x-nav-link>
-                        <x-nav-link href="/examens/pdf" :active="request()->routeIs('examens.pdf')">PDF</x-nav-link>
+                        <x-nav-link href="/global" :active="request()->routeIs('examens.global')">GlobalPlan</x-nav-link>
                     </div>
                 </div>
 
@@ -99,7 +99,7 @@
                 <x-nav-link href="/enseignants" :active="request()->routeIs('enseignants')">Enseignant</x-nav-link>
                 <x-nav-link href="/salles" :active="request()->routeIs('locales')">Locale</x-nav-link>
                 <x-nav-link href="/import" :active="request()->routeIs('import.form')">importData</x-nav-link>
-                <x-nav-link href="/examens/pdf" :active="request()->routeIs('examens_pdf')">PDF</x-nav-link>
+                <x-nav-link href="/global" :active="request()->routeIs('examens.global')">GlobalPlan</x-nav-link>
             </div>
             <!-- Responsive Settings Options -->
             <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
