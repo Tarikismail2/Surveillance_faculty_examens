@@ -22,4 +22,19 @@ class Etudiant extends Model
     {
         return $this->hasMany(Inscription::class);
     }
+
+    public function modules()
+    {
+        return $this->belongsToMany(Module::class, 'etudiant_module', 'id_etudiant', 'id_module');
+    }
+
+    public function getFullNameAttribute()
+    {
+        return "{$this->prenom} {$this->nom}";
+    }
+
+    public function examens()
+    {
+        return $this->hasManyThrough(Examen::class, Module::class, 'id', 'id_module', 'id', 'id');
+    }
 }

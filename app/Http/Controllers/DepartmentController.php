@@ -1,5 +1,4 @@
 <?php
-// app/Http/Controllers/DepartmentController.php
 
 namespace App\Http\Controllers;
 
@@ -47,7 +46,7 @@ class DepartmentController extends Controller
 
     public function show(Department $department)
     {
-        $department->load('enseignants', 'modules');
+        $department->load('enseignants');
 
         return view('departments.show', compact('department'));
     }

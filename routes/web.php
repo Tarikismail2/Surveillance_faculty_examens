@@ -5,6 +5,7 @@ use App\Http\Controllers\SessionExamController;
 use App\Http\Controllers\ExamenController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EnseignantController;
+use App\Http\Controllers\ExportController;
 use App\Http\Controllers\SalleController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\ImportController;
@@ -27,7 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('sessions', SessionExamController::class);
 
     Route::get('/examens', [ExamenController::class, 'index'])->name('examens.index');
-    Route::get('/examens/create', [ExamenController::class, 'create'])->name('examens.create');
+    Route::get('/examens/create/{id}', [ExamenController::class, 'create'])->name('examens.create');
     Route::post('/examens', [ExamenController::class, 'store'])->name('examens.store');
     Route::get('/examens/{examen}/edit', [ExamenController::class, 'edit'])->name('examens.edit');
     Route::put('/examens/{examen}', [ExamenController::class, 'update'])->name('examens.update');
@@ -66,7 +67,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/global/pdf', 'App\Http\Controllers\PlanificationController@downloadGlobalSchedulePDF')->name('examens.global.pdf');
     Route::get('/examens/global/pdf/{id_session}', [PlanificationController::class, 'downloadSurveillancePDF'])->name('examens_global.pdf');
 
+    //prof planification
+    Route::get('/select-enseignant', [ExportController::class, 'selectEnseignant'])->name('selectEnseignant');
+    Route::get('/display-schedule', [ExportController::class, 'displaySchedule'])->name('displaySchedule');
+    Route::post('/download-surveillance-pdf', [ExportController::class, 'downloadSurveillancePDF'])->name('downloadSurveillancePDF');
 
+    //Studeent planification
+    Route::get('/select-student', [ExportController::class, 'selectStudent'])->name('selectStudent');
+    Route::get('/display-student-schedule', [ExportController::class, 'displayStudentSchedule'])->name('displayStudentSchedule');
+    Route::post('/download-student-schedule-pdf', [ExportController::class, 'downloadStudentSchedulePDF'])->name('downloadStudentSchedulePDF');
 });
 
 require __DIR__ . '/auth.php';

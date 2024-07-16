@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('filieres', function (Blueprint $table) {
             $table->id();
             $table->string('code_etape')->unique();
+            $table->string('version_etape');
             $table->timestamps();
         });
     }

@@ -72,7 +72,8 @@ class ImportController extends Controller
 
                 // Ensure filiere exists and get its ID
                 $filiere = Filiere::firstOrCreate(
-                    ['code_etape' => $row[9]]
+                    ['code_etape' => $row[9]],
+                    ['version_etape' => $row[8]]
                 );
 
                 $module = Module::updateOrCreate(
@@ -81,8 +82,7 @@ class ImportController extends Controller
                         'lib_elp' => $row[7],
                         'version_etape' => $row[8],
                         'code_etape' => $row[9],
-                        'id_department' => 1, // Replace 1 with the default department ID
-                        'id_filiere' => $filiere->id, // Assign the filiere ID
+                        'id_filiere' => $filiere->id,
                     ]
                 );
 

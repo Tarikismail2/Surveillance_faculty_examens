@@ -28,7 +28,14 @@ class Module extends Model
 
     public function filiere()
     {
-        return $this->belongsTo(Filiere::class, 'code_etape');
+        return $this->belongsTo(Filiere::class, 'version_etape');
     }
+
+    public function etudiants()
+    {
+        return $this->belongsToMany(Etudiant::class, 'inscriptions', 'id_module', 'id_etudiant');
+    }
+
+   
 
 }

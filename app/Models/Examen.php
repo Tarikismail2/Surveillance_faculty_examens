@@ -9,9 +9,8 @@ class Examen extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['date', 'heure_debut', 'heure_fin', 'id_module', 'id_salle', 'id_enseignant', 'id_session'];
+    protected $fillable = ['date', 'heure_debut', 'heure_fin', 'id_module', 'id_salle', 'id_enseignant', 'id_session', 'id_etudiant'];
 
-    // Define relationships
     public function module()
     {
         return $this->belongsTo(Module::class, 'id_module');
@@ -30,19 +29,19 @@ class Examen extends Model
     public function salles()
     {
         return $this->belongsToMany(Salle::class, 'examen_salle', 'id_examen', 'id_salle')
-                    ->withTimestamps(); // Assuming you have timestamps in your pivot table
+                    ->withTimestamps();
     }
 
     public function enseignants()
     {
         return $this->belongsToMany(Enseignant::class, 'examen_salle_enseignant', 'id_examen', 'id_enseignant')
                     ->withPivot('id_salle')
-                    ->withTimestamps(); // Assuming you have timestamps in your pivot table
+                    ->withTimestamps();
     }
 
     public function surveillants()
     {
-        return $this->hasMany(ExamenSalleEnseignant::class, 'id_examen', 'id_enseignant');
+        return $this->hasMany(ExamenSalleEnseignant::class, 'id_examen');
     }
 
     public function hasAssignedInvigilators()

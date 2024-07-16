@@ -26,15 +26,17 @@ class ExamenController extends Controller
     }
 
 
-    public function create()
+    public function create($id)
     {
         $salles = Salle::all();
         $enseignants = Enseignant::all();
-        $sessions = SessionExam::all();
+        $selected_session = SessionExam::findOrFail($id);
         $filieres = Filiere::all();
+        // dd($filieres);
 
-        return view('examens.create', compact('salles', 'enseignants', 'sessions', 'filieres'));
+        return view('examens.create', compact('salles', 'enseignants', 'filieres', 'selected_session'));
     }
+
 
     public function store(Request $request)
     {
@@ -47,7 +49,7 @@ class ExamenController extends Controller
             'additional_salles.*' => 'nullable|exists:salles,id',
             'id_enseignant' => 'required|exists:enseignants,id',
             'id_session' => 'required|exists:session_exams,id',
-            'id_filiere' => 'required|exists:filieres,code_etape',
+            'id_filiere' => 'required|exists:filieres,id',
         ]);
 
         // Validation supplémentaire pour les horaires des examens
@@ -67,7 +69,7 @@ class ExamenController extends Controller
         // Validation pour empêcher la création d'un examen pour le même module de la même filière
         $existingExam = Examen::where('id_module', $request->id_module)
             ->whereHas('module', function ($query) use ($request) {
-                $query->where('code_etape', $request->id_filiere);
+                $query->where('id_filiere', $request->id_filiere);
             })->exists();
 
         if ($existingExam) {
@@ -85,7 +87,7 @@ class ExamenController extends Controller
                     });
             })
             ->whereHas('module', function ($query) use ($request) {
-                $query->where('code_etape', $request->id_filiere);
+                $query->where('id_filiere', $request->id_filiere);
             })
             ->whereHas('salles', function ($query) use ($request) {
                 $query->where('salles.id', $request->id_salle);
@@ -275,7 +277,7 @@ class ExamenController extends Controller
 
     public function getModulesByFiliere($filiere_id)
     {
-        $modules = Module::where('code_etape', $filiere_id)
+        $modules = Module::where('version_etape', $filiere_id)
             ->whereDoesntHave('examens')
             ->withCount('inscriptions')
             ->get();
@@ -545,5 +547,4 @@ class ExamenController extends Controller
 
         return $dompdf->stream("examens_enseignant_{$enseignant->name}.pdf");
     }
-    
 }

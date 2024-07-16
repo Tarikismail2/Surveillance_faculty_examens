@@ -9,11 +9,11 @@ class Filiere extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['code_etape'];
+    protected $fillable = ['code_etape','version_etape'];
 
     public function modules()
     {
-        return $this->hasMany(Module::class, 'code_etape', 'code_etape');
+        return $this->hasMany(Module::class, 'version_etape', 'version_etape');
     }
 
     
