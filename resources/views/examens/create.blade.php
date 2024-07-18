@@ -152,7 +152,7 @@
                 @endif
 
                     <div class="flex items-center justify-end mt-4">
-                        <a href="{{ route('examens.index') }}"
+                        <a href="{{ route('examens.index', ['id' => $selected_session->id]) }}"
                             class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center">
                             <i class="fas fa-arrow-left mr-2"></i> @lang('Retour')
                         </a>

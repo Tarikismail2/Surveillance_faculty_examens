@@ -25,29 +25,20 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    //route sessions
     Route::resource('sessions', SessionExamController::class);
 
+    //route examens
+    // Route::resource('examens', ExamenController::class);
     Route::get('/examens', [ExamenController::class, 'index'])->name('examens.index');
     Route::get('/examens/create/{id}', [ExamenController::class, 'create'])->name('examens.create');
     Route::post('/examens', [ExamenController::class, 'store'])->name('examens.store');
-    Route::get('/examens/{examen}/edit', [ExamenController::class, 'edit'])->name('examens.edit');
-    Route::put('/examens/{examen}', [ExamenController::class, 'update'])->name('examens.update');
-    Route::delete('/examens/{examen}', [ExamenController::class, 'destroy'])->name('examens.destroy');
-    Route::get('/examens/pdf/{idEnseignant}', [ExamenController::class, 'generatePdfForEnseignant'])
-        ->name('examens_pdf');
-
-    Route::resource('departments', DepartmentController::class);
-    Route::get('departments/{department}', [DepartmentController::class, 'show'])->name('departments.show');
-
-    Route::resource('enseignants', EnseignantController::class);
-
-    Route::resource('salles', SalleController::class);
-
-    Route::get('/import', [ImportController::class, 'showForm'])->name('import.form');
-    Route::post('/import', [ImportController::class, 'import'])->name('import.process');
-    // Route::post('/upload', [ImportController::class, 'process'])->name('upload.process');
-
+    Route::get('examens/edit/{examen}', [ExamenController::class, 'edit'])->name('examens.edit');
+    Route::put('/examens/{examen}', [ExamenController::class, 'update'])->name('examens.update');   
+    Route::delete('/examens/{examen}', [ExamenController::class, 'destroy'])->name('examens.destroy');      
     Route::get('/examens/getModulesByFiliere/{id_filiere}', [ExamenController::class, 'getModulesByFiliere']);
+    Route::post('/examens/getRooms', [ExamenController::class, 'getRooms'])
+    ->name('examens.getRooms');
 
     //Affectation des surveillants sur les locaux   
     Route::get('/examens/{examen}', [ExamenController::class, 'show'])->name('examens.show');
@@ -55,7 +46,21 @@ Route::middleware('auth')->group(function () {
     Route::post('/examens/{examen}/assign-invigilators', [ExamenController::class, 'assignInvigilators'])->name('examens.assignInvigilators');
     Route::get('/examens/{examen}/edit-invigilators', [ExamenController::class, 'editInvigilators'])->name('examens.editInvigilators');
     Route::post('/examens/{examen}/update-invigilators', [ExamenController::class, 'updateInvigilators'])->name('examens.updateInvigilators');
+   
 
+    //route departments
+    Route::resource('departments', DepartmentController::class);
+    Route::get('departments/{department}', [DepartmentController::class, 'show'])->name('departments.show');
+
+    //route enseignants
+    Route::resource('enseignants', EnseignantController::class);
+
+    //route salles
+    Route::resource('salles', SalleController::class);
+
+    //route upload
+    Route::get('/import', [ImportController::class, 'showForm'])->name('import.form');
+    Route::post('/import', [ImportController::class, 'import'])->name('import.process');
 
     //Affichage globale de la planification des examens
     Route::get('/api/examens/{sessionId}/schedule', [PlanificationController::class, 'getExamsBySession']);

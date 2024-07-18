@@ -79,11 +79,11 @@
                                         {{ optional($examen->module)->lib_elp ?? 'N/A' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        {{ optional($examen->module)->code_etape ?? 'N/A' }}
+                                        {{ optional($examen->module)->version_etape ?? 'N/A' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @foreach ($examen->salles as $salle)
-                                            {{ $salle->name }},
+                                            {{ $salle->name }}{{ !$loop->last ? ', ' : '' }}
                                         @endforeach
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">

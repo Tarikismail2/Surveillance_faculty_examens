@@ -51,7 +51,7 @@ class Examen extends Model
 
     public function filiere()
     {
-        return $this->belongsTo(Filiere::class, 'code_etape');
+        return $this->belongsTo(Filiere::class, 'version_etape');
     }
 
     public function session()

@@ -65,7 +65,7 @@
 
     @foreach ($exams as $examen)
         <div class="filiere-info">
-            <span class="section-title">Filière : {{ $examen->module->code_etape }}</span>
+            <span class="section-title">Filière : {{ $examen->module->version_etape }}</span>
             <table>
                 <thead>
                     <tr>

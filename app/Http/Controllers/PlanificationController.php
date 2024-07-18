@@ -52,7 +52,7 @@ class PlanificationController extends Controller
                     'date' => $exam->date,
                     'heure_debut' => $exam->heure_debut,
                     'heure_fin' => $exam->heure_fin,
-                    'filiere' => $exam->module->filiere->code_etape,
+                    'filiere' => $exam->module->filiere->version_etape,
                     'module' => $exam->module->lib_elp,
                     'additionalSalles' => $exam->additionalSalles->pluck('name')->toArray(),
                     'enseignant' => $exam->enseignant->name,

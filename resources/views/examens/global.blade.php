@@ -71,7 +71,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $examen->heure_fin }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @if ($examen->module)
-                                                {{ $examen->module->code_etape }}
+                                                {{ $examen->module->version_etape }}
                                             @else
                                                 N/A
                                             @endif

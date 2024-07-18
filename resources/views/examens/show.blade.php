@@ -29,7 +29,7 @@
                     <p><strong>@lang('Date'):</strong> {{ $examen->date }}</p>
                     <p><strong>@lang('Heure de début'):</strong> {{ $examen->heure_debut }}</p>
                     <p><strong>@lang('Heure de fin'):</strong> {{ $examen->heure_fin }}</p>
-                    <p><strong>@lang('Filière'):</strong> {{ $examen->module->code_etape }}</p>
+                    <p><strong>@lang('Filière'):</strong> {{ $examen->module->version_etape }}</p>
                     <p><strong>@lang('Module'):</strong> {{ $examen->module->lib_elp }}</p>
                 </div>
 

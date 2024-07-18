@@ -19,12 +19,12 @@ use Psy\Readline\Hoa\Console;
 
 class ExamenController extends Controller
 {
+
     public function index()
     {
         $examens = Examen::with('salles', 'module', 'enseignant')->get();
         return view('examens.index', compact('examens'));
     }
-
 
     public function create($id)
     {
@@ -32,10 +32,10 @@ class ExamenController extends Controller
         $enseignants = Enseignant::all();
         $selected_session = SessionExam::findOrFail($id);
         $filieres = Filiere::all();
-        // dd($filieres);
 
         return view('examens.create', compact('salles', 'enseignants', 'filieres', 'selected_session'));
     }
+
 
 
     public function store(Request $request)
@@ -146,24 +146,25 @@ class ExamenController extends Controller
         return redirect()->route('examens.index')->with('success', 'Examen créé avec succès.');
     }
 
-
     public function edit(Examen $examen)
     {
-        $examen->load('filiere', 'module');
-
-        // Autres chargements de données nécessaires
+        $examen->load('module', 'additionalSalles'); // Ensure additional salles are loaded
         $modules = Module::all();
         $salles = Salle::all();
         $enseignants = Enseignant::all();
-        $sessions = SessionExam::all();
         $filieres = Filiere::all();
-
-        return view('examens.edit', compact('examen', 'modules', 'salles', 'enseignants', 'sessions', 'filieres'));
+        $selected_session = SessionExam::findOrFail($examen->id);
+        $primaryRoomId = $examen->id_salle;
+    
+        return view('examens.edit', compact('examen', 'modules', 'salles', 'enseignants', 'selected_session', 'filieres', 'primaryRoomId'));
     }
+    
+
 
 
     public function update(Request $request, Examen $examen)
     {
+        // Validate the incoming request
         $request->validate([
             'date' => 'required|date',
             'heure_debut' => 'required|date_format:H:i|before_or_equal:18:30',
@@ -173,35 +174,35 @@ class ExamenController extends Controller
             'additional_salles.*' => 'nullable|exists:salles,id',
             'id_enseignant' => 'required|exists:enseignants,id',
             'id_session' => 'required|exists:session_exams,id',
-            'id_filiere' => 'required|exists:filieres,code_etape',
+            'id_filiere' => 'required|exists:filieres,id',
         ]);
 
-        // Validation supplémentaire pour les horaires des examens
+        // Convert times to timestamps for comparison
         $heure_debut = strtotime($request->heure_debut);
         $heure_fin = strtotime($request->heure_fin);
-
         $matin_start = strtotime('08:00');
         $matin_end = strtotime('12:30');
         $apres_midi_start = strtotime('14:00');
         $apres_midi_end = strtotime('18:30');
 
+        // Ensure the exam falls within allowed time ranges
         if (!(($heure_debut >= $matin_start && $heure_fin <= $matin_end && $heure_debut < $heure_fin) ||
             ($heure_debut >= $apres_midi_start && $heure_fin <= $apres_midi_end && $heure_debut < $heure_fin))) {
             return back()->withErrors(['error' => 'La durée de l\'examen doit être entre 08:00 et 12:30 pour le matin ou entre 14:00 et 18:30 pour l\'après-midi.']);
         }
 
-        // Validation pour empêcher la création d'un examen pour le même module de la même filière
+        // Ensure the exam is unique for the module and filiere
         $existingExam = Examen::where('id_module', $request->id_module)
             ->where('id', '!=', $examen->id)
             ->whereHas('module', function ($query) use ($request) {
-                $query->where('code_etape', $request->id_filiere);
+                $query->where('version_etape', $request->id_filiere);
             })->exists();
 
         if ($existingExam) {
             return back()->withErrors(['error' => 'Un examen pour ce module et cette filière existe déjà.']);
         }
 
-        // Validation pour empêcher la création de deux examens pour la même filière à la même durée
+        // Ensure no overlapping exams for the same filiere
         $overlappingExam = Examen::where('date', $request->date)
             ->where('id', '!=', $examen->id)
             ->where(function ($query) use ($request, $heure_debut, $heure_fin) {
@@ -213,14 +214,14 @@ class ExamenController extends Controller
                     });
             })
             ->whereHas('module', function ($query) use ($request) {
-                $query->where('code_etape', $request->id_filiere);
+                $query->where('version_etape', $request->id_filiere);
             })->exists();
 
         if ($overlappingExam) {
             return back()->withErrors(['error' => 'Il existe déjà un examen pour cette filière dans la même durée.']);
         }
 
-        // Validation pour empêcher l'affectation d'une salle déjà occupée
+        // Ensure the selected salle is not occupied
         $occupiedSalle = Examen::where('date', $request->date)
             ->where('id', '!=', $examen->id)
             ->where(function ($query) use ($request, $heure_debut, $heure_fin) {
@@ -239,6 +240,7 @@ class ExamenController extends Controller
             return back()->withErrors(['error' => 'Cette salle est déjà occupée pendant cette période.']);
         }
 
+        // Calculate the total capacity of selected salles
         $salles_ids = array_filter(array_merge([$request->id_salle], $request->additional_salles ?? []));
         $capacite_totale = Salle::whereIn('id', $salles_ids)->sum('capacite');
         $module = Module::findOrFail($request->id_module);
@@ -248,11 +250,13 @@ class ExamenController extends Controller
             return back()->withErrors(['error' => 'La capacité totale des salles sélectionnées est insuffisante pour accueillir cet examen.']);
         }
 
+        // Ensure the exam date is within the session duration
         $session = SessionExam::findOrFail($request->id_session);
         if ($request->date < $session->date_debut || $request->date > $session->date_fin) {
             return back()->withErrors(['error' => 'La date de l\'examen doit être incluse dans la durée de la session d\'examen.']);
         }
 
+        // Update the exam details
         $examen->update([
             'date' => $request->date,
             'heure_debut' => $request->heure_debut,
@@ -262,11 +266,13 @@ class ExamenController extends Controller
             'id_session' => $request->id_session,
         ]);
 
-        // Attacher les salles supplémentaires
+        // Attach additional salles
         $examen->salles()->sync($salles_ids);
 
+        // Redirect with success message
         return redirect()->route('examens.index')->with('success', 'Examen mis à jour avec succès.');
     }
+
 
 
     public function destroy(Examen $examen)
@@ -275,14 +281,34 @@ class ExamenController extends Controller
         return redirect()->route('examens.index')->with('success', 'Examen supprimé avec succès.');
     }
 
+    public function getRooms(Request $request)
+    {
+        $id = $request->input('id_examen');
+
+        // Fetch the primary room ID for the given exam
+        $primaryRoomId = DB::table('examens')->where('id', $id)->value('id_salle');
+
+        // Fetch additional rooms excluding the primary room and already assigned additional rooms
+        $additionalRooms = Salle::whereNotIn('id', function ($query) use ($id) {
+            $query->select('id_salle')
+                ->from('examen_salle')
+                ->where('id_examen', $id);
+        })->where('id', '!=', $primaryRoomId)->get();
+
+        return response()->json([
+            'rooms' => $additionalRooms
+        ]);
+    }
+
+
     public function getModulesByFiliere($filiere_id)
     {
         $modules = Module::where('version_etape', $filiere_id)
-            ->whereDoesntHave('examens')
             ->withCount('inscriptions')
             ->get();
         return response()->json($modules);
     }
+
 
 
 
