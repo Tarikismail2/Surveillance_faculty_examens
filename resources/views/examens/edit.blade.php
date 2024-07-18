@@ -45,27 +45,25 @@
                     </div>
 
                     <div class="form-group mb-4">
-                        <label for="heure_debut"
-                            class="block text-gray-700 dark:text-gray-300">@lang('Heure de Début')</label>
+                        <label for="heure_debut" class="block text-gray-700 dark:text-gray-300">@lang('Heure de Début')</label>
                         <input type="time" name="heure_debut" id="heure_debut"
                             class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            value="{{  $examen->heure_debut }}" required>
+                            value="{{ $examen->heure_debut }}" required>
                         @error('heure_debut')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
-
+                    
                     <div class="form-group mb-4">
-                        <label for="heure_fin"
-                            class="block text-gray-700 dark:text-gray-300">@lang('Heure de Fin')</label>
+                        <label for="heure_fin" class="block text-gray-700 dark:text-gray-300">@lang('Heure de Fin')</label>
                         <input type="time" name="heure_fin" id="heure_fin"
                             class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            value="{{  $examen->heure_fin }}" required>
+                            value="{{ $examen->heure_fin }}" required>
                         @error('heure_fin')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
-
+                    
                     <div class="form-group mb-4">
                         <label for="filiere" class="block text-gray-700 dark:text-gray-300">@lang('Filière')</label>
                         <select class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" id="filiere" name="id_filiere" required>

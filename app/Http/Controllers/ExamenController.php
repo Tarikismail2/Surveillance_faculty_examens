@@ -155,10 +155,15 @@ class ExamenController extends Controller
         $filieres = Filiere::all();
         $selected_session = SessionExam::findOrFail($examen->id);
         $primaryRoomId = $examen->id_salle;
-    
+
+        // Formater les heures de début et de fin
+        $examen->heure_debut = \Carbon\Carbon::parse($examen->heure_debut)->format('H:i');
+        $examen->heure_fin = \Carbon\Carbon::parse($examen->heure_fin)->format('H:i');
+
         return view('examens.edit', compact('examen', 'modules', 'salles', 'enseignants', 'selected_session', 'filieres', 'primaryRoomId'));
     }
-    
+
+
 
 
 
@@ -168,7 +173,7 @@ class ExamenController extends Controller
         $request->validate([
             'date' => 'required|date',
             'heure_debut' => 'required|date_format:H:i|before_or_equal:18:30',
-            'heure_fin' => 'required|date_format:H:i|after:heure_debut|before_or_equal:18:30',
+            'heure_fin' => 'required|date_format:H:i|before_or_equal:18:30',
             'id_module' => 'required|exists:modules,id',
             'id_salle' => 'required|exists:salles,id',
             'additional_salles.*' => 'nullable|exists:salles,id',
