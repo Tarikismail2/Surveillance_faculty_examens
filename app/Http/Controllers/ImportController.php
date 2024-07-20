@@ -17,7 +17,7 @@ class ImportController extends Controller
         return view('import-form');
     }
 
-    public function import(Request $request)
+  public function import(Request $request)
 {
     $request->validate([
         'file' => 'required|mimes:xlsx,xls|max:2048',
@@ -38,59 +38,25 @@ class ImportController extends Controller
 
             DB::beginTransaction();
 
+            $batchSize = 100;
+            $batch = [];
+            
             foreach ($rows as $index => $row) {
                 if ($index == 0) continue; // Skip header
 
-                // Validate and convert the date
-                $dateNaissance = null;
-                if (isset($row[5]) && !empty($row[5])) {
-                    try {
-                        $dateNaissance = \DateTime::createFromFormat('m/d/Y', $row[5]);
-                    } catch (\Exception $e) {
-                        $dateNaissance = null;
-                    }
+                // Prepare the data for the batch
+                $batch[] = $row;
+
+                // Process the batch if it reaches the specified size
+                if (count($batch) >= $batchSize) {
+                    $this->processBatch($batch);
+                    $batch = []; // Clear the batch
                 }
+            }
 
-                // Set CIN to null if it is empty or duplicate
-                $cin = isset($row[3]) && !empty($row[3]) ? $row[3] : null;
-
-                // Check for duplicate CIN
-                if ($cin !== null && Etudiant::where('cin', $cin)->exists()) {
-                    $cin = null;
-                }
-
-                $etudiant = Etudiant::updateOrCreate(
-                    ['code_etudiant' => $row[0]],
-                    [
-                        'nom' => $row[1],
-                        'prenom' => $row[2],
-                        'cin' => $cin,
-                        'cne' => $row[4],
-                        'date_naissance' => $dateNaissance ? $dateNaissance->format('Y-m-d') : null, // Format to Y-m-d if valid
-                    ]
-                );
-
-                // Ensure filiere exists and get its ID
-                $filiere = Filiere::firstOrCreate(
-                    ['version_etape' => $row[8]],
-                    ['code_etape' => $row[9]]
-                );
-
-                $module = Module::updateOrCreate(
-                    [
-                        'code_elp' => $row[6],
-                        'lib_elp' => $row[7],
-                        'version_etape' => $row[8],
-                        'code_etape' => $row[9],
-                    ]
-                );
-
-                Inscription::updateOrCreate(
-                    [
-                        'id_etudiant' => $etudiant->id,
-                        'id_module' => $module->id,
-                    ]
-                );
+            // Process any remaining data in the batch
+            if (count($batch) > 0) {
+                $this->processBatch($batch);
             }
 
             DB::commit();
@@ -105,5 +71,60 @@ class ImportController extends Controller
     return back()->withErrors(['error' => 'Le fichier n\'a pas pu être téléchargé.']);
 }
 
+private function processBatch(array $batch)
+{
+    foreach ($batch as $row) {
+        // Validate and convert the date
+        $dateNaissance = null;
+        if (isset($row[5]) && !empty($row[5])) {
+            try {
+                $dateNaissance = \DateTime::createFromFormat('m/d/Y', $row[5]);
+            } catch (\Exception $e) {
+                $dateNaissance = null;
+            }
+        }
+
+        // Set CIN to null if it is empty or duplicate
+        $cin = isset($row[3]) && !empty($row[3]) ? $row[3] : null;
+
+        // Check for duplicate CIN
+        if ($cin !== null && Etudiant::where('cin', $cin)->exists()) {
+            $cin = null;
+        }
+
+        $etudiant = Etudiant::updateOrCreate(
+            ['code_etudiant' => $row[0]],
+            [
+                'nom' => $row[1],
+                'prenom' => $row[2],
+                'cin' => $cin,
+                'cne' => $row[4],
+                'date_naissance' => $dateNaissance ? $dateNaissance->format('Y-m-d') : null, // Format to Y-m-d if valid
+            ]
+        );
+
+        // Ensure filiere exists and get its ID
+        $filiere = Filiere::firstOrCreate(
+            ['version_etape' => $row[8]],
+            ['code_etape' => $row[9]]
+        );
+
+        $module = Module::updateOrCreate(
+            [
+                'code_elp' => $row[6],
+                'lib_elp' => $row[7],
+                'version_etape' => $row[8],
+                'code_etape' => $row[9],
+            ]
+        );
+
+        Inscription::updateOrCreate(
+            [
+                'id_etudiant' => $etudiant->id,
+                'id_module' => $module->id,
+            ]
+        );
+    }
+}
 
 }
