@@ -41,6 +41,7 @@ class PlanificationController extends Controller
             'exams' => $exams,
         ]);
     }
+    
 
     public function getExamsBySession($sessionId)
     {

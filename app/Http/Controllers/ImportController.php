@@ -72,17 +72,16 @@ class ImportController extends Controller
 
                 // Ensure filiere exists and get its ID
                 $filiere = Filiere::firstOrCreate(
-                    ['code_etape' => $row[9]],
-                    ['version_etape' => $row[8]]
+                    ['version_etape' => $row[8]],
+                    ['code_etape' => $row[9]]
                 );
 
                 $module = Module::updateOrCreate(
-                    ['code_elp' => $row[6]],
                     [
+                        'code_elp' => $row[6],
                         'lib_elp' => $row[7],
                         'version_etape' => $row[8],
                         'code_etape' => $row[9],
-                        'id_filiere' => $filiere->id,
                     ]
                 );
 
@@ -105,4 +104,6 @@ class ImportController extends Controller
 
     return back()->withErrors(['error' => 'Le fichier n\'a pas pu être téléchargé.']);
 }
+
+
 }

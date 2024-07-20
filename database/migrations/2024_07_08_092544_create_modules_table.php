@@ -10,7 +10,7 @@ class CreateModulesTable extends Migration
     {
         Schema::create('modules', function (Blueprint $table) {
             $table->id();
-            $table->string('code_elp')->unique();
+            $table->string('code_elp');
             $table->string('lib_elp');
             $table->string('version_etape');
             $table->string('code_etape');

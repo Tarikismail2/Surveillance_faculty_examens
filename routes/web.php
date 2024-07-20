@@ -30,23 +30,23 @@ Route::middleware('auth')->group(function () {
 
     //route examens
     // Route::resource('examens', ExamenController::class);
-    Route::get('/examens', [ExamenController::class, 'index'])->name('examens.index');
+    Route::get('/examens/{sessionId}', [ExamenController::class, 'index'])->name('examens.index');
     Route::get('/examens/create/{id}', [ExamenController::class, 'create'])->name('examens.create');
     Route::post('/examens', [ExamenController::class, 'store'])->name('examens.store');
-    Route::get('examens/edit/{examen}', [ExamenController::class, 'edit'])->name('examens.edit');
+    Route::get('/examens/edit/{id}', [ExamenController::class, 'edit'])->name('examens.editExamen');
     Route::put('/examens/{examen}', [ExamenController::class, 'update'])->name('examens.update');   
     Route::delete('/examens/{examen}', [ExamenController::class, 'destroy'])->name('examens.destroy');      
     Route::get('/examens/getModulesByFiliere/{id_filiere}', [ExamenController::class, 'getModulesByFiliere']);
-    Route::post('/examens/getRooms', [ExamenController::class, 'getRooms'])
-    ->name('examens.getRooms');
+    Route::post('/examens/getRooms', [ExamenController::class, 'getRooms'])->name('examens.getRooms');
+    // Route::get('/examens/getEnseignantsByDepartment/{departmentId}', [ExamenController::class, 'getEnseignantsByDepartment'])->name('examens.getEnseignantsByDepartment');
 
     //Affectation des surveillants sur les locaux   
-    Route::get('/examens/{examen}', [ExamenController::class, 'show'])->name('examens.show');
+    Route::get('/examens/form/{examen}', [ExamenController::class, 'showForm'])->name('examens.showForm');
     Route::get('/examens/{id}/show-invigilators', [ExamenController::class, 'showAssignInvigilatorsForm'])->name('examens.showAssignInvigilatorsForm');
-    Route::post('/examens/{examen}/assign-invigilators', [ExamenController::class, 'assignInvigilators'])->name('examens.assignInvigilators');
+    Route::post('/examens/{id}/assign-invigilators', [ExamenController::class, 'assignInvigilators'])->name('examens.assignInvigilators');
     Route::get('/examens/{examen}/edit-invigilators', [ExamenController::class, 'editInvigilators'])->name('examens.editInvigilators');
     Route::post('/examens/{examen}/update-invigilators', [ExamenController::class, 'updateInvigilators'])->name('examens.updateInvigilators');
-   
+
 
     //route departments
     Route::resource('departments', DepartmentController::class);

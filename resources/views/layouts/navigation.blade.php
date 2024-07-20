@@ -4,6 +4,7 @@
 <head>
     <!-- Vite integration -->
     @vite(['resources/css/main.css', 'resources/js/main.js'])
+    
 </head>
 
 <body>

@@ -127,6 +127,7 @@ return [
     // 'providers' => [
     //     // Autres Providers
     //     Maatwebsite\Excel\ExcelServiceProvider::class,
+    //     Yajra\DataTables\DataTablesServiceProvider::class,
     // ],
 
     // 'aliases' => [

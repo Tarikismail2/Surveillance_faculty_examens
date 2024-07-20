@@ -49,7 +49,7 @@
                             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-300 ease-in-out">
                             {{ __('Créer un examen') }}
                         </a>
-                        <a href="{{ route('examens.index', ['id' => $session->id]) }}"
+                        <a href="{{ route('examens.index', ['sessionId' => $session->id]) }}"
                             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-300 ease-in-out">
                             {{ __('Voir les examens') }}
                         </a>

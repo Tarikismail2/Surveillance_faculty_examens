@@ -19,5 +19,10 @@ class SessionExam extends Model
         'id',
     ];
 
+    public function examens()
+    {
+        return $this->hasMany(Examen::class);
+    }
+
 }
 

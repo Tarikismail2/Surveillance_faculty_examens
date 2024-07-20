@@ -28,7 +28,7 @@ class Module extends Model
 
     public function filiere()
     {
-        return $this->belongsTo(Filiere::class, 'version_etape');
+        return $this->belongsTo(Filiere::class, 'version_etape', 'version_etape');
     }
 
     public function etudiants()

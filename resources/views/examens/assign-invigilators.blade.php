@@ -24,9 +24,8 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('examens.assignInvigilators', $examen->id) }}">
+                <form action="{{ route('examens.assignInvigilators', ['id' => $examen->id]) }}" method="POST">
                     @csrf
-
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         @foreach ($salles as $salle)
                             @if ($examen->salles->contains('id', $salle->id))
@@ -35,7 +34,8 @@
                                     <label class="block text-sm font-medium text-gray-700">@lang('Surveillants')</label>
                                     <div class="enseignants-container">
                                         <div class="flex items-center mb-2">
-                                            <select name="enseignants[{{ $salle->id }}][]" class="mt-1 block w-full">
+                                            <select name="enseignants[{{ $salle->id }}][]" class="mt-1 block w-full" onchange="updateEnseignantOptions()">
+                                                <option value="">@lang('Choisir un surveillant')</option>
                                                 @foreach ($enseignants as $enseignant)
                                                     <option value="{{ $enseignant->id }}">{{ $enseignant->name }}</option>
                                                 @endforeach
@@ -70,12 +70,9 @@
             div.classList.add('flex', 'items-center', 'mb-2');
             const select = document.createElement('select');
             select.name = `enseignants[${salleId}][]`;
-            @foreach ($enseignants as $enseignant)
-                const option{{ $enseignant->id }} = document.createElement('option');
-                option{{ $enseignant->id }}.value = '{{ $enseignant->id }}';
-                option{{ $enseignant->id }}.textContent = '{{ $enseignant->name }}';
-                select.appendChild(option{{ $enseignant->id }});
-            @endforeach
+            select.classList.add('mt-1', 'block', 'w-full');
+            select.onchange = updateEnseignantOptions;
+            select.innerHTML = getEnseignantOptions();
             div.appendChild(select);
             const removeButton = document.createElement('button');
             removeButton.type = 'button';
@@ -86,10 +83,43 @@
             };
             div.appendChild(removeButton);
             container.appendChild(div);
+            updateEnseignantOptions();
         }
 
         function removeSurveillant(button) {
             button.parentNode.remove();
+            updateEnseignantOptions();
         }
+
+        function getEnseignantOptions() {
+            let options = '<option value="">@lang('Choisir un surveillant')</option>';
+            @foreach ($enseignants as $enseignant)
+                options += `<option value="{{ $enseignant->id }}">{{ $enseignant->name }}</option>`;
+            @endforeach
+            return options;
+        }
+
+        function updateEnseignantOptions() {
+            const selectedEnseignants = new Set();
+            document.querySelectorAll('select[name^="enseignants"]').forEach(select => {
+                if (select.value) {
+                    selectedEnseignants.add(select.value);
+                }
+            });
+
+            document.querySelectorAll('select[name^="enseignants"]').forEach(select => {
+                const currentSelection = select.value;
+                select.innerHTML = getEnseignantOptions();
+                select.value = currentSelection;
+                select.querySelectorAll('option').forEach(option => {
+                    if (option.value && selectedEnseignants.has(option.value) && option.value !== currentSelection) {
+                        option.disabled = true;
+                    }
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', updateEnseignantOptions);
     </script>
 </x-app-layout>
+    

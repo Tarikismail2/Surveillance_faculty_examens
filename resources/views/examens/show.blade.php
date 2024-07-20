@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 @lang('Détails de l\'examen')
             </h2>
-            <a href="{{ route('examens.index') }}"
+            <a href="{{ route('examens.index', ['sessionId' => $examen->id]) }}"
                 class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                 {{ __('Retour à la liste des examens') }}
             </a>

@@ -15,10 +15,4 @@ class Department extends Model
     {
         return $this->hasMany(Enseignant::class, 'id_department');
     }
-
-    // public function modules()
-    // {
-    //     return $this->hasMany(Module::class, 'id_department');
-    // }
-    
 }
