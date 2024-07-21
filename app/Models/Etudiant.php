@@ -17,6 +17,9 @@ class Etudiant extends Model
         'cne',
         'date_naissance',
     ];
+    protected $casts = [
+        'date_naissance' => 'datetime', // Ensure date_naissance is cast to DateTime
+    ];
 
     public function inscriptions()
     {

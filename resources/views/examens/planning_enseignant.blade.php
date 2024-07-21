@@ -1,5 +1,3 @@
-<!-- resources/views/examens/planning_surveillant.blade.php -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>

@@ -10,6 +10,7 @@ use App\Http\Controllers\SalleController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\PlanificationController;
+use App\Http\Controllers\EtudiantController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -34,8 +35,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/examens/create/{id}', [ExamenController::class, 'create'])->name('examens.create');
     Route::post('/examens', [ExamenController::class, 'store'])->name('examens.store');
     Route::get('/examens/edit/{id}', [ExamenController::class, 'edit'])->name('examens.editExamen');
-    Route::put('/examens/{examen}', [ExamenController::class, 'update'])->name('examens.update');   
-    Route::delete('/examens/{examen}', [ExamenController::class, 'destroy'])->name('examens.destroy');      
+    Route::put('/examens/{examen}', [ExamenController::class, 'update'])->name('examens.update');
+    Route::delete('/examens/{examen}', [ExamenController::class, 'destroy'])->name('examens.destroy');
     Route::get('/examens/getModulesByFiliere/{id_filiere}', [ExamenController::class, 'getModulesByFiliere']);
     Route::post('/examens/getRooms', [ExamenController::class, 'getRooms'])->name('examens.getRooms');
     // Route::get('/examens/getEnseignantsByDepartment/{departmentId}', [ExamenController::class, 'getEnseignantsByDepartment'])->name('examens.getEnseignantsByDepartment');
@@ -57,6 +58,18 @@ Route::middleware('auth')->group(function () {
 
     //route salles
     Route::resource('salles', SalleController::class);
+
+
+
+    // route etudiants 
+    Route::get('/etudiants', [EtudiantController::class, 'index'])->name('etudiants.index');
+    Route::get('/etudiants/create', [EtudiantController::class, 'create'])->name('etudiants.create');
+    Route::post('/etudiants', [EtudiantController::class, 'store'])->name('etudiants.store');
+    Route::get('/etudiants/{etudiant}/edit', [EtudiantController::class, 'edit'])->name('etudiants.edit');
+    Route::put('/etudiants/{etudiant}', [EtudiantController::class, 'update'])->name('etudiants.update');
+    Route::get('/etudiants/{etudiant}', [EtudiantController::class, 'show'])->name('etudiants.show');
+    Route::delete('/etudiants/{etudiant}', [EtudiantController::class, 'destroy'])->name('etudiants.destroy');
+
 
     //route upload
     Route::get('/import', [ImportController::class, 'showForm'])->name('import.form');

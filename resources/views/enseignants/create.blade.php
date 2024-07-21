@@ -1,22 +1,35 @@
 <x-app-layout>
     <x-slot name="header">
+        <div class="flex justify-between items-center bg-gray-100 p-4 rounded-lg shadow-md">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Ajouter un Enseignant') }}
         </h2>
+        </div>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
+                @if (session('status'))
+                    <div class="mb-4 p-4 rounded-md {{ session('status')['type'] === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                        {{ session('status')['message'] }}
+                    </div>
+                @endif
                 <form action="{{ route('enseignants.store') }}" method="POST">
                     @csrf
                     <div class="form-group mb-4">
                         <label for="name" class="block text-gray-700 dark:text-gray-300">Nom</label>
-                        <input type="text" name="name" id="name" class="form-control mt-1 block w-full rounded-md shadow-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        <input type="text" name="name" id="name" value="{{ old('name') }}" class="form-control mt-1 block w-full rounded-md shadow-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        @error('name')
+                            <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                        @enderror
                     </div>
                     <div class="form-group mb-4">
                         <label for="email" class="block text-gray-700 dark:text-gray-300">Email</label>
-                        <input type="email" name="email" id="email" class="form-control mt-1 block w-full rounded-md shadow-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        <input type="email" name="email" id="email" value="{{ old('email') }}" class="form-control mt-1 block w-full rounded-md shadow-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        @error('email')
+                            <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                        @enderror
                     </div>
                     <div class="form-group mb-4">
                         <label for="id_department" class="block text-gray-700 dark:text-gray-300">Département</label>
@@ -25,6 +38,9 @@
                                 <option value="{{ $department->id_department }}">{{ $department->name }}</option>
                             @endforeach
                         </select>
+                        @error('id_department')
+                            <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                        @enderror
                     </div>
                     <div class="flex items-center justify-end mt-4">
                         <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">

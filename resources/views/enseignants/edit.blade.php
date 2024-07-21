@@ -1,13 +1,20 @@
 <x-app-layout>
     <x-slot name="header">
+        <div class="flex justify-between items-center bg-gray-100 p-4 rounded-lg shadow-md">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Modifier l\'Enseignant') }}
         </h2>
+        </div>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
+                @if (session('status'))
+                    <div class="mb-4 p-4 rounded-md {{ session('status')['type'] === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                        {{ session('status')['message'] }}
+                    </div>
+                @endif
                 <form action="{{ route('enseignants.update', $enseignant->id) }}" method="POST">
                     @csrf
                     @method('PUT')

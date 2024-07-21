@@ -4,8 +4,8 @@
             <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
                 {{ __('Enseignants') }}
             </h2>
-            <a href="{{ route('enseignants.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md">
-                {{ __('Ajouter un Enseignant') }}
+            <a href="{{ route('enseignants.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center">
+                <i class="fas fa-plus"></i>
             </a>
         </div>
     </x-slot>
@@ -14,6 +14,11 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-lg rounded-lg overflow-hidden">
                 <div class="p-6">
+                    @if (session('status'))
+                        <div class="mb-4 p-4 rounded-md {{ session('status')['type'] === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                            {{ session('status')['message'] }}
+                        </div>
+                    @endif
                     <div class="overflow-x-auto">
                         <table id="enseignants-table" class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
@@ -68,11 +73,15 @@
                         searchable: false,
                         render: function (data, type, row) {
                             return `
-                                <a href="/enseignants/${data.id}/edit" class="text-yellow-600 hover:text-yellow-700 font-medium">Modifier</a>
+                                <a href="/enseignants/${data.id}/edit" class="text-yellow-600 hover:text-yellow-700 font-medium" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
                                 <form action="/enseignants/${data.id}" method="POST" class="inline-block" style="display:inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-700 font-medium">Supprimer</button>
+                                    <button type="submit" class="text-red-600 hover:text-red-700 font-medium" title="Supprimer">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
                                 </form>
                             `;
                         }
@@ -82,15 +91,12 @@
                     url: "//cdn.datatables.net/plug-ins/1.11.5/i18n/French.json"
                 },
                 initComplete: function () {
-                    // Style des éléments de DataTables
                     $('#enseignants-table_paginate .paginate_button').addClass('py-2 px-4 border rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300');
                     $('#enseignants-table_paginate .paginate_button.current').addClass('bg-blue-600 text-white');
                     $('#enseignants-table_info').addClass('text-gray-700 text-sm');
                     $('#enseignants-table_filter input').addClass('border border-gray-300 rounded-lg py-2 px-4');
                     $('#enseignants-table_length select').addClass('border border-gray-300 rounded-lg py-2 px-4');
                     $('#enseignants-table_processing').addClass('text-gray-700 font-medium bg-gray-100 p-2 rounded-lg');
-                    
-                    // Styles spécifiques pour la pagination et la recherche
                     $('#enseignants-table_paginate').addClass('flex items-center space-x-2 mt-4');
                     $('#enseignants-table_filter').addClass('flex items-center space-x-4 mt-4');
                 }
