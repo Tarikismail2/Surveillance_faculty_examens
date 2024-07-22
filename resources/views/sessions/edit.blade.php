@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Modifier la session') }}
         </h2>
     </x-slot>
@@ -24,10 +24,10 @@
                         <input type="date" name="date_fin" id="date_fin" value="{{ $session->date_fin }}" class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                     </div>
                     <div class="flex items-center justify-end mt-4">
-                        <a href="{{ route('sessions.index') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center">
+                        <a href="{{ route('sessions.index') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded inline-flex items-center">
                             <i class="fas fa-arrow-left mr-2"></i> {{ __('Retour') }}
                         </a>
-                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-2">
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-2 inline-flex items-center">
                             <i class="fas fa-save mr-2"></i> {{ __('Mettre à jour') }}
                         </button>
                     </div>

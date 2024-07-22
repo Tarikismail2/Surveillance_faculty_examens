@@ -3,56 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emploi du temps</title>
+    <title>Emploi du Temps</title>
     <style>
         body {
-            font-family: DejaVu Sans, sans-serif;
+            font-family: Arial, sans-serif;
             line-height: 1.6;
             margin: 0;
             padding: 0;
+            background-color: #f8f9fa;
         }
         .container {
-            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
             padding: 20px;
             box-sizing: border-box;
         }
         header, footer {
             text-align: center;
-            padding: 10px;
-            background-color: #f4f4f4;
+            padding: 15px;
+            background-color: #343a40;
+            color: #fff;
         }
-        header h1, footer p {
+        header h1 {
             margin: 0;
+            font-size: 1.5em;
+        }
+        header h3 {
+            margin: 5px 0;
+            font-size: 1.2em;
+            color: #ced4da;
+        }
+        footer p {
+            margin: 0;
+            font-size: 0.9em;
         }
         .schedule-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .schedule-table th, .schedule-table td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 12px;
             text-align: left;
         }
         .schedule-table th {
-            background-color: #f4f4f4;
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
         }
         .schedule-table tr:nth-child(even) {
-            background-color: #f9f9f9;
+            background-color: #f2f2f2;
         }
         .alert {
             padding: 15px;
-            background-color: #f44336;
+            background-color: #dc3545;
             color: white;
             margin-bottom: 20px;
+            border-radius: 5px;
+            font-size: 1em;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            {{-- <h1>Emploi du Temps des Examens pour {{ $student_name }}</h1>
-            <h3>Session : {{ $session_type }}</h3> --}}
+            <h1>Emploi du Temps des Examens</h1>
+            <h3>Session : {{ $session_type }}</h3>
         </header>
 
         <main>

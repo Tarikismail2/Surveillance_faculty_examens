@@ -17,11 +17,11 @@ class Inscription extends Model
 
     public function etudiant()
     {
-        return $this->belongsTo(Etudiant::class);
+        return $this->belongsTo(Etudiant::class, 'id_etudiant');
     }
 
     public function module()
     {
-        return $this->belongsTo(Module::class);
+        return $this->belongsTo(Module::class, 'id_module');
     }
 }

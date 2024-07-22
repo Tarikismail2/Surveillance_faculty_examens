@@ -1,9 +1,15 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center bg-gray-100 p-4 rounded-lg shadow-md">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Liste des Examens') }}
-        </h2>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('Liste des Examens') }}
+            </h2>
+            <a href="{{ route('examens.create', ['id' => $session->id]) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-300 ease-in-out flex items-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 00-2 0v3H6a1 1 0 000 2h3v3a1 1 0 002 0v-3h3a1 1 0 000-2h-3V7z" clip-rule="evenodd" />
+                </svg>
+                <span class="hidden md:inline">Créer un examen</span>
+            </a>
         </div>
     </x-slot>
 
@@ -17,19 +23,14 @@
                 @endif
 
                 <div class="mb-4 flex justify-end">
-                    <a href="{{ route('examens.create', ['id' => $session->id]) }}"
-                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                        Créer un examen 
-                    </a>
-
-                    <a href="{{ route('sessions.index') }}"
-                        class="inline-block bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 rounded-md py-2 px-4 transition-colors duration-300 ease-in-out">
-                        Retour aux sessions
+                    <a href="{{ route('sessions.index') }}" class="inline-block bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 rounded-md py-2 px-4 transition-colors duration-300 ease-in-out flex items-center space-x-2">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Retour aux sessions</span>
                     </a>
                 </div>
 
-                <form method="GET" action="{{ route('examens.index', ['sessionId' => $session->id]) }}" class="mb-4">
-                    <div class="flex space-x-4">
+                {{-- <div class="mb-6">
+                    <form method="GET" action="{{ route('examens.index', ['sessionId' => $session->id]) }}" class="flex space-x-4">
                         <div>
                             <label for="filiere_id" class="block text-sm font-medium text-gray-700">Filière</label>
                             <select id="filiere_id" name="filiere_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
@@ -41,119 +42,103 @@
                                 @endforeach
                             </select>
                         </div>
-                        {{-- <div>
-                            <label for="module_id" class="block text-sm font-medium text-gray-700">Module</label>
-                            <select id="module_id" name="module_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                <option value="">Tous les modules</option>
-                                @foreach ($modules as $module)
-                                    <option value="{{ $module->id }}" {{ request('module_id') == $module->id ? 'selected' : '' }}>
-                                        {{ $module->lib_elp }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div> --}}
                         <div class="flex items-end">
-                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Filtrer</button>
+                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center space-x-2">
+                                <i class="fas fa-filter"></i>
+                                <span>Filtrer</span>
+                            </button>
                         </div>
-                    </div>
-                </form>
+                    </form>
+                </div> --}}
+
 
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 table-auto">
+                    <table id="exams-table" class="display min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Date
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Heure de Début
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Heure de Fin
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Module
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Filière
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
-                                    Salles
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Enseignant
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Actions
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Affectation des surveillants
-                                </th>
+                                <th>Date</th>
+                                <th>Heure de Début</th>
+                                <th>Heure de Fin</th>
+                                <th>Module</th>
+                                <th>Filière</th>
+                                <th>Salles</th>
+                                <th>Enseignant</th>
+                                <th>Actions</th>
+                                <th>Affectation des surveillants</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse ($examens as $examen)
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        {{ $examen->date ?? 'N/A' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        {{ $examen->heure_debut ?? 'N/A' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        {{ $examen->heure_fin ?? 'N/A' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        {{ optional($examen->module)->lib_elp ?? 'N/A' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        {{ optional($examen->module)->version_etape ?? 'N/A' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td>{{ $examen->date ?? 'N/A' }}</td>
+                                    <td>{{ $examen->heure_debut ?? 'N/A' }}</td>
+                                    <td>{{ $examen->heure_fin ?? 'N/A' }}</td>
+                                    <td>{{ optional($examen->module)->lib_elp ?? 'N/A' }}</td>
+                                    <td>{{ optional($examen->module)->version_etape ?? 'N/A' }}</td>
+                                    <td>
                                         @foreach ($examen->salles as $salle)
                                             {{ $salle->name }}{{ !$loop->last ? ', ' : '' }}
                                         @endforeach
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        {{ optional($examen->enseignant)->name ?? 'N/A' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <a href="{{ route('examens.editExamen', ['id' => $examen->id]) }}"
-                                            class="text-indigo-600 hover:text-indigo-900 mr-2">Modifier</a>
-                                        <form action="{{ route('examens.destroy', $examen->id) }}" method="POST"
-                                            class="inline">
+                                    <td>{{ optional($examen->enseignant)->name ?? 'N/A' }}</td>
+                                    <td class="flex space-x-2">
+                                        <a href="{{ route('examens.editExamen', ['id' => $examen->id]) }}" class="text-indigo-600 hover:text-indigo-900 flex items-center space-x-1">
+                                            <i class="fas fa-edit"></i>
+                                            {{-- <span class="hidden md:inline">Modifier</span> --}}
+                                        </a>
+                                        <form action="{{ route('examens.destroy', $examen->id) }}" method="POST" class="inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit"
-                                                class="text-red-600 hover:text-red-900">Supprimer</button>
+                                            <button type="submit" class="text-red-600 hover:text-red-900 flex items-center space-x-1">
+                                                <i class="fas fa-trash-alt"></i>
+                                                {{-- <span class="hidden md:inline">Supprimer</span> --}}
+                                            </button>
                                         </form>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td>
                                         @if ($examen->hasAssignedInvigilators())
-                                            <a href="{{ route('examens.showForm', $examen->id) }}"
-                                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                                Voir Affectation
+                                            <a href="{{ route('examens.showForm', $examen->id) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center space-x-2">
+                                                <i class="fas fa-eye"></i>
+                                                <span class="hidden md:inline">Voir Affectation</span>
                                             </a>
                                         @else
-                                            <a href="{{ route('examens.showAssignInvigilatorsForm', $examen->id) }}"
-                                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                                Affectation
+                                            <a href="{{ route('examens.showAssignInvigilatorsForm', $examen->id) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center space-x-2">
+                                                <i class="fas fa-user-plus"></i>
+                                                <span class="hidden md:inline">Affectation</span>
                                             </a>
                                         @endif
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="9" class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                        Aucun examen trouvé pour cette sélection.
-                                    </td>
+                                    <td colspan="9" class="text-center text-sm font-medium">Aucun examen trouvé pour cette sélection.</td>
                                 </tr>
                             @endforelse
-
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Initialisation de DataTables -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#exams-table').DataTable({
+                "language": {
+                    "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/fr.json" // Langue française
+                },
+                "responsive": true,
+                "paging": true,
+                "searching": true,
+                "info": true,
+                "lengthChange": true
+            });
+        });
+    </script>
 </x-app-layout>

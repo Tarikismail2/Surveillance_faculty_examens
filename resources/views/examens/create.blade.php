@@ -1,9 +1,9 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center bg-gray-100 p-4 rounded-lg shadow-md">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            @lang('Créer un nouvel examen')
-        </h2>
+            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                @lang('Créer un nouvel examen')
+            </h2>
         </div>
     </x-slot>
 
@@ -34,171 +34,177 @@
                 <form action="{{ route('examens.store') }}" method="POST">
                     @csrf
 
-                    <div class="form-group mb-4">
-                        <label for="date" class="block text-gray-700 dark:text-gray-300">@lang('Date')</label>
-                        <input type="date" name="date" id="date" value="{{ old('date') }}"
-                            class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            required>
-                        @error('date')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="form-group mb-4">
-                        <label for="heure_debut"
-                            class="block text-gray-700 dark:text-gray-300">@lang('Heure de Début')</label>
-                        <input type="time" name="heure_debut" id="heure_debut" value="{{ old('heure_debut') }}"
-                            class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            required>
-                        @error('heure_debut')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="form-group mb-4">
-                        <label for="heure_fin" class="block text-gray-700 dark:text-gray-300">@lang('Heure de Fin')</label>
-                        <input type="time" name="heure_fin" id="heure_fin" value="{{ old('heure_fin') }}"
-                            class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            required>
-                        @error('heure_fin')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="form-group mb-4">
-                        <label for="filiere" class="block text-gray-700 dark:text-gray-300">@lang('Filière')</label>
-                        <select
-                            class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            id="filiere" name="id_filiere" required>
-                            <option value="">@lang('Sélectionnez une filière')</option>
-                            @foreach ($filieres as $filiere)
-                                <option value="{{ $filiere->version_etape }}" {{ old('id_filiere') == $filiere->version_etape ? 'selected' : ''}}>
-                                    {{ $filiere->version_etape }}</option>
-                            @endforeach
-                        </select>
-                        @error('id_filiere')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="form-group mb-4">
-                        <label for="module" class="block text-gray-700 dark:text-gray-300">@lang('Module')</label>
-                        <select
-                            class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            id="module" name="id_module" required>
-                            <option value="">@lang('Sélectionnez un module')</option>
-                            <!-- Les modules seront remplis dynamiquement -->
-                        </select>
-                        @error('id_module')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    {{-- <div class="form-group mb-4">
-                        <label for="departement"
-                            class="block text-gray-700 dark:text-gray-300">@lang('Département')</label>
-                        <select
-                            class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            id="departement" name="departement" required>
-                            <option value="">@lang('Sélectionnez un département')</option>
-                            @foreach ($departments as $department)
-                                <option value="{{ $department->id }}">{{ $department->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('departement')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div> --}}
-
-                    <div class="form-group mb-4">
-                        <label for="id_enseignant"
-                            class="block text-gray-700 dark:text-gray-300">@lang('Enseignant')</label>
-                        <select name="id_enseignant" id="id_enseignant"
-                            class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                            <option value="">@lang('Choisir un enseignant')</option>
-                            @foreach ($enseignants as $enseignant)
-                                <option value="{{ $enseignant->id }}" {{ old('id_enseignant') == $enseignant->id ? 'selected' : '' }}>{{ $enseignant->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('id_enseignant')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="form-group mb-4">
-                        <label for="id_session"
-                            class="block text-gray-700 dark:text-gray-300">@lang('Session')</label>
-                        <select id="id_session" name="id_session"
-                            class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            readonly>
-                            <option value="{{ $selected_session->id }}">{{ $selected_session->type }}
-                                ({{ $selected_session->date_debut }} - {{ $selected_session->date_fin }})</option>
-                        </select>
-                        @error('id_session')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div id="salle-section" class="form-group mb-4">
-                        <label for="id_salle" class="block text-gray-700 dark:text-gray-300">@lang('Salle Principale')</label>
-                        <select name="id_salle" id="id_salle"
-                            class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                            <option value="">@lang('Choisir une salle')</option>
-                            @foreach ($salles as $salle)
-                                <option value="{{ $salle->id }}" data-capacite="{{ $salle->capacite }}" {{ old('id_salle') == $salle->id ? 'selected' : '' }}
-                                    data-capacite="{{ $salle->capacite }}">
-                                    {{ $salle->name }} (Capacité: {{ $salle->capacite }})
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('id_salle')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div class="form-group mb-4">
-                        <label for="additional_salles"
-                            class="block text-gray-700 dark:text-gray-300">@lang('Salles Additionnelles')</label>
-                        <div id="additional_salles">
-                            <!-- Les salles additionnelles seront ajoutées ici -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                        <!-- Date -->
+                        <div class="form-group">
+                            <label for="date"
+                                class="block text-gray-700 dark:text-gray-300">@lang('Date')</label>
+                            <input type="date" name="date" id="date" value="{{ old('date') }}"
+                                class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                required>
+                            @error('date')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
-                        <button type="button" id="add_salle_button"
-                            class="mt-2 py-2 px-4 bg-blue-500 hover:bg-blue-700 text-white font-semibold rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">
-                            @lang('Ajouter une salle')
-                        </button>
-                    </div>
 
-                    <div class="form-group mb-4">
-                        <label for="inscriptions_count"
-                            class="block text-gray-700 dark:text-gray-300">@lang('Inscriptions')</label>
-                        <input type="number" id="inscriptions_count" name="inscriptions_count"
-                            class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            readonly>
-                    </div>
+                        <!-- Heure de Début -->
+                        <div class="form-group">
+                            <label for="heure_debut"
+                                class="block text-gray-700 dark:text-gray-300">@lang('Heure de Début')</label>
+                            <input type="time" name="heure_debut" id="heure_debut" value="{{ old('heure_debut') }}"
+                                class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                required>
+                            @error('heure_debut')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                    <div class="form-group mb-4">
-                        <label for="total_capacity"
-                            class="block text-gray-700 dark:text-gray-300">@lang('Capacité Totale')</label>
-                        <input type="number" id="total_capacity" name="total_capacity"
-                            class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            readonly>
-                    </div>
+                        <!-- Heure de Fin -->
+                        <div class="form-group">
+                            <label for="heure_fin"
+                                class="block text-gray-700 dark:text-gray-300">@lang('Heure de Fin')</label>
+                            <input type="time" name="heure_fin" id="heure_fin" value="{{ old('heure_fin') }}"
+                                class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                required>
+                            @error('heure_fin')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                    <div class="flex items-center justify-end mt-4">
-                        <a href="{{ route('examens.index', ['sessionId' => $selected_session->id]) }}"
-                            class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center">
-                            <i class="fas fa-arrow-left mr-2"></i> @lang('Retour')
-                        </a>
-                        <button type="submit"
-                            class="py-2 px-4 bg-green-500 hover:bg-green-700 text-white font-semibold rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75">
-                            <i class="fas fa-save mr-2"></i> @lang('Créer Examen')
-                        </button>
+                        <!-- Filière -->
+                        <div class="form-group">
+                            <label for="filiere"
+                                class="block text-gray-700 dark:text-gray-300">@lang('Filière')</label>
+                            <select
+                                class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                id="filiere" name="id_filiere" required>
+                                <option value="">@lang('Sélectionnez une filière')</option>
+                                @foreach ($filieres as $filiere)
+                                    <option value="{{ $filiere->version_etape }}"
+                                        {{ old('version_etape') == $filiere->version_etape ? 'selected' : '' }}>
+                                        {{ $filiere->version_etape }}</option>
+                                @endforeach
+                            </select>
+                            @error('id_filiere')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Module -->
+                        <div class="form-group">
+                            <label for="module"
+                                class="block text-gray-700 dark:text-gray-300">@lang('Module')</label>
+                            <select
+                                class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                id="module" name="id_module" required>
+                                <option value="">@lang('Sélectionnez un module')</option>
+                                <!-- Les modules seront remplis dynamiquement -->
+                            </select>
+                            @error('id_module')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Enseignant -->
+                        <div class="form-group">
+                            <label for="id_enseignant"
+                                class="block text-gray-700 dark:text-gray-300">@lang('Enseignant')</label>
+                            <select name="id_enseignant" id="id_enseignant"
+                                class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <option value="">@lang('Choisir un enseignant')</option>
+                                @foreach ($enseignants as $enseignant)
+                                    <option value="{{ $enseignant->id }}"
+                                        {{ old('id_enseignant') == $enseignant->id ? 'selected' : '' }}>
+                                        {{ $enseignant->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('id_enseignant')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Session -->
+                        <div class="form-group">
+                            <label for="id_session"
+                                class="block text-gray-700 dark:text-gray-300">@lang('Session')</label>
+                            <select id="id_session" name="id_session"
+                                class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                readonly>
+                                <option value="{{ $selected_session->id }}">{{ $selected_session->type }}
+                                    ({{ $selected_session->date_debut }} - {{ $selected_session->date_fin }})</option>
+                            </select>
+                            @error('id_session')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Salle Principale -->
+                        <div class="form-group">
+                            <label for="id_salle"
+                                class="block text-gray-700 dark:text-gray-300">@lang('Salle Principale')</label>
+                            <select name="id_salle" id="id_salle"
+                                class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <option value="">@lang('Choisir une salle')</option>
+                                @foreach ($salles as $salle)
+                                    <option value="{{ $salle->id }}" data-capacite="{{ $salle->capacite }}"
+                                        {{ old('id_salle') == $salle->id ? 'selected' : '' }}>
+                                        {{ $salle->name }} (Capacité: {{ $salle->capacite }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('id_salle')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Salles Additionnelles -->
+                        <div class="form-group">
+                            <label for="additional_salles"
+                                class="block text-gray-700 dark:text-gray-300">@lang('Salles Additionnelles')</label>
+                            <div id="additional_salles">
+                                <!-- Les salles additionnelles seront ajoutées ici -->
+                            </div>
+                            <button type="button" id="add_salle_button"
+                                class="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                                @lang('Ajouter une Salle')
+                            </button>
+                        </div>
+
+                        <!-- Inscriptions et Capacité Totale -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                            <div class="form-group">
+                                <label for="inscriptions_count"
+                                    class="block text-gray-700 dark:text-gray-300">@lang('Inscriptions')</label>
+                                <input type="number" id="inscriptions_count" name="inscriptions_count"
+                                    class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="total_capacity"
+                                    class="block text-gray-700 dark:text-gray-300">@lang('Capacité Totale')</label>
+                                <input type="number" id="total_capacity" name="total_capacity"
+                                    class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    readonly>
+                            </div>
+                        </div>
+
+                        <!-- Boutons -->
+                        <div class="flex items-center justify-end mt-4">
+                            <a href="{{ route('examens.index', ['sessionId' => $selected_session->id]) }}"
+                                class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center">
+                                <i class="fas fa-arrow-left mr-2"></i> @lang('Retour')
+                            </a>
+                            <button type="submit"
+                                class="py-2 px-4 bg-green-500 hover:bg-green-700 text-white font-semibold rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75">
+                                <i class="fas fa-save mr-2"></i> @lang('Créer Examen')
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const departementSelect = document.getElementById('departement');
@@ -210,27 +216,6 @@
             const totalCapacity = document.getElementById('total_capacity');
             const addSalleButton = document.getElementById('add_salle_button');
             const additionalSallesDiv = document.getElementById('additional_salles');
-
-            // departementSelect.addEventListener('change', function() {
-            //     const departmentId = this.value;
-            //     enseignantSelect.innerHTML = '<option value="">@lang('Choisir un enseignant')</option>';
-
-            //     if (departmentId) {
-            //         fetch(`/examens/getEnseignantsByDepartment/${departmentId}`)
-            //             .then(response => response.json())
-            //             .then(data => {
-            //                 data.forEach(enseignant => {
-            //                     const option = document.createElement('option');
-            //                     option.value = enseignant.id;
-            //                     option.textContent = `${enseignant.name} ${enseignant.email}`;
-            //                     enseignantSelect.appendChild(option);
-            //                 });
-            //             })
-            //             .catch(error => console.error('Error fetching enseignants:', error));
-            //     }
-            // });
-
-
 
             filiereSelect.addEventListener('change', function() {
                 const filiereId = this.value;

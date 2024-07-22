@@ -69,11 +69,14 @@ Route::middleware('auth')->group(function () {
     Route::put('/etudiants/{etudiant}', [EtudiantController::class, 'update'])->name('etudiants.update');
     Route::get('/etudiants/{etudiant}', [EtudiantController::class, 'show'])->name('etudiants.show');
     Route::delete('/etudiants/{etudiant}', [EtudiantController::class, 'destroy'])->name('etudiants.destroy');
+    Route::delete('/etudiants/delete-modules', [EtudiantController::class, 'deleteModules'])->name('etudiants.deleteModules');
 
 
     //route upload
     Route::get('/import', [ImportController::class, 'showForm'])->name('import.form');
     Route::post('/import', [ImportController::class, 'import'])->name('import.process');
+    Route::post('/import/cancel', [ImportController::class, 'cancelImport'])->name('import.cancel');
+
 
     //Affichage globale de la planification des examens
     Route::get('/api/examens/{sessionId}/schedule', [PlanificationController::class, 'getExamsBySession']);

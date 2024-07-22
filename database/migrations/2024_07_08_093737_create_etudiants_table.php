@@ -13,9 +13,9 @@ return new class extends Migration
             $table->string('code_etudiant')->unique();
             $table->string('nom');
             $table->string('prenom');
-            $table->string('cin')->nullable()->unique();
+            $table->string('cin');
             $table->string('cne');
-            $table->date('date_naissance')->nullable();
+            $table->date('date_naissance');
             $table->timestamps();
         });
     }

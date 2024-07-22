@@ -3,44 +3,111 @@
 namespace App\Http\Controllers;
 
 use App\Models\Etudiant;
+use App\Models\Module;
 use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\DB;
 
 class EtudiantController extends Controller
 {
-    public function index()
+
+    public function index(Request $request)
     {
-        $etudiants = Etudiant::all();
-        return view('etudiants.index', compact('etudiants'));
+        if ($request->ajax()) {
+            $data = Etudiant::select([
+                'id',
+                'nom',
+                'prenom',
+                DB::raw("CONCAT(nom, ' ', prenom) as fullName")
+            ]);
+
+            return DataTables::of($data)
+                ->addColumn('action', function ($row) {
+                    $editUrl = route('etudiants.edit', $row->id);
+                    $deleteUrl = route('etudiants.destroy', $row->id);
+
+                    $csrfField = csrf_field();
+                    $methodField = method_field('DELETE');
+
+                    return <<<EOL
+                            <a href="{$editUrl}" class="text-yellow-600 hover:text-yellow-800 flex items-center">
+                                <i class="fas fa-edit mr-1"></i>
+                            </a>
+                            <form action="{$deleteUrl}" method="POST" class="inline">
+                                {$csrfField}
+                                {$methodField}
+                                <button type="submit" class="text-red-600 hover:text-red-800 flex items-center">
+                                    <i class="fas fa-trash mr-1"></i>
+                                </button>
+                            </form>
+                            EOL;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+
+        return view('etudiants.index');
     }
 
     public function create()
     {
-        return view('etudiants.create');
+        $modules = Module::all(); // Fetch all modules
+        return view('etudiants.create', compact('modules'));
     }
 
     public function store(Request $request)
     {
-        $request->validate([
+        // Valider les données du formulaire
+        $validatedData = $request->validate([
+            'code_etudiant' => 'required|string|max:255',
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
             'cin' => 'nullable|string|max:255',
-            'cne' => 'nullable|string|max:255',
+            'cne' => 'required|string|max:255',
             'date_naissance' => 'nullable|date',
+            'modules' => 'required|array',
         ]);
-
-        Etudiant::create($request->all());
-
-        return redirect()->route('etudiants.index')->with('success', 'Étudiant ajouté avec succès.');
+    
+        // Créer l'étudiant
+        $etudiant = Etudiant::create([
+            'code_etudiant' => $validatedData['code_etudiant'],
+            'nom' => $validatedData['nom'],
+            'prenom' => $validatedData['prenom'],
+            'cin' => $validatedData['cin'],
+            'cne' => $validatedData['cne'],
+            'date_naissance' => $validatedData['date_naissance'],
+        ]);
+    
+        // Attacher les modules à l'étudiant
+        $etudiant->modules()->sync($validatedData['modules']);
+    
+        return redirect()->route('etudiants.index')->with('success', 'Étudiant créé avec succès.');
+    }
+    
+    public function deleteModules(Request $request)
+    {
+        $validatedData = $request->validate([
+            'delete_modules' => 'required|array',
+        ]);
+    
+        // Supprimer les modules sélectionnés
+        Module::destroy($validatedData['delete_modules']);
+    
+        return redirect()->route('etudiants.index')->with('success', 'Modules supprimés avec succès.');
     }
 
     public function show(Etudiant $etudiant)
     {
-        return view('etudiants.show', compact('etudiant'));
+        $modules = $etudiant->modules;
+        return view('etudiants.show', compact('etudiant', 'modules'));
     }
 
     public function edit(Etudiant $etudiant)
     {
-        return view('etudiants.edit', compact('etudiant'));
+        $modules = Module::all(); // Fetch all modules
+        $selectedModules = $etudiant->modules->pluck('id')->toArray(); // Get selected modules
+        // dd($selectedModules);
+        return view('etudiants.edit', compact('etudiant', 'modules', 'selectedModules'));
     }
 
     public function update(Request $request, Etudiant $etudiant)
@@ -51,15 +118,25 @@ class EtudiantController extends Controller
             'cin' => 'nullable|string|max:255',
             'cne' => 'nullable|string|max:255',
             'date_naissance' => 'nullable|date',
+            'modules' => 'nullable|array', // Validate module input
+            'modules.*' => 'exists:modules,id', // Validate each module ID
         ]);
 
-        $etudiant->update($request->all());
+        $etudiant->update($request->only(['nom', 'prenom', 'cin', 'cne', 'date_naissance']));
+
+        // Sync modules (update the modules list for the student)
+        if ($request->has('modules')) {
+            $etudiant->modules()->sync($request->input('modules'));
+        } else {
+            $etudiant->modules()->sync([]); // If no modules selected, detach all
+        }
 
         return redirect()->route('etudiants.index')->with('success', 'Étudiant mis à jour avec succès.');
     }
 
     public function destroy(Etudiant $etudiant)
     {
+        $etudiant->modules()->detach(); // Detach all modules before deleting
         $etudiant->delete();
 
         return redirect()->route('etudiants.index')->with('success', 'Étudiant supprimé avec succès.');

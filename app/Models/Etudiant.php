@@ -23,12 +23,12 @@ class Etudiant extends Model
 
     public function inscriptions()
     {
-        return $this->hasMany(Inscription::class);
+        return $this->hasMany(Inscription::class, 'id_etudiant');
     }
 
     public function modules()
     {
-        return $this->belongsToMany(Module::class, 'etudiant_module', 'id_etudiant', 'id_module');
+        return $this->belongsToMany(Module::class, 'inscriptions', 'id_etudiant', 'id_module');
     }
 
     public function getFullNameAttribute()

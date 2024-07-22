@@ -1,44 +1,70 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center bg-gray-100 p-4 rounded-lg shadow-md">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Ajouter un Étudiant') }}
-        </h2>
+        <div class="flex justify-between items-center bg-green-100 p-4 rounded-lg shadow-md">
+            <h2 class="font-semibold text-xl text-green-800 leading-tight">
+                {{ __('Gestion des Étudiants') }}
+            </h2>
         </div>
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
+        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white shadow-sm rounded-lg p-6 border border-gray-200">
+                <!-- Formulaire de création d'étudiant -->
                 <form action="{{ route('etudiants.store') }}" method="POST">
                     @csrf
-                    <div class="mb-4">
-                        <label for="nom" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nom</label>
-                        <input type="text" name="nom" id="nom" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ __('Créer un Étudiant') }}</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Champs du formulaire étudiant -->
+                        @foreach (['code_etudiant' => 'Code Étudiant', 'nom' => 'Nom', 'prenom' => 'Prénom', 'cin' => 'CIN', 'cne' => 'CNE'] as $field => $label)
+                            <div class="mb-4">
+                                <label for="{{ $field }}" class="block text-gray-700 font-semibold">{{ $label }}</label>
+                                <input type="{{ $field == 'date_naissance' ? 'date' : 'text' }}" id="{{ $field }}" name="{{ $field }}"
+                                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                    {{ $field == 'code_etudiant' || $field == 'nom' || $field == 'prenom' || $field == 'cne' ? 'required' : '' }}>
+                                @error($field)
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        @endforeach
+                        <div class="mb-4">
+                            <label for="date_naissance" class="block text-gray-700 font-semibold">Date de Naissance</label>
+                            <input type="date" id="date_naissance" name="date_naissance"
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            @error('date_naissance')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Sélection des modules -->
+                        <div class="mb-4 col-span-2">
+                            <label for="modules" class="block text-gray-700 font-semibold">Modules</label>
+                            <div class="space-y-2">
+                                @foreach ($modules->chunk(10) as $chunk) <!-- Pagination simple -->
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                        @foreach ($chunk as $module)
+                                            <div class="flex items-center">
+                                                <input type="checkbox" id="module-{{ $module->id }}" name="modules[]"
+                                                    value="{{ $module->id }}"
+                                                    class="mr-2 form-checkbox text-indigo-600 focus:ring-indigo-500 focus:border-indigo-500">
+                                                <label for="module-{{ $module->id }}" class="text-gray-700">{{ $module->lib_elp }}</label>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endforeach
+                            </div>
+                            @error('modules')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
-                    <div class="mb-4">
-                        <label for="prenom" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Prénom</label>
-                        <input type="text" name="prenom" id="prenom" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                    </div>
-                    <div class="mb-4">
-                        <label for="cin" class="block text-sm font-medium text-gray-700 dark:text-gray-300">CIN</label>
-                        <input type="text" name="cin" id="cin" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    </div>
-                    <div class="mb-4">
-                        <label for="cne" class="block text-sm font-medium text-gray-700 dark:text-gray-300">CNE</label>
-                        <input type="text" name="cne" id="cne" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    </div>
-                    <div class="mb-4">
-                        <label for="date_naissance" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Date de Naissance</label>
-                        <input type="date" name="date_naissance" id="date_naissance" class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                    </div>
-                    <div class="flex justify-end">
-                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                            {{ __('Ajouter') }}
-                        </button>
-                    </div>
+                    <button type="submit"
+                        class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-4">
+                        {{ __('Créer') }}
+                    </button>
                 </form>
             </div>
         </div>
     </div>
+
 </x-app-layout>

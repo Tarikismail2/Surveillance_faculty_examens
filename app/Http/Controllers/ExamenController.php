@@ -60,6 +60,8 @@ class ExamenController extends Controller
 
     public function store(Request $request)
     {
+        // dd($request->all());
+
         $request->validate([
             'date' => 'required|date',
             'heure_debut' => 'required|date_format:H:i|before_or_equal:18:30',
@@ -69,7 +71,7 @@ class ExamenController extends Controller
             'additional_salles.*' => 'nullable|exists:salles,id',
             'id_enseignant' => 'required|exists:enseignants,id',
             'id_session' => 'required|exists:session_exams,id',
-            'id_filiere' => 'required|exists:filieres,id',
+            'id_filiere' => 'required|exists:filieres,version_etape',
         ]);
 
         // Validation supplémentaire pour les horaires des examens
@@ -211,7 +213,7 @@ public function update(Request $request, Examen $examen)
         'additional_salles.*' => 'nullable|exists:salles,id',
         'id_enseignant' => 'required|exists:enseignants,id',
         'id_session' => 'required|exists:session_exams,id',
-        'id_filiere' => 'required|exists:filieres,id',
+        'id_filiere' => 'required|exists:filieres,version_etape',
     ]);
 
     // Convert times to timestamps for comparison

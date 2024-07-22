@@ -85,34 +85,34 @@ class PlanificationController extends Controller
         return view('examens.schedule', compact('sessions', 'exams', 'selectedSessionId'));
     }
 
-  
-    //download the Global planification
+    
     public function downloadGlobalSchedulePDF(Request $request)
-    {
-        // Fetch data needed for PDF generation
-        $selectedSessionId = $request->input('id_session');
-        $exams = Examen::where('id_session', $selectedSessionId)->get();
-        
-        // Fetch session details
-        $session = SessionExam::findOrFail($selectedSessionId); 
-        
-        // Configure Dompdf options
-        $options = new DompdfOptions();
-        $options->set('defaultFont', 'Arial');
-        $dompdf = new Dompdf($options);
-        
-        // Load HTML view file
-        $html = view('examens.global_pdf', compact('exams', 'session'))->render();
-        
-        // Load HTML to Dompdf
-        $dompdf->loadHtml($html);
-        
-        // Render the PDF
-        $dompdf->render();
-        
-        // Output the generated PDF to Browser
-        return $dompdf->stream('global_exam_schedule.pdf');
-    }
+{
+    // Fetch data needed for PDF generation
+    $selectedSessionId = $request->input('id_session');
+    $exams = Examen::where('id_session', $selectedSessionId)->get();
+    
+    // Fetch session details
+    $session = SessionExam::findOrFail($selectedSessionId); 
+    
+    // Configure Dompdf options
+    $options = new DompdfOptions();
+    $options->set('defaultFont', 'Arial');
+    $options->set('isRemoteEnabled', true); // Enable remote content (images in base64)
+    $dompdf = new Dompdf($options);
+    
+    // Load HTML view file
+    $html = view('examens.global_pdf', compact('exams', 'session'))->render();
+    
+    // Load HTML to Dompdf
+    $dompdf->loadHtml($html);
+    
+    // Render the PDF
+    $dompdf->render();
+    
+    // Output the generated PDF to Browser
+    return $dompdf->stream('global_exam_schedule.pdf');
+}
     
     //download the surveillance planification
     public function downloadSurveillancePDF($id_session)
