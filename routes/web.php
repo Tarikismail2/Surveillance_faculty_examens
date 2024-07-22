@@ -94,9 +94,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/download-surveillance-pdf', [ExportController::class, 'downloadSurveillancePDF'])->name('downloadSurveillancePDF');
 
     //Studeent planification
-    Route::get('/select-student', [ExportController::class, 'selectStudent'])->name('selectStudent');
-    Route::get('/display-student-schedule', [ExportController::class, 'displayStudentSchedule'])->name('displayStudentSchedule');
-    Route::post('/download-student-schedule-pdf', [ExportController::class, 'downloadStudentSchedulePDF'])->name('downloadStudentSchedulePDF');
+    
+    Route::get('/planification/select_student', [ExportController::class, 'selectStudent'])->name('selectStudent');
+    Route::get('/planification/display_student_schedule', [ExportController::class, 'showSelectStudentForm'])->name('displayStudentSchedule');
+    Route::get('/planification/download_student_schedule_pdf', [ExportController::class, 'downloadStudentSchedulePDF'])->name('downloadStudentSchedulePDF');
 });
 
 require __DIR__ . '/auth.php';

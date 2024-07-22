@@ -10,44 +10,74 @@ use Illuminate\Support\Facades\DB;
 
 class EtudiantController extends Controller
 {
-
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Etudiant::select([
+            $query = Etudiant::select([
                 'id',
                 'nom',
-                'prenom',
-                DB::raw("CONCAT(nom, ' ', prenom) as fullName")
+                'prenom'
             ]);
-
-            return DataTables::of($data)
+    
+            // Gestion de la recherche
+            if ($request->has('search') && $request->search['value']) {
+                $search = $request->search['value'];
+                $query->where(function ($q) use ($search) {
+                    $q->where('nom', 'LIKE', "%$search%")
+                      ->orWhere('prenom', 'LIKE', "%$search%");
+                });
+            }
+    
+            // Tri des résultats
+            if ($request->has('order')) {
+                $orderColumn = $request->order[0]['column']; // Numéro de colonne
+                $orderDirection = $request->order[0]['dir']; // Direction du tri
+    
+                $columns = ['nom', 'prenom', 'fullName'];
+                $orderBy = $columns[$orderColumn] ?? 'nom';
+    
+                $query->orderBy($orderBy, $orderDirection);
+            }
+    
+            return DataTables::of($query)
+                ->addColumn('fullName', function ($row) {
+                    return $row->nom . ' ' . $row->prenom;
+                })
                 ->addColumn('action', function ($row) {
                     $editUrl = route('etudiants.edit', $row->id);
                     $deleteUrl = route('etudiants.destroy', $row->id);
-
+    
                     $csrfField = csrf_field();
                     $methodField = method_field('DELETE');
-
+    
                     return <<<EOL
+                        <div class="flex space-x-2">
                             <a href="{$editUrl}" class="text-yellow-600 hover:text-yellow-800 flex items-center">
                                 <i class="fas fa-edit mr-1"></i>
+                                <span class="sr-only">{{ __('Modifier') }}</span>
                             </a>
                             <form action="{$deleteUrl}" method="POST" class="inline">
                                 {$csrfField}
                                 {$methodField}
                                 <button type="submit" class="text-red-600 hover:text-red-800 flex items-center">
                                     <i class="fas fa-trash mr-1"></i>
+                                    <span class="sr-only">{{ __('Supprimer') }}</span>
                                 </button>
                             </form>
-                            EOL;
+                        </div>
+                    EOL;
                 })
                 ->rawColumns(['action'])
                 ->make(true);
         }
-
+    
         return view('etudiants.index');
     }
+    
+    
+    
+
+    
 
     public function create()
     {

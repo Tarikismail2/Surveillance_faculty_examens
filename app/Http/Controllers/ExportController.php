@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ExportController extends Controller
@@ -125,90 +126,111 @@ class ExportController extends Controller
 
 
 
-   
+
     // Emploi du temps pour étudiant
+    // public function showSelectStudentForm()
+    // {
+    //     $sessions = SessionExam::orderBy('type', 'asc')->pluck('type', 'id');
+    //     $students = Etudiant::orderBy('nom')->orderBy('prenom')->pluck('full_name', 'id');
+    //     $selectedSession = old('id_session'); // or default value
+    
+    //     return view('planification.select_student', compact('sessions', 'students', 'selectedSession'));
+    // }
     public function selectStudent(Request $request)
     {
-        $sessions = SessionExam::orderBy('type')->pluck('type', 'id');
-        $students = Etudiant::orderBy('nom')->get()->pluck('full_name', 'id');
+        // Get all sessions and students from the database
+        $sessions = SessionExam::all()->pluck('type', 'id');
+        $students = Etudiant::all()->pluck('nom', 'id');
 
-        return view('planification.select_student', compact('sessions', 'students'));
+        // Get selected session and student from request
+        $selectedSession = $request->input('id_session');
+        $selectedStudent = $request->input('id_etudiant');
+
+        // Retrieve exams for the selected student and session if provided
+        $examens = [];
+        if ($selectedSession && $selectedStudent) {
+            $examens = Examen::where('session_id', $selectedSession)
+                             ->where('student_id', $selectedStudent)
+                             ->get();
+        }
+
+        return view('planification.select_student', compact('sessions', 'students', 'selectedSession', 'selectedStudent', 'examens'));
     }
+
+    
 
     public function displayStudentSchedule(Request $request)
     {
-        $id_session = $request->input('id_session');
-        $id_etudiant = $request->input('id_etudiant');
-
         $sessions = SessionExam::orderBy('type')->pluck('type', 'id');
-        $students = Etudiant::orderBy('nom')->get()->pluck('full_name', 'id');
-
-        $session = SessionExam::find($id_session);
-        $etudiant = Etudiant::find($id_etudiant);
-
-        if (!$etudiant) {
-            return back()->withErrors(['error' => 'Étudiant non trouvé']);
-        }
-
-        // Retrieve exams associated with the student through their modules
-        $examens = Examen::whereHas('module.etudiants', function ($query) use ($id_etudiant) {
-                            $query->where('etudiants.id', $id_etudiant);
-                        })
-                        ->where('id_session', $id_session)
-                        ->orderBy('date')
-                        ->orderBy('heure_debut')
-                        ->get();
-                        // dd($etudiant);
-
-        return view('planification.select_student', compact('sessions', 'students', 'session', 'etudiant', 'examens'));
+        $students = Etudiant::orderBy('nom')->orderBy('prenom')->pluck('nom', 'id');
+    
+        $selectedSession = $request->input('id_session', null);
+        $selectedStudent = $request->input('id_etudiant', null);
+    
+        // Récupérer les examens pour l'étudiant sélectionné et la session sélectionnée
+        $examens = Examen::whereHas('module', function($query) use ($selectedStudent) {
+            $query->whereHas('inscriptions', function($query) use ($selectedStudent) {
+                $query->where('id_etudiant', $selectedStudent);
+            });
+        })->where('id_session', $selectedSession)
+          ->orderBy('date')
+          ->orderBy('heure_debut')
+          ->get();
+    
+        // Déboguer les résultats de la requête
+        // dd($examens);
+    
+        return view('planification.select_student', compact('sessions', 'students', 'selectedSession', 'selectedStudent', 'examens'));
     }
+    
 
     public function downloadStudentSchedulePDF(Request $request)
     {
         $id_session = $request->input('id_session');
         $id_etudiant = $request->input('id_etudiant');
-
+    
         if (!$id_session) {
             return redirect()->back()->with('error', 'Session ID is missing.');
         }
-
+    
         $session = SessionExam::find($id_session);
         $etudiant = Etudiant::find($id_etudiant);
-
+    
         if (!$session) {
             return redirect()->back()->with('error', 'Session not found.');
         }
-
+    
         if (!$etudiant) {
             return redirect()->back()->with('error', 'Student not found.');
         }
-
+    
         $schedule = Examen::whereHas('module.etudiants', function ($query) use ($id_etudiant) {
-                            $query->where('etudiants.id', $id_etudiant);
-                        })
-                        ->where('id_session', $id_session)
-                        ->orderBy('date')
-                        ->orderBy('heure_debut')
-                        ->get();
-
+            $query->where('etudiants.id', $id_etudiant);
+        })
+            ->where('id_session', $id_session)
+            ->orderBy('date')
+            ->orderBy('heure_debut')
+            ->get();
+    
         $session_type = $session->type;
-        $student_name = $etudiant->full_name;
-
+        $student_name = $etudiant->nom . ' ' . $etudiant->prenom;
+    
         $html = view('planification.show_student_schedule_pdf', compact('session_type', 'student_name', 'schedule'))->render();
-
+    
         // Setup PDF options and generate PDF
-        $options = new Options();
+        $options = new \Dompdf\Options();
         $options->set('defaultFont', 'DejaVu Sans');
-
-        $dompdf = new Dompdf($options);
+    
+        $dompdf = new \Dompdf\Dompdf($options);
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
-
+    
         // Set PDF file name
         $pdfFileName = 'Student_Exam_Schedule.pdf';
-
+    
         // Stream the PDF to the browser
         return $dompdf->stream($pdfFileName);
     }
+    
 }
