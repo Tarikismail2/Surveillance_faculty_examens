@@ -70,7 +70,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/etudiants/{etudiant}', [EtudiantController::class, 'show'])->name('etudiants.show');
     Route::delete('/etudiants/{etudiant}', [EtudiantController::class, 'destroy'])->name('etudiants.destroy');
     Route::delete('/etudiants/delete-modules', [EtudiantController::class, 'deleteModules'])->name('etudiants.deleteModules');
-
+    Route::get('/test-pdf',  [EtudiantController::class, 'generatePdf'])->name('test.pdf');
 
     //route upload
     Route::get('/import', [ImportController::class, 'showForm'])->name('import.form');
@@ -96,8 +96,10 @@ Route::middleware('auth')->group(function () {
     //Studeent planification
     
     Route::get('/planification/select_student', [ExportController::class, 'selectStudent'])->name('selectStudent');
-    Route::get('/planification/display_student_schedule', [ExportController::class, 'showSelectStudentForm'])->name('displayStudentSchedule');
+    Route::get('/planification/display_student_schedule', [ExportController::class, 'displayStudentSchedule'])->name('displayStudentSchedule');
     Route::get('/planification/download_student_schedule_pdf', [ExportController::class, 'downloadStudentSchedulePDF'])->name('downloadStudentSchedulePDF');
+  
+
 });
 
 require __DIR__ . '/auth.php';

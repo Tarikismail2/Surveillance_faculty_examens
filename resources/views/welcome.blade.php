@@ -55,8 +55,8 @@
             <section id="hero" class="hero section">
                 <img src="{{ asset('images/hero-bg.jpg') }}" alt="" data-aos="fade-in">
                 <div class="container">
-                    <h2 data-aos="fade-up" data-aos-delay="100">Here we go,<br>Bienvenue à la Plateforme pour la gestion des Surveillance des Examens</h2>
-                    <p data-aos="fade-up" data-aos-delay="200">Cette Plateforme est dedie pour pour la gestion des examens du faculty des sceiences Chouaib Doukkali</p>
+                    <h2 data-aos="fade-up" data-aos-delay="100">Welcome,<br>Bienvenue à la Plateforme pour la gestion de Surveillance des Examens</h2>
+                    <p data-aos="fade-up" data-aos-delay="200">Cette Plateforme est dedié pour la gestion de la surveillance des examens au niveau de la faculté des sceiences el jadida université Chouaib Doukkali</p>
                     <div class="d-flex mt-4" data-aos="fade-up" data-aos-delay="300">
                         <a href="/dashboard" class="btn-get-started">Get Started</a>
                     </div>

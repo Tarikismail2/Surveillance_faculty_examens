@@ -3,10 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Etudiant;
+use App\Models\Examen;
 use App\Models\Module;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
+use PDF;
+use Dompdf\Dompdf;
+use Dompdf\Options as DompdfOptions;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Collection;
+use Dompdf\Options;
+
 
 class EtudiantController extends Controller
 {
@@ -18,27 +27,27 @@ class EtudiantController extends Controller
                 'nom',
                 'prenom'
             ]);
-    
+
             // Gestion de la recherche
             if ($request->has('search') && $request->search['value']) {
                 $search = $request->search['value'];
                 $query->where(function ($q) use ($search) {
-                    $q->where('nom', 'LIKE', "%$search%")
-                      ->orWhere('prenom', 'LIKE', "%$search%");
+                    $q->whereRaw("CONCAT(nom, ' ', prenom) LIKE ?", ["%$search%"])
+                        ->orWhereRaw("CONCAT(prenom, ' ', nom) LIKE ?", ["%$search%"]);
                 });
             }
-    
+
             // Tri des résultats
             if ($request->has('order')) {
                 $orderColumn = $request->order[0]['column']; // Numéro de colonne
                 $orderDirection = $request->order[0]['dir']; // Direction du tri
-    
+
                 $columns = ['nom', 'prenom', 'fullName'];
                 $orderBy = $columns[$orderColumn] ?? 'nom';
-    
+
                 $query->orderBy($orderBy, $orderDirection);
             }
-    
+
             return DataTables::of($query)
                 ->addColumn('fullName', function ($row) {
                     return $row->nom . ' ' . $row->prenom;
@@ -46,10 +55,10 @@ class EtudiantController extends Controller
                 ->addColumn('action', function ($row) {
                     $editUrl = route('etudiants.edit', $row->id);
                     $deleteUrl = route('etudiants.destroy', $row->id);
-    
+
                     $csrfField = csrf_field();
                     $methodField = method_field('DELETE');
-    
+
                     return <<<EOL
                         <div class="flex space-x-2">
                             <a href="{$editUrl}" class="text-yellow-600 hover:text-yellow-800 flex items-center">
@@ -70,14 +79,10 @@ class EtudiantController extends Controller
                 ->rawColumns(['action'])
                 ->make(true);
         }
-    
+
         return view('etudiants.index');
     }
-    
-    
-    
 
-    
 
     public function create()
     {
@@ -97,7 +102,7 @@ class EtudiantController extends Controller
             'date_naissance' => 'nullable|date',
             'modules' => 'required|array',
         ]);
-    
+
         // Créer l'étudiant
         $etudiant = Etudiant::create([
             'code_etudiant' => $validatedData['code_etudiant'],
@@ -107,22 +112,22 @@ class EtudiantController extends Controller
             'cne' => $validatedData['cne'],
             'date_naissance' => $validatedData['date_naissance'],
         ]);
-    
+
         // Attacher les modules à l'étudiant
         $etudiant->modules()->sync($validatedData['modules']);
-    
+
         return redirect()->route('etudiants.index')->with('success', 'Étudiant créé avec succès.');
     }
-    
+
     public function deleteModules(Request $request)
     {
         $validatedData = $request->validate([
             'delete_modules' => 'required|array',
         ]);
-    
+
         // Supprimer les modules sélectionnés
         Module::destroy($validatedData['delete_modules']);
-    
+
         return redirect()->route('etudiants.index')->with('success', 'Modules supprimés avec succès.');
     }
 
@@ -171,4 +176,31 @@ class EtudiantController extends Controller
 
         return redirect()->route('etudiants.index')->with('success', 'Étudiant supprimé avec succès.');
     }
+
+
+    public function generatePdf()
+    {
+        $options = new DompdfOptions();
+        $options->set('defaultFont', 'Arial');
+        $options->set('isRemoteEnabled', true);
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isPhpEnabled', true);
+        $dompdf = new Dompdf($options);
+    
+        // Fetch data needed for PDF generation
+        $exams = Examen::with(['module.etudiants', 'salles', 'responsable'])->get();
+    
+        // Load HTML view file with data
+        $html = view('etudiants.pdf', ['exams' => $exams])->render();
+    
+        // Load HTML to Dompdf
+        $dompdf->loadHtml($html);
+    
+        // Render the PDF
+        $dompdf->render();
+    
+        // Output the generated PDF to Browser
+        return $dompdf->stream('liste_etudiants.pdf', ['Attachment' => 0]);
+    }
+    
 }

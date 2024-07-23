@@ -21,8 +21,8 @@
         header, footer {
             text-align: center;
             padding: 20px;
-            background-color: #007BFF;
-            color: white;
+            background-color: white;
+            color: #000;
             border-radius: 8px;
         }
         header h1, footer p {
@@ -57,8 +57,8 @@
             text-align: center;
         }
         .schedule-table th {
-            background-color: #007BFF;
-            color: white;
+            background-color: #a5b1be;
+            color: #000;
         }
         .schedule-table tr:nth-child(even) {
             background-color: #f9f9f9;

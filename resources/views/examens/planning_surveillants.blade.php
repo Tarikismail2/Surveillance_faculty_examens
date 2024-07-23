@@ -54,7 +54,7 @@
             text-overflow: ellipsis;
             white-space: nowrap;
             font-weight: bold;
-            color: #007bff;
+            color: #6a6d70;
         }
 
         .header {

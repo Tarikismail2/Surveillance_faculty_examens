@@ -11,7 +11,7 @@
                 <form action="{{ route('displayStudentSchedule') }}" method="GET" class="space-y-6">
                     @csrf
 
-                    <div>
+                    <div class="bg-gray-100 p-4 rounded-lg shadow-sm">
                         <label for="id_session" class="block text-sm font-medium text-gray-700">Session :</label>
                         <select name="id_session" id="id_session" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                             @foreach ($sessions as $id => $session)
@@ -19,17 +19,17 @@
                             @endforeach
                         </select>
                     </div>
-                    
-                    <div>
+
+                    <div class="bg-gray-100 p-4 rounded-lg shadow-sm">
                         <label for="id_etudiant" class="block text-sm font-medium text-gray-700">Étudiant :</label>
                         <select name="id_etudiant" id="id_etudiant" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                            @foreach ($students as $id => $student)
-                                <option value="{{ $id }}" {{ old('id_etudiant', $selectedStudent) == $id ? 'selected' : '' }}>{{ $student }}</option>
+                            @foreach($students as $id => $fullName)
+                                <option value="{{ $id }}" {{ $selectedStudent == $id ? 'selected' : '' }}>{{ $fullName }}</option>
                             @endforeach
                         </select>
                     </div>
-                    
-                    <div class="flex justify-end">
+
+                    <div class="flex justify-end mt-4">
                         <button type="submit" class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
                             Afficher l'emploi du temps
                         </button>
@@ -37,10 +37,10 @@
                 </form>
 
                 @if(!empty($examens) && $examens->count())
-                    <div class="mt-6">
+                    <div class="mt-6 bg-gray-50 p-4 rounded-lg shadow-sm">
                         <h2 class="text-lg font-medium text-gray-900">Emploi du temps des examens</h2>
-                        <table class="min-w-full divide-y divide-gray-200 mt-4">
-                            <thead class="bg-gray-50">
+                        <table class="min-w-full divide-y divide-gray-200 mt-4 bg-white rounded-md shadow-sm">
+                            <thead class="bg-gray-100">
                                 <tr>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Heure Début</th>
@@ -63,7 +63,7 @@
                 @else
                     <p class="mt-6 text-gray-500">Aucun examen trouvé pour cet étudiant et cette session.</p>
                 @endif
-                           
+
                 <form action="{{ route('downloadStudentSchedulePDF') }}" method="GET" class="mt-6">
                     <input type="hidden" name="id_session" value="{{ $selectedSession }}">
                     <input type="hidden" name="id_etudiant" value="{{ $selectedStudent }}">

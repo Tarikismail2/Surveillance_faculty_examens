@@ -40,4 +40,5 @@ class Etudiant extends Model
     {
         return $this->hasManyThrough(Examen::class, Module::class, 'id', 'id_module', 'id', 'id');
     }
+    
 }

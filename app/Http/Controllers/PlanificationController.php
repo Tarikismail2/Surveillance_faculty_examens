@@ -41,7 +41,7 @@ class PlanificationController extends Controller
             'exams' => $exams,
         ]);
     }
-    
+
 
     public function getExamsBySession($sessionId)
     {
@@ -85,35 +85,34 @@ class PlanificationController extends Controller
         return view('examens.schedule', compact('sessions', 'exams', 'selectedSessionId'));
     }
 
-    
+
     public function downloadGlobalSchedulePDF(Request $request)
-{
-    // Fetch data needed for PDF generation
-    $selectedSessionId = $request->input('id_session');
-    $exams = Examen::where('id_session', $selectedSessionId)->get();
-    
-    // Fetch session details
-    $session = SessionExam::findOrFail($selectedSessionId); 
-    
-    // Configure Dompdf options
-    $options = new DompdfOptions();
-    $options->set('defaultFont', 'Arial');
-    $options->set('isRemoteEnabled', true); // Enable remote content (images in base64)
-    $dompdf = new Dompdf($options);
-    
-    // Load HTML view file
-    $html = view('examens.global_pdf', compact('exams', 'session'))->render();
-    
-    // Load HTML to Dompdf
-    $dompdf->loadHtml($html);
-    
-    // Render the PDF
-    $dompdf->render();
-    
-    // Output the generated PDF to Browser
-    return $dompdf->stream('global_exam_schedule.pdf');
-}
-    
+    {
+        // Fetch data needed for PDF generation
+        $selectedSessionId = $request->input('id_session');
+        $exams = Examen::where('id_session', $selectedSessionId)->get();
+
+        // Fetch session details
+        $session = SessionExam::findOrFail($selectedSessionId);
+
+        // Configure Dompdf options
+        $options = new DompdfOptions();
+        $options->set('defaultFont', 'Arial');
+        $options->set('isRemoteEnabled', true); // Enable remote content (images in base64)
+        $dompdf = new Dompdf($options);
+
+        // Load HTML view file
+        $html = view('examens.global_pdf', compact('exams', 'session'))->render();
+
+        $dompdf->loadHtml($html);
+
+        $dompdf->setPaper('A4', 'portrait');
+
+        $dompdf->render();
+
+        return $dompdf->stream('global_exam_schedule.pdf', ['Attachment' => 0]);
+    }
+
     //download the surveillance planification
     public function downloadSurveillancePDF($id_session)
     {
@@ -126,44 +125,44 @@ class PlanificationController extends Controller
         if (!$session) {
             return redirect()->back()->with('error', 'Session not found.');
         }
-  
+
         $dateDebut = Carbon::parse($session->date_debut);
         $dateFin = Carbon::parse($session->date_fin);
-    
+
         $dates = [];
         $currentDate = $dateDebut->copy();
-    
+
         while ($currentDate <= $dateFin) {
             $dates[] = $currentDate->format('Y-m-d');
             $currentDate->addDay();
         }
-    
+
         $exams = Examen::where('id_session', $id_session)->get();
-    
+
         $creneauxHoraires = ['08:00:00-10:00:00', '10:00:00-12:00:00', '12:00:00-14:00:00', '14:00:00-16:00:00', '16:00:00-18:00:00'];
 
         $surveillantsAssignments = [];
-    
+
         foreach ($exams as $exam) {
             $assignedSurveillants = ExamenSalleEnseignant::with(['surveillant', 'salle'])
                 ->where('id_examen', $exam->id)
                 ->get();
-    
+
             foreach ($assignedSurveillants as $assignment) {
                 $surveillantId = $assignment->id_enseignant;
-    
+
                 if (!isset($surveillantsAssignments[$surveillantId])) {
                     $surveillantsAssignments[$surveillantId] = [
                         'name' => $assignment->surveillant->name,
                         'assignments' => []
                     ];
                 }
-    
+
                 foreach ($dates as $date) {
                     if (!isset($surveillantsAssignments[$surveillantId]['assignments'][$date])) {
                         $surveillantsAssignments[$surveillantId]['assignments'][$date] = [];
                     }
-    
+
                     foreach ($creneauxHoraires as $creneau) {
                         if (!isset($surveillantsAssignments[$surveillantId]['assignments'][$date][$creneau])) {
                             $surveillantsAssignments[$surveillantId]['assignments'][$date][$creneau] = '-';
@@ -172,41 +171,40 @@ class PlanificationController extends Controller
                 }
             }
         }
-    
+
         foreach ($exams as $exam) {
             $examDate = $exam->date;
             $creneau = $exam->heure_debut . '-' . $exam->heure_fin;
-    
+
             $assignedSurveillants = ExamenSalleEnseignant::with(['surveillant', 'salle'])
                 ->where('id_examen', $exam->id)
                 ->get();
-    
+
             foreach ($assignedSurveillants as $assignment) {
                 $surveillantId = $assignment->id_enseignant;
                 $salle = $assignment->salle->name;
-    
+
                 if (isset($surveillantsAssignments[$surveillantId]['assignments'][$examDate])) {
                     $surveillantsAssignments[$surveillantId]['assignments'][$examDate][$creneau] = $salle;
                 }
             }
         }
-       // dd($surveillantsAssignments);
-   
+        // dd($surveillantsAssignments);
+
         Log::info('Final surveillants assignments', $surveillantsAssignments);
-           
+
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);
-    
+
         $dompdf = new Dompdf($options);
         $html = view('examens.planning_surveillants', compact('surveillantsAssignments', 'dates', 'creneauxHoraires'))->render();
-    
+
         $dompdf->loadHtml($html);
-    
+
         $dompdf->setPaper('A1', 'portrait');
-    
+
         $dompdf->render();
-    
-        return $dompdf->stream('planning_surveillants.pdf');
+
+        return $dompdf->stream('planning_surveillants.pdf', ['Attachment' => 0]);
     }
-    
 }

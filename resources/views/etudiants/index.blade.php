@@ -36,6 +36,9 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                             <!-- DataTables will populate rows here -->
                         </tbody>
+                        <a href="{{ route('test.pdf') }}" class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                            Télécharger PDF
+                        </a>
                     </table>
                 </div>
             </div>
@@ -50,33 +53,32 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
 
     <script>
-$(document).ready(function() {
-    $('#etudiantsTable').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: '{{ route('etudiants.index') }}',
-        columns: [
-            { 
-                data: 'fullName', 
-                name: 'fullName',
-                render: function(data, type, row) {
-                    return '<a href="/etudiants/' + row.id + '" class="text-blue-600 hover:text-blue-800 font-medium">' + data + '</a>';
-                }
-            },
-            { 
-                data: 'action', 
-                name: 'action', 
-                orderable: false, 
-                searchable: false
-            }
-        ],
-        responsive: true,
-        paging: true,
-        searching: true,
-        info: true
-    });
-});
-
+        $(document).ready(function() {
+            $('#etudiantsTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: '{{ route('etudiants.index') }}',
+                columns: [
+                    { 
+                        data: 'fullName', 
+                        name: 'fullName',
+                        render: function(data, type, row) {
+                            return '<a href="/etudiants/' + row.id + '" class="text-blue-600 hover:text-blue-800 font-medium">' + data + '</a>';
+                        }
+                    },
+                    { 
+                        data: 'action', 
+                        name: 'action', 
+                        orderable: false, 
+                        searchable: false
+                    }
+                ],
+                responsive: true,
+                paging: true,
+                searching: true,
+                info: true
+            });
+        });
     </script>
     
 </x-app-layout>

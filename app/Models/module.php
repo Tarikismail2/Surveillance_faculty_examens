@@ -35,7 +35,4 @@ class Module extends Model
     {
         return $this->belongsToMany(Etudiant::class, 'inscriptions', 'id_module', 'id_etudiant');
     }
-
-   
-
 }
