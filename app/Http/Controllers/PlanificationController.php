@@ -100,9 +100,10 @@ class PlanificationController extends Controller
         $options->set('defaultFont', 'Arial');
         $options->set('isRemoteEnabled', true); // Enable remote content (images in base64)
         $dompdf = new Dompdf($options);
+        $totalPages = $exams->count();
 
         // Load HTML view file
-        $html = view('examens.global_pdf', compact('exams', 'session'))->render();
+        $html = view('examens.global_pdf', compact(['exams', 'session']))->render();
 
         $dompdf->loadHtml($html);
 

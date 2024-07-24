@@ -26,6 +26,13 @@
                     </div>
                 @endif
 
+                <!-- Debugging Messages -->
+                <div class="mb-4 p-3 border rounded-lg bg-gray-100">
+                    <h4 class="font-bold">@lang('Debugging Information')</h4>
+                    <p>@lang('Number of Salles'): {{ $salles->count() }}</p>
+                    <p>@lang('Number of Enseignants'): {{ $enseignants->count() }}</p>
+                </div>
+
                 <form action="{{ route('examens.assignInvigilators', ['id' => $examen->id]) }}" method="POST">
                     @csrf
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -33,23 +40,21 @@
                             @if ($examen->salles->contains('id', $salle->id))
                                 <div id="salle_{{ $salle->id }}" class="p-4 border rounded-lg bg-gray-50 dark:bg-gray-700 shadow-md">
                                     <h3 class="font-semibold text-lg text-gray-800 dark:text-gray-100 mb-2">@lang('Salle'): {{ $salle->name }}</h3>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">@lang('Surveillants')</label>
-                                    <div class="enseignants-container mb-4">
+                                    <div class="enseignants-container mb-4" id="container_salle_{{ $salle->id }}">
                                         <div class="flex items-center mb-2">
-                                            <select name="enseignants[{{ $salle->id }}][]" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" onchange="updateEnseignantOptions()">
+                                            <select name="enseignants[{{ $salle->id }}][]" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                                                 <option value="">@lang('Choisir un surveillant')</option>
                                                 @foreach ($enseignants as $enseignant)
                                                     <option value="{{ $enseignant->id }}">{{ $enseignant->name }}</option>
                                                 @endforeach
                                             </select>
-                                            <button type="button" class="ml-2 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded" onclick="removeSurveillant(this)">
-                                                @lang('Supprimer')
-                                            </button>
                                         </div>
                                     </div>
-                                    <button type="button" class="mt-2 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" onclick="addSurveillant({{ $salle->id }})">
-                                        @lang('Ajouter un surveillant')
-                                    </button>
+                                </div>
+                            @else
+                                <!-- Debug: Display if salle is not part of examen -->
+                                <div class="p-4 border rounded-lg bg-red-100 shadow-md">
+                                    <h3 class="font-semibold text-lg text-red-800">@lang('Salle non assignée au examen'): {{ $salle->name }}</h3>
                                 </div>
                             @endif
                         @endforeach
@@ -64,16 +69,16 @@
             </div>
         </div>
     </div>
+</x-app-layout>
 
     <script>
         function addSurveillant(salleId) {
-            const container = document.querySelector(`#salle_${salleId} .enseignants-container`);
+            const container = document.querySelector(`#container_salle_${salleId}`);
             const div = document.createElement('div');
             div.classList.add('flex', 'items-center', 'mb-2');
             const select = document.createElement('select');
             select.name = `enseignants[${salleId}][]`;
             select.classList.add('mt-1', 'block', 'w-full', 'border', 'border-gray-300', 'rounded-md', 'shadow-sm', 'focus:border-blue-500', 'focus:ring', 'focus:ring-blue-200', 'focus:ring-opacity-50');
-            select.onchange = updateEnseignantOptions;
             select.innerHTML = getEnseignantOptions();
             div.appendChild(select);
             const removeButton = document.createElement('button');
@@ -123,4 +128,3 @@
 
         document.addEventListener('DOMContentLoaded', updateEnseignantOptions);
     </script>
-</x-app-layout>

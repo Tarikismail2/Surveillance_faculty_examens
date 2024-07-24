@@ -11,6 +11,7 @@ use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\PlanificationController;
 use App\Http\Controllers\EtudiantController;
+use App\Http\Controllers\ContrainteEnseignantController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -99,7 +100,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/planification/display_student_schedule', [ExportController::class, 'displayStudentSchedule'])->name('displayStudentSchedule');
     Route::get('/planification/download_student_schedule_pdf', [ExportController::class, 'downloadStudentSchedulePDF'])->name('downloadStudentSchedulePDF');
   
+    
 
+    Route::resource('contraintes', ContrainteEnseignantController::class);
+    Route::patch('contraintes/{id}/valider', [ContrainteEnseignantController::class, 'valider'])->name('contraintes.valider');
+    Route::delete('contraintes/{id}/annuler', [ContrainteEnseignantController::class, 'annuler'])->name('contraintes.annuler');
+    
 });
 
 require __DIR__ . '/auth.php';

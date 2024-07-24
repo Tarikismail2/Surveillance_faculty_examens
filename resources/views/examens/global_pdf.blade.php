@@ -2,39 +2,51 @@
 <html>
 <head>
     <style>
-        /* Styles CSS pour le PDF */
+        @page {
+            margin: 0;
+            size: A4;
+        }
+
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            position: relative;
         }
+
+        /* En-tête pour la première page */
         .header {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            height: 80px;
-            background-color: #1a202c;
-            color: white;
+            height: 100px;
             padding: 10px 20px;
             box-sizing: border-box;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 4px solid #4a5568;
+            z-index: 9999; /* Assurez-vous que l'en-tête est au-dessus du contenu */
+            page-break-after: avoid; /* Éviter la coupure après l'en-tête */
         }
+
         .header img {
-            max-height: 60px;
+            max-height: 80px;
+            display: block;
         }
+
         .header h1 {
             margin: 0;
             font-size: 24px;
+            text-align: center;
+            flex-grow: 1;
         }
+
+        /* Marge pour le contenu afin de ne pas chevaucher l'en-tête */
         .content {
-            margin-top: 120px; /* Ajuster pour dégager l'espace nécessaire sous l'en-tête */
+            margin-top: 120px; /* Assure que le contenu ne chevauche pas l'en-tête */
             padding: 20px;
         }
+
         .section-title {
             font-size: 20px;
             font-weight: bold;
@@ -43,38 +55,59 @@
             border-bottom: 2px solid #cbd5e0;
             padding-bottom: 5px;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
             table-layout: fixed;
+            page-break-inside: avoid; /* Éviter la coupure à l'intérieur des tables */
         }
+
         th, td {
             border: 1px solid #e2e8f0;
             padding: 8px;
             text-align: left;
             word-wrap: break-word;
         }
+
         th {
             background-color: #edf2f7;
             color: #2d3748;
         }
+
         .session-info, .filiere-info {
             margin-bottom: 20px;
         }
+
         .session-info p, .filiere-info p {
             margin: 5px 0;
+        }
+
+        /* Styles pour les pages suivantes */
+        @media print {
+            .page-break {
+                page-break-before: always;
+            }
+            .no-print {
+                display: none; /* Masquer le contenu non imprimable */
+            }
+        }
+
+        /* En-tête seulement sur la première page */
+        .header-not-first {
+            display: none;
         }
     </style>
 </head>
 <body>
+    <!-- En-tête uniquement sur la première page -->
     <div class="header">
-        {{-- <!-- Logo de l'université et de la faculté (exemple en base64) -->
-        {{-- <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA... (votre code base64 ici) ..." alt="University Logo" style="float: left;">
-        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA... (votre code base64 ici) ..." alt="Faculty Logo" style="float: right;"> --}}
-        <h1>faculté des sciences el jadida</h1>
+        <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/fslogo.png'))) }}" alt="Logo">
+        <h1>Faculté des Sciences El Jadida</h1>
     </div>
 
+    <!-- Contenu principal -->
     <div class="content">
         <h1>Planification Globale des Examens - {{ $session->type }}</h1>
         <div class="session-info">
@@ -90,8 +123,8 @@
                     <thead>
                         <tr>
                             <th>Date</th>
-                            <th>Durée début</th>
-                            <th>Durée fin</th>
+                            <th>Début</th>
+                            <th>Fin</th>
                             <th>Module</th>
                             <th>Locaux</th>
                             <th>Surveillants</th>
@@ -106,7 +139,7 @@
                             <td>
                                 @if ($examen->additionalSalles && count($examen->additionalSalles) > 0)
                                     @foreach ($examen->additionalSalles as $additionalSalle)
-                                        {{ $additionalSalle->name }},
+                                        {{ $additionalSalle->name }}@if (!$loop->last), @endif
                                     @endforeach
                                 @else
                                     N/A
@@ -115,7 +148,7 @@
                             <td>
                                 @if ($examen->enseignants && count($examen->enseignants) > 0)
                                     @foreach ($examen->enseignants as $enseignant)
-                                        {{ $enseignant->name }},
+                                        {{ $enseignant->name }}@if (!$loop->last), @endif
                                     @endforeach
                                 @else
                                     N/A
@@ -125,7 +158,19 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Ajouter une rupture de page après chaque ensemble de données si nécessaire -->
+            @if (!$loop->last)
+                <div class="page-break"></div>
+            @endif
         @endforeach
+
+        <!-- En-tête seulement sur la première page -->
+        <div class="header-not-first">
+            <!-- En-tête uniquement sur la première page -->
+            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/fslogo.png'))) }}" alt="Logo">
+            <h1>Faculté des Sciences El Jadida</h1>
+        </div>
     </div>
 </body>
 </html>
