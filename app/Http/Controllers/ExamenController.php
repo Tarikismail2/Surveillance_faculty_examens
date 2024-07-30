@@ -483,6 +483,7 @@ class ExamenController extends Controller
         ]);
     }
     
+    
     public function showAssignInvigilatorsForm($id)
     {
         $examen = Examen::findOrFail($id);
@@ -606,7 +607,7 @@ class ExamenController extends Controller
         }
     
         // Redirect to the exam details view with a success message
-        return redirect()->route('examens.showForm', ['id' => $examen->id])->with('success', 'Les surveillants ont été assignés avec succès.');
+        return redirect()->route('examens.showForm', ['examen' => $examen->id])->with('success', 'Les surveillants ont été assignés avec succès.');
     }
     
     

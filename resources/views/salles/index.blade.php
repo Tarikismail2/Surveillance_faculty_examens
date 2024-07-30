@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
                 {{ __('Salles') }}
             </h2>
-            <a href="{{ route('salles.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir ajouter un nouvel enseignant ?') }}');">
+            <a href="{{ route('salles.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir ajouter un nouvel salle ?') }}');">
                 <i class="fas fa-plus"></i>
                 <span class="ml-2">{{ __('Ajouter un nouvelle salle') }}</span>
             </a>
@@ -51,12 +51,12 @@
                                             <div class="text-sm text-gray-900">{{ $salle->capacite }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium action-icons">
-                                            <a href="{{ route('salles.edit', $salle->id) }}" title="{{ __('Modifier') }}" class="text-yellow-600 hover:text-yellow-700" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir modifier cet enseignant ?') }}');">
+                                            <a href="{{ route('salles.edit', $salle->id) }}" title="{{ __('Modifier') }}" class="text-yellow-600 hover:text-yellow-700" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir modifier cet salle ?') }}');">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
                                                     <path d="M17.414 2.586a2 2 0 00-2.828 0L5 12.172V15h2.828l9.586-9.586a2 2 0 000-2.828zM4 13H3v4a1 1 0 001 1h4v-1H4v-3z" />
                                                 </svg>
                                             </a>
-                                            <form action="{{ route('salles.destroy', $salle->id) }}" method="POST" class="inline-block" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir supprimer cet enseignant ?') }}');">
+                                            <form action="{{ route('salles.destroy', $salle->id) }}" method="POST" class="inline-block" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir supprimer cet salle ?') }}');">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="bg-transparent border-0 p-0 m-0" title="{{ __('Supprimer') }}">

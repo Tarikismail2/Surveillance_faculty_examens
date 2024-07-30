@@ -89,7 +89,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/global/pdf', 'App\Http\Controllers\PlanificationController@downloadGlobalSchedulePDF')->name('examens.global.pdf');
     Route::get('/examens/global/pdf/{id_session}', [PlanificationController::class, 'downloadSurveillancePDF'])->name('examens_global.pdf');
 
-    
+
     //prof planification
     Route::get('/select-enseignant', [ExportController::class, 'selectEnseignant'])->name('selectEnseignant');
     Route::get('/display-schedule', [ExportController::class, 'displaySchedule'])->name('displaySchedule');

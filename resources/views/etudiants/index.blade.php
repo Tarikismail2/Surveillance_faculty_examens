@@ -6,7 +6,7 @@
             </h2>
             <a href="{{ route('etudiants.create') }}"
                 class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center"
-                onclick="return confirm('{{ __('Êtes-vous sûr de vouloir ajouter un nouvel enseignant ?') }}');">
+                onclick="return confirm('{{ __('Êtes-vous sûr de vouloir ajouter un nouvel etudiant ?') }}');">
                 <i class="fas fa-plus mr-2"></i>
                 {{ __('Ajouter étudiant') }}
             </a>
@@ -81,7 +81,7 @@
                         render: function(data, type, row) {
                             return `
                                 <div class="flex space-x-2">
-                                    <a href="/etudiants/${row.id}/edit" class="text-blue-600 hover:text-blue-800 font-medium" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir modifier cet enseignant ?') }}');">
+                                    <a href="/etudiants/${row.id}/edit" class="text-blue-600 hover:text-blue-800 font-medium" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir modifier cet etudiant ?') }}');">
                                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
                                         <path d="M17.414 2.586a2 2 0 00-2.828 0L5 12.172V15h2.828l9.586-9.586a2 2 0 000-2.828zM4 13H3v4a1 1 0 001 1h4v-1H4v-3z" />
                                     </svg>

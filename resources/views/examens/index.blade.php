@@ -4,7 +4,8 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Liste des Examens') }}
             </h2>
-            <a href="{{ route('examens.create', ['id' => $session->id]) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-300 ease-in-out flex items-center space-x-2">
+            <a href="{{ route('examens.create', ['id' => $session->id]) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-300 ease-in-out flex items-center space-x-2"
+                onclick="return confirm('{{ __('Êtes-vous sûr de vouloir ajouter un nouvel examen ?') }}');">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 00-2 0v3H6a1 1 0 000 2h3v3a1 1 0 002 0v-3h3a1 1 0 000-2h-3V7z" clip-rule="evenodd" />
                 </svg>
@@ -59,7 +60,7 @@
                                     </td>
                                     <td>{{ optional($examen->enseignant)->name ?? 'N/A' }}</td>
                                     <td class="flex space-x-2">
-                                        <a href="{{ route('examens.editExamen', ['id' => $examen->id]) }}" class="text-indigo-600 hover:text-indigo-900 flex items-center space-x-1">
+                                        <a href="{{ route('examens.editExamen', ['id' => $examen->id]) }}" class="text-indigo-600 hover:text-indigo-900 flex items-center space-x-1" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir modifier cet examen ?') }}');">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
                                                 <path d="M17.414 2.586a2 2 0 00-2.828 0L5 12.172V15h2.828l9.586-9.586a2 2 0 000-2.828zM4 13H3v4a1 1 0 001 1h4v-1H4v-3z" />
                                             </svg>
