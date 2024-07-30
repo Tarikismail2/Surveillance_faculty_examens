@@ -28,9 +28,9 @@
 
                 <!-- Debugging Messages -->
                 <div class="mb-4 p-3 border rounded-lg bg-gray-100">
-                    <h4 class="font-bold">@lang('Debugging Information')</h4>
-                    <p>@lang('Number of Salles'): {{ $salles->count() }}</p>
-                    <p>@lang('Number of Enseignants'): {{ $enseignants->count() }}</p>
+                    <h4 class="font-bold">@lang('Informations de débogage')</h4>
+                    <p>@lang('Nombre de salles'): {{ $salles->count() }}</p>
+                    <p>@lang('Nombre d\'enseignants'): {{ $enseignants->count() }}</p>
                 </div>
 
                 <form action="{{ route('examens.assignInvigilators', ['id' => $examen->id]) }}" method="POST">
@@ -71,60 +71,60 @@
     </div>
 </x-app-layout>
 
-    <script>
-        function addSurveillant(salleId) {
-            const container = document.querySelector(`#container_salle_${salleId}`);
-            const div = document.createElement('div');
-            div.classList.add('flex', 'items-center', 'mb-2');
-            const select = document.createElement('select');
-            select.name = `enseignants[${salleId}][]`;
-            select.classList.add('mt-1', 'block', 'w-full', 'border', 'border-gray-300', 'rounded-md', 'shadow-sm', 'focus:border-blue-500', 'focus:ring', 'focus:ring-blue-200', 'focus:ring-opacity-50');
+<script>
+    function addSurveillant(salleId) {
+        const container = document.querySelector(`#container_salle_${salleId}`);
+        const div = document.createElement('div');
+        div.classList.add('flex', 'items-center', 'mb-2');
+        const select = document.createElement('select');
+        select.name = `enseignants[${salleId}][]`;
+        select.classList.add('mt-1', 'block', 'w-full', 'border', 'border-gray-300', 'rounded-md', 'shadow-sm', 'focus:border-blue-500', 'focus:ring', 'focus:ring-blue-200', 'focus:ring-opacity-50');
+        select.innerHTML = getEnseignantOptions();
+        div.appendChild(select);
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.classList.add('ml-2', 'bg-red-500', 'hover:bg-red-700', 'text-white', 'font-bold', 'py-1', 'px-2', 'rounded');
+        removeButton.innerHTML = '@lang('Supprimer')';
+        removeButton.onclick = function() {
+            removeSurveillant(removeButton);
+        };
+        div.appendChild(removeButton);
+        container.appendChild(div);
+        updateEnseignantOptions();
+    }
+
+    function removeSurveillant(button) {
+        button.parentNode.remove();
+        updateEnseignantOptions();
+    }
+
+    function getEnseignantOptions() {
+        let options = '<option value="">@lang('Choisir un surveillant')</option>';
+        @foreach ($enseignants as $enseignant)
+            options += `<option value="{{ $enseignant->id }}">{{ $enseignant->name }}</option>`;
+        @endforeach
+        return options;
+    }
+
+    function updateEnseignantOptions() {
+        const selectedEnseignants = new Set();
+        document.querySelectorAll('select[name^="enseignants"]').forEach(select => {
+            if (select.value) {
+                selectedEnseignants.add(select.value);
+            }
+        });
+
+        document.querySelectorAll('select[name^="enseignants"]').forEach(select => {
+            const currentSelection = select.value;
             select.innerHTML = getEnseignantOptions();
-            div.appendChild(select);
-            const removeButton = document.createElement('button');
-            removeButton.type = 'button';
-            removeButton.classList.add('ml-2', 'bg-red-500', 'hover:bg-red-700', 'text-white', 'font-bold', 'py-1', 'px-2', 'rounded');
-            removeButton.innerHTML = '@lang('Supprimer')';
-            removeButton.onclick = function() {
-                removeSurveillant(removeButton);
-            };
-            div.appendChild(removeButton);
-            container.appendChild(div);
-            updateEnseignantOptions();
-        }
-
-        function removeSurveillant(button) {
-            button.parentNode.remove();
-            updateEnseignantOptions();
-        }
-
-        function getEnseignantOptions() {
-            let options = '<option value="">@lang('Choisir un surveillant')</option>';
-            @foreach ($enseignants as $enseignant)
-                options += `<option value="{{ $enseignant->id }}">{{ $enseignant->name }}</option>`;
-            @endforeach
-            return options;
-        }
-
-        function updateEnseignantOptions() {
-            const selectedEnseignants = new Set();
-            document.querySelectorAll('select[name^="enseignants"]').forEach(select => {
-                if (select.value) {
-                    selectedEnseignants.add(select.value);
+            select.value = currentSelection;
+            select.querySelectorAll('option').forEach(option => {
+                if (option.value && selectedEnseignants.has(option.value) && option.value !== currentSelection) {
+                    option.disabled = true;
                 }
             });
+        });
+    }
 
-            document.querySelectorAll('select[name^="enseignants"]').forEach(select => {
-                const currentSelection = select.value;
-                select.innerHTML = getEnseignantOptions();
-                select.value = currentSelection;
-                select.querySelectorAll('option').forEach(option => {
-                    if (option.value && selectedEnseignants.has(option.value) && option.value !== currentSelection) {
-                        option.disabled = true;
-                    }
-                });
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', updateEnseignantOptions);
-    </script>
+    document.addEventListener('DOMContentLoaded', updateEnseignantOptions);
+</script>

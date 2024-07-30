@@ -1,76 +1,131 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center bg-gray-100 p-4 rounded-lg shadow-md">
-            <h2 class="font-semibold text-2xl text-black-600 leading-tight">
+            <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
                 {{ __('Liste des contraintes des enseignants') }}
             </h2>
+            <a href="{{ route('contrainte_enseignants.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir ajouter une nouvelle contrainte ?') }}');">
+                <i class="fas fa-plus"></i>
+            </a>
         </div>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
+                <div class="p-6">
+                    @if (session('success'))
+                        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                            <span class="block sm:inline">{{ session('success') }}</span>
+                        </div>
+                    @endif
+                    @if (session('error'))
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                            <span class="block sm:inline">{{ session('error') }}</span>
+                        </div>
+                    @endif
 
-                @if (session('success'))
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-                        <strong class="font-bold">{{ session('success') }}</strong>
+                    <!-- Formulaire de filtrage -->
+                    <form method="GET" action="{{ route('contrainte_enseignants.index') }}" class="mb-4">
+                        <div class="flex items-center">
+                            <label for="id_session" class="block text-gray-700 text-sm font-bold mb-2 mr-4">Session</label>
+                            <select id="id_session" name="id_session" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                <option value="">Sélectionner une session</option>
+                                @foreach ($sessions as $session)
+                                    <option value="{{ $session->id }}" {{ request('id_session') == $session->id ? 'selected' : '' }}>
+                                        {{ $session->type }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <button type="submit" class="ml-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                Filtrer
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Tableau avec DataTables -->
+                    <div class="overflow-x-auto">
+                        <table id="constraintsTable" class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ __('Enseignant') }}
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ __('Date') }}
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ __('Heure de début') }}
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ __('Heure de fin') }}
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ __('Statut') }}
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ __('Actions') }}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @forelse ($contraintes as $contrainte)
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @if ($contrainte->enseignant)
+                                                {{ $contrainte->enseignant->name }}
+                                            @else
+                                                {{ __('Aucun enseignant associé') }}
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $contrainte->date }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $contrainte->heure_debut }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $contrainte->heure_fin }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">{{ $contrainte->validee ? 'Validée' : 'Non validée' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center space-x-2">
+                                            @if (!$contrainte->validee)
+                                                <form action="{{ route('contraintes.valider', $contrainte->id) }}" method="POST" class="inline-block" onsubmit="return confirm('{{ __('Êtes-vous sûr de vouloir valider cette contrainte ?') }}');">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="text-green-600 hover:text-green-900">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                            <form action="{{ route('contraintes.annuler', $contrainte->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette contrainte ?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600 hover:text-red-900">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ __('Aucune contrainte trouvée.') }}
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
-                @endif
-
-                @if (session('error'))
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                        <strong class="font-bold">{{ session('error') }}</strong>
-                    </div>
-                @endif
-
-                <table class="table-auto w-full">
-                    <thead>
-                        <tr class="bg-gray-200">
-                            <th class="px-4 py-2">Enseignant</th>
-                            <th class="px-4 py-2">Date</th>
-                            <th class="px-4 py-2">Heure de début</th>
-                            <th class="px-4 py-2">Heure de fin</th>
-                            <th class="px-4 py-2">Statut</th>
-                            <th class="px-4 py-2">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($contraintes as $contrainte)
-                            <tr class="bg-white border-b">
-                                <td class="px-4 py-2">
-                                    @if ($contrainte->enseignant)
-                                        {{ $contrainte->enseignant->name }}
-                                    @else
-                                        {{ __('Aucun enseignant associé') }}
-                                    @endif
-                                </td>
-                                <td class="px-4 py-2">{{ $contrainte->date }}</td>
-                                <td class="px-4 py-2">{{ $contrainte->heure_debut }}</td>
-                                <td class="px-4 py-2">{{ $contrainte->heure_fin }}</td>
-                                <td class="px-4 py-2">{{ $contrainte->validee ? 'Validée' : 'Non validée' }}</td>
-                                <td class="px-4 py-2">
-                                    @if (!$contrainte->validee)
-                                        <form action="{{ route('contraintes.valider', $contrainte->id) }}" method="POST" style="display:inline;">
-                                            @csrf
-                                            @method('PATCH')
-                                            <x-button class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                                                Valider
-                                            </x-button>
-                                        </form>
-                                    @endif
-                                    <form action="{{ route('contraintes.annuler', $contrainte->id) }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <x-button class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                                            Annuler
-                                        </x-button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Font Awesome -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <!-- DataTables JS -->
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.js"></script>
+    <!-- Initialize DataTables -->
+    <script>
+        $(document).ready(function() {
+            $('#constraintsTable').DataTable();
+        });
+    </script>
 </x-app-layout>

@@ -11,18 +11,20 @@ class CreateContrainteEnseignantsTable extends Migration
         Schema::create('contrainte_enseignants', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_enseignant');
+            $table->unsignedBigInteger('id_session');
             $table->date('date');
             $table->time('heure_debut');
             $table->time('heure_fin');
-            $table->boolean('validee')->default(false);
+            $table->boolean('validee');
             $table->timestamps();
 
             $table->foreign('id_enseignant')->references('id')->on('enseignants')->onDelete('cascade');
+            $table->foreign('id_session')->references('id')->on('session_exams')->onDelete('cascade');
         });
     }
 
     public function down()
     {
-        Schema::dropIfExists('contraintes_enseignants');
+        Schema::dropIfExists('contrainte_enseignants');
     }
 }

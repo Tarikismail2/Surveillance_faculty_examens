@@ -11,6 +11,7 @@ class ContrainteEnseignant extends Model
 
     protected $fillable = [
         'id_enseignant',
+        'id_session', 
         'date',
         'heure_debut',
         'heure_fin',
@@ -20,5 +21,10 @@ class ContrainteEnseignant extends Model
     public function enseignant()
     {
         return $this->belongsTo(Enseignant::class, 'id_enseignant');
+    }
+
+    public function session()
+    {
+        return $this->belongsTo(SessionExam::class, 'id_session'); 
     }
 }

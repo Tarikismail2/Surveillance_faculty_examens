@@ -4,8 +4,11 @@
             <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
                 {{ __('Enseignants') }}
             </h2>
-            <a href="{{ route('enseignants.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center">
-                <i class="fas fa-plus"></i>
+            <a href="{{ route('enseignants.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir ajouter un nouvel enseignant ?') }}');">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 00-2 0v3H6a1 1 0 000 2h3v3a1 1 0 002 0v-3h3a1 1 0 000-2h-3V7z" clip-rule="evenodd" />
+                </svg>
+                {{ __('Créer un nouvel enseignant') }}
             </a>
         </div>
     </x-slot>
@@ -14,11 +17,13 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-lg rounded-lg overflow-hidden">
                 <div class="p-6">
+                    <!-- Messages de succès et d'erreur -->
                     @if (session('status'))
                         <div class="mb-4 p-4 rounded-md {{ session('status')['type'] === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                             {{ session('status')['message'] }}
                         </div>
                     @endif
+
                     <div class="overflow-x-auto">
                         <table id="enseignants-table" class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
@@ -73,14 +78,18 @@
                         searchable: false,
                         render: function (data, type, row) {
                             return `
-                                <a href="/enseignants/${data.id}/edit" class="text-yellow-600 hover:text-yellow-700 font-medium" title="Modifier">
-                                    <i class="fas fa-edit"></i>
+                                <a href="/enseignants/${data.id}/edit" class="text-yellow-600 hover:text-yellow-700 font-medium" title="Modifier" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir modifier un nouvel enseignant ?') }}');">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M17.414 2.586a2 2 0 00-2.828 0L5 12.172V15h2.828l9.586-9.586a2 2 0 000-2.828zM4 13H3v4a1 1 0 001 1h4v-1H4v-3z" />
+                                    </svg>
                                 </a>
-                                <form action="/enseignants/${data.id}" method="POST" class="inline-block" style="display:inline">
+                                <form action="/enseignants/${data.id}" method="POST" class="inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet enseignant ?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-red-600 hover:text-red-700 font-medium" title="Supprimer">
-                                        <i class="fas fa-trash-alt"></i>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M6 8a1 1 0 011-1h6a1 1 0 011 1v9a1 1 0 11-2 0v-1H8v1a1 1 0 11-2 0V8zm3-3a1 1 0 00-1-1V3a1 1 0 112 0v1a1 1 0 00-1 1z" clip-rule="evenodd" />
+                                        </svg>
                                     </button>
                                 </form>
                             `;

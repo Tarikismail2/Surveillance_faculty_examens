@@ -29,29 +29,6 @@
                     </a>
                 </div>
 
-                {{-- <div class="mb-6">
-                    <form method="GET" action="{{ route('examens.index', ['sessionId' => $session->id]) }}" class="flex space-x-4">
-                        <div>
-                            <label for="filiere_id" class="block text-sm font-medium text-gray-700">Filière</label>
-                            <select id="filiere_id" name="filiere_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                <option value="">Toutes les filières</option>
-                                @foreach ($filieres as $filiere)
-                                    <option value="{{ $filiere->version_etape }}" {{ request('filiere_id') == $filiere->version_etape ? 'selected' : '' }}>
-                                        {{ $filiere->version_etape }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="flex items-end">
-                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center space-x-2">
-                                <i class="fas fa-filter"></i>
-                                <span>Filtrer</span>
-                            </button>
-                        </div>
-                    </form>
-                </div> --}}
-
-
                 <div class="overflow-x-auto">
                     <table id="exams-table" class="display min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -83,15 +60,17 @@
                                     <td>{{ optional($examen->enseignant)->name ?? 'N/A' }}</td>
                                     <td class="flex space-x-2">
                                         <a href="{{ route('examens.editExamen', ['id' => $examen->id]) }}" class="text-indigo-600 hover:text-indigo-900 flex items-center space-x-1">
-                                            <i class="fas fa-edit"></i>
-                                            {{-- <span class="hidden md:inline">Modifier</span> --}}
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M17.414 2.586a2 2 0 00-2.828 0L5 12.172V15h2.828l9.586-9.586a2 2 0 000-2.828zM4 13H3v4a1 1 0 001 1h4v-1H4v-3z" />
+                                            </svg>
                                         </a>
-                                        <form action="{{ route('examens.destroy', $examen->id) }}" method="POST" class="inline">
+                                        <form action="{{ route('examens.destroy', $examen->id) }}" method="POST" class="inline" onsubmit="return confirmDelete();">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-red-600 hover:text-red-900 flex items-center space-x-1">
-                                                <i class="fas fa-trash-alt"></i>
-                                                {{-- <span class="hidden md:inline">Supprimer</span> --}}
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M6 8a1 1 0 011-1h6a1 1 0 011 1v9a1 1 0 11-2 0v-1H8v1a1 1 0 11-2 0V8zm3-3a1 1 0 00-1-1V3a1 1 0 112 0v1a1 1 0 00-1 1z" clip-rule="evenodd" />
+                                                </svg>
                                             </button>
                                         </form>
                                     </td>
@@ -140,5 +119,9 @@
                 "lengthChange": true
             });
         });
+
+        function confirmDelete() {
+            return confirm('Êtes-vous sûr de vouloir supprimer cet examen ?');
+        }
     </script>
 </x-app-layout>

@@ -89,23 +89,26 @@ Route::middleware('auth')->group(function () {
     Route::get('/global/pdf', 'App\Http\Controllers\PlanificationController@downloadGlobalSchedulePDF')->name('examens.global.pdf');
     Route::get('/examens/global/pdf/{id_session}', [PlanificationController::class, 'downloadSurveillancePDF'])->name('examens_global.pdf');
 
+    
     //prof planification
     Route::get('/select-enseignant', [ExportController::class, 'selectEnseignant'])->name('selectEnseignant');
     Route::get('/display-schedule', [ExportController::class, 'displaySchedule'])->name('displaySchedule');
     Route::post('/download-surveillance-pdf', [ExportController::class, 'downloadSurveillancePDF'])->name('downloadSurveillancePDF');
 
+
     //Studeent planification
-    
     Route::get('/planification/select_student', [ExportController::class, 'selectStudent'])->name('selectStudent');
     Route::get('/planification/display_student_schedule', [ExportController::class, 'displayStudentSchedule'])->name('displayStudentSchedule');
     Route::get('/planification/download_student_schedule_pdf', [ExportController::class, 'downloadStudentSchedulePDF'])->name('downloadStudentSchedulePDF');
-  
-    
 
-    Route::resource('contraintes', ContrainteEnseignantController::class);
+
+
+    // Route::resource('contrainte_enseignants')->names('contrainte_enseignants');
+    Route::get('/contraintes', [ContrainteEnseignantController::class, 'index'])->name('contrainte_enseignants.index');
+    Route::get('/contrainte_enseignants/create', [ContrainteEnseignantController::class, 'create'])->name('contrainte_enseignants.create');
+    Route::post('/contrainte_enseignants', [ContrainteEnseignantController::class, 'store'])->name('contrainte_enseignants.store');
     Route::patch('contraintes/{id}/valider', [ContrainteEnseignantController::class, 'valider'])->name('contraintes.valider');
     Route::delete('contraintes/{id}/annuler', [ContrainteEnseignantController::class, 'annuler'])->name('contraintes.annuler');
-    
 });
 
 require __DIR__ . '/auth.php';
