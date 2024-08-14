@@ -82,6 +82,11 @@ class Examen extends Model
     {
         return $this->belongsTo(Enseignant::class, 'id_enseignant');
     }
+
+    public function teacher()
+    {
+        return $this->belongsTo(Enseignant::class);
+    }
 }
 
 

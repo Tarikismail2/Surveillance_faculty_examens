@@ -13,6 +13,7 @@ use App\Http\Controllers\PlanificationController;
 use App\Http\Controllers\EtudiantController;
 use App\Http\Controllers\ContrainteEnseignantController;
 use App\Http\Controllers\SurveillantsReservistesController;
+use App\Http\Controllers\TimetableController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -116,6 +117,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/contrainte_enseignants', [ContrainteEnseignantController::class, 'store'])->name('contrainte_enseignants.store');
     Route::patch('contraintes/{id}/valider', [ContrainteEnseignantController::class, 'valider'])->name('contraintes.valider');
     Route::delete('contraintes/{id}/annuler', [ContrainteEnseignantController::class, 'annuler'])->name('contraintes.annuler');
+
+    //Enseignants emploi selon department
+    Route::get('/select-department', [TimetableController::class, 'selectDepartment'])->name('selectDepartment');
+    Route::get('/display-schedule-department', [TimetableController::class, 'displayScheduleByDepartment'])->name('displayScheduleByDepartment');
+    Route::get('/download-schedule/{id_department}/{id_session}', [TimetableController::class, 'downloadSchedule'])->name('download-schedule');
+
+
 });
 
 require __DIR__ . '/auth.php';

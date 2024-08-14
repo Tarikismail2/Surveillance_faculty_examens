@@ -57,6 +57,9 @@
                                 <x-dropdown-link :href="route('selectEnseignant')">
                                     {{ __('Emploi d\'Enseignant') }}
                                 </x-dropdown-link>
+                                <x-dropdown-link :href="route('selectDepartment')">
+                                    {{ __('Emploi d\'Enseignant Dépertement') }}
+                                </x-dropdown-link>
                                 <x-dropdown-link :href="route('selectStudent')">
                                     {{ __('Emploi d\'Etudiant') }}
                                 </x-dropdown-link>

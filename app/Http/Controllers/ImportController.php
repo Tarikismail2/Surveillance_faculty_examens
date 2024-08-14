@@ -37,43 +37,29 @@ class ImportController extends Controller
                 $sheet = $spreadsheet->getActiveSheet();
                 $rows = $sheet->toArray();
 
-                DB::beginTransaction();
-
-                $batchSize = 100;
-                $batch = [];
+                $batchSize = 1000; // Adjust the batch size if necessary
+                $totalRows = count($rows);
 
                 // Initialize import status
                 Session::put('import_status', 'in_progress');
 
-                foreach ($rows as $index => $row) {
-                    if ($index == 0) continue; // Skip header
+                DB::transaction(function () use ($rows, $batchSize, $totalRows) {
+                    $filiereCache = [];
+                    $moduleCache = [];
 
-                    // Check import status
-                    if (Session::get('import_status') === 'cancelled') {
-                        DB::rollBack();
-                        return back()->withErrors(['error' => 'Importation annulée par l\'utilisateur.']);
+                    for ($i = 1; $i < $totalRows; $i += $batchSize) {
+                        // Check import status
+                        if (Session::get('import_status') === 'cancelled') {
+                            throw new \Exception('Importation annulée par l\'utilisateur.');
+                        }
+
+                        $batch = array_slice($rows, $i, $batchSize);
+                        $this->processBatch($batch, $filiereCache, $moduleCache);
                     }
-
-                    // Prepare data for the batch
-                    $batch[] = $row;
-
-                    // Process batch if it reaches specified size
-                    if (count($batch) >= $batchSize) {
-                        $this->processBatch($batch);
-                        $batch = []; // Clear the batch
-                    }
-                }
-
-                // Process any remaining data in the batch
-                if (count($batch) > 0) {
-                    $this->processBatch($batch);
-                }
-
-                DB::commit();
+                });
 
                 return back()->with('success', 'Importation terminée avec succès.');
             } catch (\Exception $e) {
-                DB::rollBack();
                 return back()->withErrors(['error' => $e->getMessage()]);
             }
         }
@@ -81,9 +67,11 @@ class ImportController extends Controller
         return back()->withErrors(['error' => 'Le fichier n\'a pas pu être téléchargé.']);
     }
 
-    private function processBatch(array $batch)
+    private function processBatch(array $batch, array &$filiereCache, array &$moduleCache)
     {
-        ini_set('max_execution_time', 600);
+        $etudiants = [];
+        $inscriptions = [];
+
         foreach ($batch as $row) {
             // Validate and convert the date
             $dateNaissance = null;
@@ -103,44 +91,59 @@ class ImportController extends Controller
                 $cin = null;
             }
 
-            $etudiant = Etudiant::updateOrCreate(
-                ['code_etudiant' => $row[0]],
-                [
-                    'nom' => $row[1],
-                    'prenom' => $row[2],
-                    'cin' => $cin,
-                    'cne' => $row[4],
-                    'date_naissance' => $dateNaissance ? $dateNaissance->format('Y-m-d') : null,
-                ]
-            );
+            $etudiants[] = [
+                'code_etudiant' => $row[0],
+                'nom' => $row[1],
+                'prenom' => $row[2],
+                'cin' => $cin,
+                'cne' => $row[4],
+                'date_naissance' => $dateNaissance ? $dateNaissance->format('Y-m-d') : null,
+            ];
 
-            // Ensure Filiere exists and get its ID
-            $filiere = Filiere::firstOrCreate(
-                ['version_etape' => $row[8]],
-                ['code_etape' => $row[9]]
-            );
+            // Cache or fetch Filiere
+            if (!isset($filiereCache[$row[8]])) {
+                $filiereCache[$row[8]] = Filiere::firstOrCreate(
+                    ['version_etape' => $row[8]],
+                    ['code_etape' => $row[9]]
+                )->id;
+            }
 
-            $module = Module::updateOrCreate(
-                [
-                    'code_elp' => $row[6],
-                    'lib_elp' => $row[7],
-                    'version_etape' => $row[8],
-                    'code_etape' => $row[9],
-                ]
-            );
+            // Cache or fetch Module
+            if (!isset($moduleCache[$row[6]])) {
+                $moduleCache[$row[6]] = Module::updateOrCreate(
+                    [
+                        'code_elp' => $row[6],
+                        'lib_elp' => $row[7],
+                        'version_etape' => $row[8],
+                        'code_etape' => $row[9],
+                    ]
+                )->id;
+            }
 
-            Inscription::updateOrCreate(
-                [
-                    'id_etudiant' => $etudiant->id,
-                    'id_module' => $module->id,
-                ]
-            );
+            $inscriptions[] = [
+                'id_etudiant' => $row[0], // Use the student code as a temporary key
+                'id_module' => $moduleCache[$row[6]],
+            ];
         }
+
+        // Bulk insert students
+        Etudiant::upsert($etudiants, ['code_etudiant'], ['nom', 'prenom', 'cin', 'cne', 'date_naissance']);
+
+        // Resolve student IDs after bulk insert
+        $studentIds = Etudiant::whereIn('code_etudiant', array_column($etudiants, 'code_etudiant'))
+            ->pluck('id', 'code_etudiant');
+
+        // Map the student IDs to inscriptions
+        foreach ($inscriptions as &$inscription) {
+            $inscription['id_etudiant'] = $studentIds[$inscription['id_etudiant']];
+        }
+
+        // Bulk insert inscriptions
+        Inscription::insert($inscriptions);
     }
 
     public function cancelImport(Request $request)
     {
-        ini_set('max_execution_time', 600);
         Session::put('import_status', 'cancelled');
         return back()->with('success', 'Importation annulée.');
     }
