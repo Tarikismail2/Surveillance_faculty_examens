@@ -59,43 +59,56 @@
                     </div>
                 </form>
 
-       <!-- Display schedule if available -->
-@isset($schedule)
-@if(!$schedule->isEmpty())
-    <div class="overflow-x-auto mt-6">
-        <div class="flex justify-end mb-4">
-            <a href="{{ route('download-schedule', ['id_department' => $idDepartment, 'id_session' => $idSession]) }}" 
-                class="inline-flex items-center px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-               Télécharger le planning
-            </a>
-        </div>
-        <table class="min-w-full divide-y divide-gray-200 bg-white shadow-md rounded-lg">
-            <thead class="bg-gray-100 text-gray-600">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Date</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Heure de début</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Heure de fin</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Salle</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Enseignant</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @foreach($schedule as $entry)
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $entry->examen->date->format('d/m/Y') }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $entry->examen->heure_debut->format('H:i') }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $entry->examen->heure_fin->format('H:i') }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $entry->salle->name }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ $entry->enseignant->name }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-@else
-    <p class="mt-4 text-center text-gray-500">Aucun emploi du temps disponible pour le département sélectionné et la session choisie.</p>
-@endif
-@endisset
+                <!-- Display schedule if available -->
+                @isset($schedule)
+                    @if (!$schedule->isEmpty())
+                        <div class="overflow-x-auto mt-6">
+                            <div class="flex justify-end mb-4">
+                                @isset($idDepartment)
+                                <a href="{{ route('download-schedule', ['id_department' => $idDepartment, 'id_session' => $idSession]) }}"
+                                    class="inline-flex items-center px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    Télécharger le planning
+                                </a>
+                            @endisset
+                            
+
+                            </div>
+                            <table class="min-w-full divide-y divide-gray-200 bg-white shadow-md rounded-lg">
+                                <thead class="bg-gray-100 text-gray-600">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Date
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Heure
+                                            de début</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Heure
+                                            de fin</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Salle
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                            Enseignant</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    @foreach ($schedule as $entry)
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                {{ $entry->examen->date->format('d/m/Y') }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                {{ $entry->examen->heure_debut->format('H:i') }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                {{ $entry->examen->heure_fin->format('H:i') }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ $entry->salle->name }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">{{ $entry->enseignant->name }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <p class="mt-4 text-center text-gray-500">Aucun emploi du temps disponible pour le département
+                            sélectionné et la session choisie.</p>
+                    @endif
+                @endisset
 
 
             </div>
