@@ -47,32 +47,8 @@
                             @enderror
                         </div>
 
-                        <!-- Heure de Début -->
-                        <div class="form-group">
-                            <label for="heure_debut"
-                                class="block text-gray-700 dark:text-gray-300">@lang('Heure de Début')</label>
-                            <input type="time" name="heure_debut" id="heure_debut" value="{{ old('heure_debut') }}"
-                                class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                required>
-                            @error('heure_debut')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Heure de Fin -->
-                        <div class="form-group">
-                            <label for="heure_fin"
-                                class="block text-gray-700 dark:text-gray-300">@lang('Heure de Fin')</label>
-                            <input type="time" name="heure_fin" id="heure_fin" value="{{ old('heure_fin') }}"
-                                class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                required>
-                            @error('heure_fin')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Filière -->
-                        <div class="form-group">
+                         <!-- Filière -->
+                         <div class="form-group">
                             <label for="filiere"
                                 class="block text-gray-700 dark:text-gray-300">@lang('Filière')</label>
                             <select
@@ -81,11 +57,23 @@
                                 <option value="">@lang('Sélectionnez une filière')</option>
                                 @foreach ($filieres as $filiere)
                                     <option value="{{ $filiere->version_etape }}"
-                                        {{ old('version_etape') == $filiere->version_etape ? 'selected' : '' }}>
+                                        {{ old('$filiere->version_etape') == $filiere->version_etape ? 'selected' : '' }}>
                                         {{ $filiere->version_etape }}</option>
                                 @endforeach
                             </select>
                             @error('id_filiere')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Heure de Début -->
+                        <div class="form-group">
+                            <label for="heure_debut"
+                                class="block text-gray-700 dark:text-gray-300">@lang('Heure de Début')</label>
+                            <input type="time" name="heure_debut" id="heure_debut" value="{{ old('heure_debut') }}"
+                                class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                required>
+                            @error('heure_debut')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
@@ -101,6 +89,18 @@
                                 <!-- Les modules seront remplis dynamiquement -->
                             </select>
                             @error('id_module')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                         <!-- Heure de Fin -->
+                         <div class="form-group">
+                            <label for="heure_fin"
+                                class="block text-gray-700 dark:text-gray-300">@lang('Heure de Fin')</label>
+                            <input type="time" name="heure_fin" id="heure_fin" value="{{ old('heure_fin') }}"
+                                class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                required>
+                            @error('heure_fin')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
@@ -181,12 +181,13 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="total_capacity"
-                                    class="block text-gray-700 dark:text-gray-300">@lang('Capacité Totale')</label>
-                                <input type="number" id="total_capacity" name="total_capacity"
+                                <label for="remaining_inscriptions" class="block text-gray-700 dark:text-gray-300">
+                                    @lang('Restes des Inscriptions')
+                                </label>
+                                <input type="number" id="remaining_inscriptions" name="remaining_inscriptions"
                                     class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                     readonly>
-                            </div>
+                            </div>                            
                         </div>
 
                         <!-- Boutons -->
@@ -206,97 +207,98 @@
         </div>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const departementSelect = document.getElementById('departement');
-            const enseignantSelect = document.getElementById('enseignant');
-            const filiereSelect = document.getElementById('filiere');
-            const moduleSelect = document.getElementById('module');
-            const salleSelect = document.getElementById('id_salle');
-            const inscriptionsCount = document.getElementById('inscriptions_count');
-            const totalCapacity = document.getElementById('total_capacity');
-            const addSalleButton = document.getElementById('add_salle_button');
-            const additionalSallesDiv = document.getElementById('additional_salles');
+document.addEventListener('DOMContentLoaded', () => {
+    const departementSelect = document.getElementById('departement');
+    const enseignantSelect = document.getElementById('enseignant');
+    const filiereSelect = document.getElementById('filiere');
+    const moduleSelect = document.getElementById('module');
+    const salleSelect = document.getElementById('id_salle');
+    const inscriptionsCount = document.getElementById('inscriptions_count');
+    const remainingInscriptions = document.getElementById('remaining_inscriptions');
+    const addSalleButton = document.getElementById('add_salle_button');
+    const additionalSallesDiv = document.getElementById('additional_salles');
 
-            filiereSelect.addEventListener('change', function() {
-                const filiereId = this.value;
-                moduleSelect.innerHTML = '<option value="">@lang('Sélectionnez un module')</option>';
+    filiereSelect.addEventListener('change', function() {
+        const filiereId = this.value;
+        moduleSelect.innerHTML = '<option value="">@lang('Sélectionnez un module')</option>';
 
-                if (filiereId) {
-                    fetch(`/examens/getModulesByFiliere/${filiereId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            data.forEach(module => {
-                                const option = document.createElement('option');
-                                option.value = module.id;
-                                option.textContent =
-                                    `${module.lib_elp} (${module.inscriptions_count} @lang('inscrits'))`;
-                                option.setAttribute('data-inscriptions', module
-                                    .inscriptions_count);
-                                moduleSelect.appendChild(option);
-                            });
-                        })
-                        .catch(error => console.error('Error fetching modules:', error));
-                }
-            });
+        if (filiereId) {
+            fetch(`/examens/getModulesByFiliere/${filiereId}`)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(module => {
+                        const option = document.createElement('option');
+                        option.value = module.id;
+                        option.textContent = `${module.lib_elp} (${module.inscriptions_count} @lang('inscrits'))`;
+                        option.setAttribute('data-inscriptions', module.inscriptions_count);
+                        moduleSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching modules:', error));
+        }
+    });
 
-            moduleSelect.addEventListener('change', function() {
-                const selectedModule = moduleSelect.options[moduleSelect.selectedIndex];
-                const inscriptions = selectedModule.getAttribute('data-inscriptions') || 0;
-                inscriptionsCount.value = inscriptions;
-                updateTotalCapacity();
-            });
+    moduleSelect.addEventListener('change', function() {
+        const selectedModule = moduleSelect.options[moduleSelect.selectedIndex];
+        const inscriptions = selectedModule.getAttribute('data-inscriptions') || 0;
+        inscriptionsCount.value = inscriptions;
+        updateRemainingInscriptions();
+    });
 
-            salleSelect.addEventListener('change', function() {
-                updateTotalCapacity();
-            });
+    salleSelect.addEventListener('change', function() {
+        updateRemainingInscriptions();
+    });
 
-            addSalleButton.addEventListener('click', function() {
-                const salleCount = additionalSallesDiv.children.length;
-                const newSalleDiv = document.createElement('div');
-                newSalleDiv.className = 'mt-2 flex items-center';
+    addSalleButton.addEventListener('click', function() {
+        const salleCount = additionalSallesDiv.children.length;
+        const newSalleDiv = document.createElement('div');
+        newSalleDiv.className = 'mt-2 flex items-center';
 
-                const newSalleSelect = salleSelect.cloneNode(true);
-                newSalleSelect.name = `additional_salles[${salleCount}]`;
-                newSalleSelect.id = `additional_salle_${salleCount}`;
-                newSalleSelect.addEventListener('change', function() {
-                    updateTotalCapacity();
-                });
+        const newSalleSelect = salleSelect.cloneNode(true);
+        newSalleSelect.name = `additional_salles[${salleCount}]`;
+        newSalleSelect.id = `additional_salle_${salleCount}`;
+        newSalleSelect.addEventListener('change', function() {
+            updateRemainingInscriptions();
+        });
 
-                const removeButton = document.createElement('button');
-                removeButton.type = 'button';
-                removeButton.innerText = '@lang('Supprimer')';
-                removeButton.className =
-                    'ml-2 py-1 px-2 bg-red-500 hover:bg-red-700 text-white font-semibold rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75';
-                removeButton.addEventListener('click', function() {
-                    additionalSallesDiv.removeChild(newSalleDiv);
-                    updateTotalCapacity();
-                });
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.innerText = '@lang('Supprimer')';
+        removeButton.className =
+            'ml-2 py-1 px-2 bg-red-500 hover:bg-red-700 text-white font-semibold rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75';
+        removeButton.addEventListener('click', function() {
+            additionalSallesDiv.removeChild(newSalleDiv);
+            updateRemainingInscriptions();
+        });
 
-                newSalleDiv.appendChild(newSalleSelect);
-                newSalleDiv.appendChild(removeButton);
-                additionalSallesDiv.appendChild(newSalleDiv);
-            });
+        newSalleDiv.appendChild(newSalleSelect);
+        newSalleDiv.appendChild(removeButton);
+        additionalSallesDiv.appendChild(newSalleDiv);
+    });
 
-            function updateTotalCapacity() {
-                let total = 0;
+    function updateRemainingInscriptions() {
+        let totalCapacity = 0;
 
-                const mainSalleCapacity = salleSelect.options[salleSelect.selectedIndex]?.getAttribute(
-                    'data-capacite');
-                if (mainSalleCapacity) {
-                    total += parseInt(mainSalleCapacity);
-                }
+        const mainSalleCapacity = salleSelect.options[salleSelect.selectedIndex]?.getAttribute('data-capacite');
+        if (mainSalleCapacity) {
+            totalCapacity += parseInt(mainSalleCapacity);
+        }
 
-                const additionalSalleSelects = additionalSallesDiv.querySelectorAll('select');
-                additionalSalleSelects.forEach(salleSelect => {
-                    const capacity = salleSelect.options[salleSelect.selectedIndex]?.getAttribute(
-                        'data-capacite');
-                    if (capacity) {
-                        total += parseInt(capacity);
-                    }
-                });
-
-                totalCapacity.value = total;
+        const additionalSalleSelects = additionalSallesDiv.querySelectorAll('select');
+        additionalSalleSelects.forEach(salleSelect => {
+            const capacity = salleSelect.options[salleSelect.selectedIndex]?.getAttribute('data-capacite');
+            if (capacity) {
+                totalCapacity += parseInt(capacity);
             }
         });
+
+        const inscriptions = parseInt(inscriptionsCount.value) || 0;
+        const remaining = inscriptions - totalCapacity;
+
+        remainingInscriptions.value = remaining; // Affiche le nombre directement, avec le signe moins si nécessaire
+    }
+});
+
+
     </script>
 </x-app-layout>

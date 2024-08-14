@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
                 {{ __('Liste des contraintes des enseignants') }}
             </h2>
-            <a href="{{ route('contrainte_enseignants.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir ajouter une nouvelle contrainte ?') }}');">
+            <a href="{{ route('contrainte_enseignants.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center">
                 <i class="fas fa-plus"></i>
             </a>
         </div>
@@ -84,7 +84,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $contrainte->validee ? 'Validée' : 'Non validée' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center space-x-2">
                                             @if (!$contrainte->validee)
-                                                <form action="{{ route('contraintes.valider', $contrainte->id) }}" method="POST" class="inline-block" onsubmit="return confirm('{{ __('Êtes-vous sûr de vouloir valider cette contrainte ?') }}');">
+                                                <form action="{{ route('contraintes.valider', $contrainte->id) }}" method="POST" class="inline-block">
                                                     @csrf
                                                     @method('PATCH')
                                                     <button type="submit" class="text-green-600 hover:text-green-900">

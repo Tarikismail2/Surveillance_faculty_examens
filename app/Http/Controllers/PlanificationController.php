@@ -88,6 +88,7 @@ class PlanificationController extends Controller
 
     public function downloadGlobalSchedulePDF(Request $request)
     {
+        ini_set('max_execution_time', 600);
         // Fetch data needed for PDF generation
         $selectedSessionId = $request->input('id_session');
         $exams = Examen::where('id_session', $selectedSessionId)->get();
@@ -117,6 +118,7 @@ class PlanificationController extends Controller
     //download the surveillance planification
     public function downloadSurveillancePDF($id_session)
     {
+        ini_set('max_execution_time', 600);
         if (!$id_session) {
             return redirect()->back()->with('error', 'Session ID is missing.');
         }

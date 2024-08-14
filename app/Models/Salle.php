@@ -31,7 +31,5 @@ class Salle extends Model
         return $this->belongsToMany(Enseignant::class, 'examen_salle_enseignant', 'id_salle', 'id_enseignant');
     }
 
-    
-    
 }
 

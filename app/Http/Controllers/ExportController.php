@@ -61,6 +61,7 @@ class ExportController extends Controller
 
     public function downloadSurveillancePDF(Request $request)
     {
+        ini_set('max_execution_time', 600);
         $id_session = $request->input('id_session');
         $enseignant_id = $request->input('id_enseignant');
 
@@ -186,6 +187,7 @@ class ExportController extends Controller
 
     public function downloadStudentSchedulePDF(Request $request)
     {
+        ini_set('max_execution_time', 600);
         $id_session = $request->input('id_session');
         $id_etudiant = $request->input('id_etudiant');
 

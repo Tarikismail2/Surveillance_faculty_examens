@@ -83,6 +83,7 @@ class ImportController extends Controller
 
     private function processBatch(array $batch)
     {
+        ini_set('max_execution_time', 600);
         foreach ($batch as $row) {
             // Validate and convert the date
             $dateNaissance = null;
@@ -139,6 +140,7 @@ class ImportController extends Controller
 
     public function cancelImport(Request $request)
     {
+        ini_set('max_execution_time', 600);
         Session::put('import_status', 'cancelled');
         return back()->with('success', 'Importation annulée.');
     }

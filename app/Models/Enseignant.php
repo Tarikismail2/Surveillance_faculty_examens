@@ -22,10 +22,16 @@ class Enseignant extends Model
             ->withPivot('id_examen')
             ->withTimestamps();
     }
+
     public function examens()
     {
         return $this->belongsToMany(Examen::class, 'examen_salle_enseignant', 'id_enseignant', 'id_examen')
             ->withPivot('id_salle')
             ->withTimestamps();
+    }
+
+    public function reservations()
+    {
+        return $this->hasMany(SurveillantReserviste::class, 'id_enseignant');
     }
 }

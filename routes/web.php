@@ -12,6 +12,7 @@ use App\Http\Controllers\ImportController;
 use App\Http\Controllers\PlanificationController;
 use App\Http\Controllers\EtudiantController;
 use App\Http\Controllers\ContrainteEnseignantController;
+use App\Http\Controllers\SurveillantsReservistesController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -48,6 +49,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/examens/{id}/assign-invigilators', [ExamenController::class, 'assignInvigilators'])->name('examens.assignInvigilators');
     Route::get('/examens/{examen}/edit-invigilators', [ExamenController::class, 'editInvigilators'])->name('examens.editInvigilators');
     Route::post('/examens/{examen}/update-invigilators', [ExamenController::class, 'updateInvigilators'])->name('examens.updateInvigilators');
+
+    // Affectation automatique des surveillants
+    Route::post('/examens/assign-invigilators-to-all', [ExamenController::class, 'assignInvigilatorsToAll'])->name('examens.assignInvigilatorsToAll');
+
+    Route::get('/surveillants-reservistes', [SurveillantsReservistesController::class, 'index'])->name('surveillants_reservistes.index');
+    Route::get('/surveillants-reservistes/download', [SurveillantsReservistesController::class, 'downloadPDF'])->name('surveillants_reservistes.download');
 
 
     //route departments

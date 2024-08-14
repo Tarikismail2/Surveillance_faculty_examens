@@ -180,6 +180,7 @@ class EtudiantController extends Controller
 
     public function generatePdf()
     {
+        ini_set('max_execution_time', 600);
         $options = new DompdfOptions();
         $options->set('defaultFont', 'Arial');
         $options->set('isRemoteEnabled', true);

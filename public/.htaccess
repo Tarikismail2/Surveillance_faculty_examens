@@ -4,6 +4,8 @@
     </IfModule>
 
     RewriteEngine On
+    
+    php_value max_execution_time 600
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .

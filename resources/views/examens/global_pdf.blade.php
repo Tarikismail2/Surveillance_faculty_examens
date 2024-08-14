@@ -102,13 +102,17 @@
 </head>
 <body>
     <!-- En-tête uniquement sur la première page -->
-    <div class="header">
+    {{-- <div class="header">
         <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/fslogo.png'))) }}" alt="Logo">
         <h1>Faculté des Sciences El Jadida</h1>
-    </div>
+    </div> --}}
 
     <!-- Contenu principal -->
     <div class="content">
+        <div class="header">
+            <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/fslogo.png'))) }}" alt="Logo">
+            <h1>Faculté des Sciences El Jadida</h1>
+        </div>
         <h1>Planification Globale des Examens - {{ $session->type }}</h1>
         <div class="session-info">
             <div class="section-title">Détails de la Session :</div>
@@ -123,11 +127,14 @@
                     <thead>
                         <tr>
                             <th>Date</th>
-                            <th>Début</th>
-                            <th>Fin</th>
+                            <th>Heure Début</th>
+                            <th>Heure Fin</th>
+                            <th>Filière</th>
                             <th>Module</th>
                             <th>Locaux</th>
+                            <th>Responsable du module</th>
                             <th>Surveillants</th>
+                            <th>Session</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -136,6 +143,13 @@
                             <td>{{ $examen->heure_debut }}</td>
                             <td>{{ $examen->heure_fin }}</td>
                             <td>{{ $examen->module->lib_elp }}</td>
+                            <td>
+                                @if ($examen->module)
+                                    {{ $examen->module->version_etape }}
+                                @else
+                                    N/A
+                                @endif
+                            </td>
                             <td>
                                 @if ($examen->additionalSalles && count($examen->additionalSalles) > 0)
                                     @foreach ($examen->additionalSalles as $additionalSalle)
@@ -154,6 +168,10 @@
                                     N/A
                                 @endif
                             </td>
+                            <td>
+                                {{ $examen->enseignant ? $examen->enseignant->name : 'N/A' }}</td>
+                            <td>
+                                {{ $examen->session ? $examen->session->type : 'N/A' }}</td>
                         </tr>
                     </tbody>
                 </table>

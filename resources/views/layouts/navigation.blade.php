@@ -52,13 +52,16 @@
                             </x-slot>
                             <x-slot name="content">
                                 <x-dropdown-link :href="route('examens.global')">
-                                    {{ __('Global Plan') }}
+                                    {{ __('Emploi Globale') }}
                                 </x-dropdown-link>
                                 <x-dropdown-link :href="route('selectEnseignant')">
-                                    {{ __('Enseignant Plan') }}
+                                    {{ __('Emploi d\'Enseignant') }}
                                 </x-dropdown-link>
                                 <x-dropdown-link :href="route('selectStudent')">
-                                    {{ __('Etudiant Plan') }}
+                                    {{ __('Emploi d\'Etudiant') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('surveillants_reservistes.index')">
+                                    {{ __('Emploi des Réservistes') }}
                                 </x-dropdown-link>
                             </x-slot>
                         </x-dropdown>

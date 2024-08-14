@@ -13,25 +13,42 @@ class Examen extends Model
 
     protected $fillable = ['date', 'heure_debut', 'heure_fin', 'id_module', 'id_salle', 'id_enseignant', 'id_session', 'id_etudiant'];
 
-    public function module()
+    // Relation pour la salle principale
+    public function sallePrincipale()
     {
-        return $this->belongsTo(Module::class, 'id_module');
+        return $this->belongsTo(Salle::class, 'id_salle');
     }
-    
+
+    // Relation pour les salles supplémentaires
+    public function sallesSupplementaires()
+    {
+        return $this->belongsToMany(Salle::class, 'examen_salle', 'id_examen', 'id_salle')
+                    ->withTimestamps();
+    }
+
+    public function additionalSalles()
+    {
+        return $this->belongsToMany(Salle::class, 'examen_salle', 'id_examen', 'id_salle');
+    }
+
+    public function salles()
+    {
+        return $this->belongsToMany(Salle::class, 'examen_salle', 'id_examen', 'id_salle');
+    }
+
     public function salle()
     {
         return $this->belongsTo(Salle::class);
     }
 
+    public function module()
+    {
+        return $this->belongsTo(Module::class, 'id_module');
+    }
+
     public function enseignant()
     {
         return $this->belongsTo(Enseignant::class, 'id_enseignant');
-    }
-
-    public function salles()
-    {
-        return $this->belongsToMany(Salle::class, 'examen_salle', 'id_examen', 'id_salle')
-                    ->withTimestamps();
     }
 
     public function enseignants()
@@ -61,14 +78,11 @@ class Examen extends Model
         return $this->belongsTo(SessionExam::class, 'id_session'); 
     }
 
-    public function additionalSalles()
-    {
-        return $this->belongsToMany(Salle::class, 'examen_salle', 'id_examen', 'id_salle');
-    }
-    
     public function responsable()
     {
         return $this->belongsTo(Enseignant::class, 'id_enseignant');
     }
-
 }
+
+
+

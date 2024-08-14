@@ -103,6 +103,7 @@
 
     function updateEnseignantOptions() {
         const selectedEnseignants = new Set();
+        
         document.querySelectorAll('select[name^="enseignants"]').forEach(select => {
             if (select.value) {
                 selectedEnseignants.add(select.value);
@@ -110,16 +111,17 @@
         });
 
         document.querySelectorAll('select[name^="enseignants"]').forEach(select => {
-            const currentSelection = select.value;
-            select.innerHTML = getEnseignantOptions();
-            select.value = currentSelection;
             select.querySelectorAll('option').forEach(option => {
-                if (option.value && selectedEnseignants.has(option.value) && option.value !== currentSelection) {
+                if (option.value && selectedEnseignants.has(option.value) && option.value !== select.value) {
                     option.disabled = true;
+                } else {
+                    option.disabled = false;
                 }
             });
         });
     }
 
-    document.addEventListener('DOMContentLoaded', updateEnseignantOptions);
+    document.addEventListener('DOMContentLoaded', function() {
+        updateEnseignantOptions();
+    });
 </script>

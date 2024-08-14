@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
                 {{ __('Enseignants') }}
             </h2>
-            <a href="{{ route('enseignants.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir ajouter un nouvel enseignant ?') }}');">
+            <a href="{{ route('enseignants.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 00-2 0v3H6a1 1 0 000 2h3v3a1 1 0 002 0v-3h3a1 1 0 000-2h-3V7z" clip-rule="evenodd" />
                 </svg>
@@ -78,7 +78,7 @@
                         searchable: false,
                         render: function (data, type, row) {
                             return `
-                                <a href="/enseignants/${data.id}/edit" class="text-yellow-600 hover:text-yellow-700 font-medium" title="Modifier" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir modifier un nouvel enseignant ?') }}');">
+                                <a href="/enseignants/${data.id}/edit" class="text-yellow-600 hover:text-yellow-700 font-medium" title="Modifier">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
                                         <path d="M17.414 2.586a2 2 0 00-2.828 0L5 12.172V15h2.828l9.586-9.586a2 2 0 000-2.828zM4 13H3v4a1 1 0 001 1h4v-1H4v-3z" />
                                     </svg>
