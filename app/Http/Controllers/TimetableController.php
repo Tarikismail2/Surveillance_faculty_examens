@@ -32,15 +32,15 @@ class TimetableController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        $idDepartment = $request->input('id_department');
-        $idSession = $request->input('id_session');
+        $id_department = $request->input('id_department');
+        $id_session = $request->input('id_session');
 
-        $departement = Department::find($idDepartment);
-        $enseignants = Enseignant::where('id_department', $idDepartment)->pluck('id');
+        $departement = Department::find($id_department);
+        $enseignants = Enseignant::where('id_department', $id_department)->pluck('id');
 
         $schedule = ExamenSalleEnseignant::whereIn('id_enseignant', $enseignants)
-            ->whereHas('examen', function ($query) use ($idSession) {
-                $query->where('id_session', $idSession);
+            ->whereHas('examen', function ($query) use ($id_session) {
+                $query->where('id_session', $id_session);
             })
             ->with(['examen', 'salle', 'enseignant'])
             ->get()
@@ -55,34 +55,25 @@ class TimetableController extends Controller
                 fn($a, $b) => $a->examen->heure_debut <=> $b->examen->heure_debut,
             ]);
 
-        return view('emploi.select_department', [
-            'departement' => $departement,
-            'schedule' => $schedule,
-            'idDepartment' => $idDepartment,
-            'idSession' => $idSession,
-            'departements' => Department::orderBy('name')->pluck('name', 'id_department'),
-            'sessions' => SessionExam::orderBy('type')->pluck('type', 'id'),
-        ]);
+        $departements = Department::orderBy('name')->pluck('name', 'id_department');
+        $sessions = SessionExam::orderBy('type')->pluck('type', 'id');
+
+        return view('emploi.select_department', compact(
+            'id_department', 
+            'id_session', 
+            'departement', 
+            'schedule', 
+            'departements', 
+            'sessions'
+        ));
     }
 
-    public function downloadSchedule(Request $request)
+    public function downloadSchedule($id_department, $id_session)
     {
-        $validator = Validator::make($request->all(), [
-            'id_department' => 'required|exists:departments,id_department',
-            'id_session' => 'required|exists:session_exams,id',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $idDepartment = $request->input('id_department');
-        $idSession = $request->input('id_session');
-
-        $enseignants = Enseignant::where('id_department', $idDepartment)->pluck('id');
+        $enseignants = Enseignant::where('id_department', $id_department)->pluck('id');
         $schedule = ExamenSalleEnseignant::whereIn('id_enseignant', $enseignants)
-            ->whereHas('examen', function ($query) use ($idSession) {
-                $query->where('id_session', $idSession);
+            ->whereHas('examen', function ($query) use ($id_session) {
+                $query->where('id_session', $id_session);
             })
             ->with(['examen', 'salle', 'enseignant'])
             ->get()
@@ -92,7 +83,7 @@ class TimetableController extends Controller
             ]);
 
         // Generate PDF
-        $html = view('emploi.schedule', compact('schedule', 'idDepartment', 'idSession'))->render();
+        $html = view('emploi.schedule', compact('schedule', 'id_department', 'id_session'))->render();
 
         $options = new Options();
         $options->set('defaultFont', 'DejaVu Sans');
@@ -102,6 +93,6 @@ class TimetableController extends Controller
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
-        return $dompdf->stream('Surveillance Schedule by Department.pdf', ['Attachment' => 0]);
+        return $dompdf->stream('Surveillance_Schedule_by_Department.pdf', ['Attachment' => 0]);
     }
 }

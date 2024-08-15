@@ -119,11 +119,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('contraintes/{id}/annuler', [ContrainteEnseignantController::class, 'annuler'])->name('contraintes.annuler');
 
     //Enseignants emploi selon department
-    Route::get('/select-department', [TimetableController::class, 'selectDepartment'])->name('selectDepartment');
-    Route::get('/display-schedule-department', [TimetableController::class, 'displayScheduleByDepartment'])->name('displayScheduleByDepartment');
+    Route::get('/select-department', [TimetableController::class, 'selectDepartment'])->name('select-department');
+    Route::get('/displayScheduleByDepartment/{id_department}/{id_session}', [TimetableController::class, 'displayScheduleByDepartment'])->name('displayScheduleByDepartment');
     Route::get('/download-schedule/{id_department}/{id_session}', [TimetableController::class, 'downloadSchedule'])->name('download-schedule');
-
-
 });
 
 require __DIR__ . '/auth.php';

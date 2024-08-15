@@ -157,6 +157,7 @@
                             @enderror
                         </div>
 
+                        
                         <!-- Salles Additionnelles -->
                         <div class="form-group">
                             <label for="additional_salles"

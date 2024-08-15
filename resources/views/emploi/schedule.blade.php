@@ -19,8 +19,8 @@
 </head>
 <body>
     <h1>Emploi du Temps</h1>
-    <p>Département: {{ \App\Models\Department::find($idDepartment)->name }}</p>
-    <p>Session: {{ \App\Models\SessionExam::find($idSession)->type }}</p>
+    <p>Département: {{ \App\Models\Department::find($id_department)->name }}</p>
+    <p>Session: {{ \App\Models\SessionExam::find($id_session)->type }}</p>
 
     <table>
         <thead>
@@ -35,9 +35,9 @@
         <tbody>
             @foreach($schedule as $entry)
                 <tr>
-                    <td>{{ $entry->examen->date->format('d/m/Y') }}</td>
-                    <td>{{ $entry->examen->heure_debut->format('H:i') }}</td>
-                    <td>{{ $entry->examen->heure_fin->format('H:i') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($entry->examen->date)->format('d/m/Y') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($entry->examen->heure_debut)->format('H:i') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($entry->examen->heure_fin)->format('H:i') }}</td>
                     <td>{{ $entry->salle->name }}</td>
                     <td>{{ $entry->enseignant->name }}</td>
                 </tr>
