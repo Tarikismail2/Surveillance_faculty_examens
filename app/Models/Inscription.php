@@ -24,4 +24,9 @@ class Inscription extends Model
     {
         return $this->belongsTo(Module::class, 'id_module');
     }
+
+    public function session()
+    {
+        return $this->belongsTo(SessionExam::class);
+    }
 }

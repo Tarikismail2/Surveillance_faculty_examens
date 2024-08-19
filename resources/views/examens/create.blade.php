@@ -24,12 +24,11 @@
                 @if (session('success'))
                     <div class="mb-4">
                         <ul class="mt-3 list-disc list-inside text-sm text-green-600">
-                            @foreach (session('success') as $successful)
-                                <li>{{ $successful }}</li>
-                            @endforeach
+                            <li>{{ session('success') }}</li>
                         </ul>
                     </div>
                 @endif
+
 
                 <form action="{{ route('examens.store') }}" method="POST">
                     @csrf
@@ -47,8 +46,8 @@
                             @enderror
                         </div>
 
-                         <!-- Filière -->
-                         <div class="form-group">
+                        <!-- Filière -->
+                        <div class="form-group">
                             <label for="filiere"
                                 class="block text-gray-700 dark:text-gray-300">@lang('Filière')</label>
                             <select
@@ -70,13 +69,20 @@
                         <div class="form-group">
                             <label for="heure_debut"
                                 class="block text-gray-700 dark:text-gray-300">@lang('Heure de Début')</label>
-                            <input type="time" name="heure_debut" id="heure_debut" value="{{ old('heure_debut') }}"
-                                class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            <select name="heure_debut" id="heure_debut"
+                                class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 required>
+                                <option value="">@lang('Sélectionnez une heure de début')</option>
+                                <option value="08:30">08:30</option>
+                                <option value="10:15">10:15</option>
+                                <option value="14:30">14:30</option>
+                                <option value="16:15">16:15</option>
+                            </select>
                             @error('heure_debut')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
+
 
                         <!-- Module -->
                         <div class="form-group">
@@ -93,13 +99,19 @@
                             @enderror
                         </div>
 
-                         <!-- Heure de Fin -->
-                         <div class="form-group">
+                        <!-- Heure de Fin -->
+                        <div class="form-group">
                             <label for="heure_fin"
                                 class="block text-gray-700 dark:text-gray-300">@lang('Heure de Fin')</label>
-                            <input type="time" name="heure_fin" id="heure_fin" value="{{ old('heure_fin') }}"
-                                class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            <select name="heure_fin" id="heure_fin"
+                                class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 required>
+                                <option value="">@lang('Sélectionnez une heure de fin')</option>
+                                <option value="10:00">10:00</option>
+                                <option value="11:45">11:45</option>
+                                <option value="16:00">16:00</option>
+                                <option value="16:45">16:45</option>
+                            </select>
                             @error('heure_fin')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
@@ -138,38 +150,65 @@
                             @enderror
                         </div>
 
-                        <!-- Salle Principale -->
                         <div class="form-group">
-                            <label for="id_salle"
-                                class="block text-gray-700 dark:text-gray-300">@lang('Salle Principale')</label>
-                            <select name="id_salle" id="id_salle"
+                            <label for="allocation_mode"
+                                class="block text-gray-700 dark:text-gray-300">@lang('Mode d\'affectation des salles')</label>
+                            <select name="allocation_mode" id="allocation_mode"
                                 class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                <option value="">@lang('Choisir une salle')</option>
-                                @foreach ($salles as $salle)
-                                    <option value="{{ $salle->id }}" data-capacite="{{ $salle->capacite }}"
-                                        {{ old('id_salle') == $salle->id ? 'selected' : '' }}>
-                                        {{ $salle->name }} (Capacité: {{ $salle->capacite }})
-                                    </option>
-                                @endforeach
+                                <option value="manual" selected>@lang('Affectation Manuelle')</option>
+                                <option value="automatic">@lang('Affectation Automatique')</option>
                             </select>
-                            @error('id_salle')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
                         </div>
 
-                        
-                        <!-- Salles Additionnelles -->
-                        <div class="form-group">
-                            <label for="additional_salles"
-                                class="block text-gray-700 dark:text-gray-300">@lang('Salles Additionnelles')</label>
-                            <div id="additional_salles">
-                                <!-- Les salles additionnelles seront ajoutées ici -->
+                        <!-- Affectation Manuelle -->
+                        <div id="manual_allocation" class="grid grid-cols-1 gap-6">
+                            <!-- Salle Principale -->
+                            <div class="form-group">
+                                <label for="id_salle"
+                                    class="block text-gray-700 dark:text-gray-300">@lang('Salle Principale')</label>
+                                <select name="id_salle" id="id_salle"
+                                    class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    <option value="">@lang('Choisir une salle')</option>
+                                    @foreach ($salles as $salle)
+                                        <option value="{{ $salle->id }}" data-capacite="{{ $salle->capacite }}"
+                                            {{ old('id_salle') == $salle->id ? 'selected' : '' }}>
+                                            {{ $salle->name }} (Capacité: {{ $salle->capacite }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('id_salle')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
-                            <button type="button" id="add_salle_button"
-                                class="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
-                                @lang('Ajouter une Salle')
-                            </button>
+
+                            <!-- Salles Additionnelles -->
+                            <div class="form-group">
+                                <label for="additional_salles"
+                                    class="block text-gray-700 dark:text-gray-300">@lang('Salles Additionnelles')</label>
+                                <div id="additional_salles">
+                                    <!-- Les salles additionnelles seront ajoutées ici -->
+                                </div>
+                                <button type="button" id="add_salle_button"
+                                    class="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                                    @lang('Ajouter une Salle')
+                                </button>
+                            </div>
                         </div>
+
+                        <!-- Mode d'affectation des salles -->
+
+
+                        <!-- Affectation Automatique -->
+                        <div id="automatic_allocation" class="grid grid-cols-1 gap-6 hidden">
+                            <div class="form-group">
+                                <label for="automatic_allocation_summary"
+                                    class="block text-gray-700 dark:text-gray-300">@lang('Résumé de l\'affectation automatique')</label>
+                                <textarea id="automatic_allocation_summary" name="automatic_allocation_summary" rows="4"
+                                    class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    readonly></textarea>
+                            </div>
+                        </div>
+
 
                         <!-- Inscriptions et Capacité Totale -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
@@ -188,7 +227,7 @@
                                 <input type="number" id="remaining_inscriptions" name="remaining_inscriptions"
                                     class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                     readonly>
-                            </div>                            
+                            </div>
                         </div>
 
                         <!-- Boutons -->
@@ -208,98 +247,120 @@
         </div>
     </div>
     <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const departementSelect = document.getElementById('departement');
-    const enseignantSelect = document.getElementById('enseignant');
-    const filiereSelect = document.getElementById('filiere');
-    const moduleSelect = document.getElementById('module');
-    const salleSelect = document.getElementById('id_salle');
-    const inscriptionsCount = document.getElementById('inscriptions_count');
-    const remainingInscriptions = document.getElementById('remaining_inscriptions');
-    const addSalleButton = document.getElementById('add_salle_button');
-    const additionalSallesDiv = document.getElementById('additional_salles');
+        document.addEventListener('DOMContentLoaded', () => {
+            const departementSelect = document.getElementById('departement');
+            const enseignantSelect = document.getElementById('enseignant');
+            const filiereSelect = document.getElementById('filiere');
+            const moduleSelect = document.getElementById('module');
+            const salleSelect = document.getElementById('id_salle');
+            const inscriptionsCount = document.getElementById('inscriptions_count');
+            const remainingInscriptions = document.getElementById('remaining_inscriptions');
+            const addSalleButton = document.getElementById('add_salle_button');
+            const additionalSallesDiv = document.getElementById('additional_salles');
+            const allocationModeSelect = document.getElementById('allocation_mode');
+            const manualAllocationDiv = document.getElementById('manual_allocation');
+            const automaticAllocationDiv = document.getElementById('automatic_allocation');
+            const automaticAllocationSummary = document.getElementById('automatic_allocation_summary');
 
-    filiereSelect.addEventListener('change', function() {
-        const filiereId = this.value;
-        moduleSelect.innerHTML = '<option value="">@lang('Sélectionnez un module')</option>';
+            filiereSelect.addEventListener('change', function() {
+                const filiereId = this.value;
+                moduleSelect.innerHTML = '<option value="">@lang('Sélectionnez un module')</option>';
 
-        if (filiereId) {
-            fetch(`/examens/getModulesByFiliere/${filiereId}`)
-                .then(response => response.json())
-                .then(data => {
-                    data.forEach(module => {
-                        const option = document.createElement('option');
-                        option.value = module.id;
-                        option.textContent = `${module.lib_elp} (${module.inscriptions_count} @lang('inscrits'))`;
-                        option.setAttribute('data-inscriptions', module.inscriptions_count);
-                        moduleSelect.appendChild(option);
-                    });
-                })
-                .catch(error => console.error('Error fetching modules:', error));
-        }
-    });
+                if (filiereId) {
+                    fetch(`/examens/getModulesByFiliere/${filiereId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            data.forEach(module => {
+                                const option = document.createElement('option');
+                                option.value = module.id;
+                                option.textContent =
+                                    `${module.lib_elp} (${module.inscriptions_count} @lang('inscrits'))`;
+                                option.setAttribute('data-inscriptions', module
+                                    .inscriptions_count);
+                                option.setAttribute('data-capacite', module.capacite);
+                                moduleSelect.appendChild(option);
+                            });
+                        })
+                        .catch(error => console.error('Error fetching modules:', error));
+                }
+            });
 
-    moduleSelect.addEventListener('change', function() {
-        const selectedModule = moduleSelect.options[moduleSelect.selectedIndex];
-        const inscriptions = selectedModule.getAttribute('data-inscriptions') || 0;
-        inscriptionsCount.value = inscriptions;
-        updateRemainingInscriptions();
-    });
+            moduleSelect.addEventListener('change', function() {
+                const selectedModule = moduleSelect.options[moduleSelect.selectedIndex];
+                const inscriptions = selectedModule.getAttribute('data-inscriptions') || 0;
+                inscriptionsCount.value = inscriptions;
+                updateRemainingInscriptions();
+            });
 
-    salleSelect.addEventListener('change', function() {
-        updateRemainingInscriptions();
-    });
+            salleSelect.addEventListener('change', function() {
+                updateRemainingInscriptions();
+            });
 
-    addSalleButton.addEventListener('click', function() {
-        const salleCount = additionalSallesDiv.children.length;
-        const newSalleDiv = document.createElement('div');
-        newSalleDiv.className = 'mt-2 flex items-center';
+            addSalleButton.addEventListener('click', function() {
+                const salleCount = additionalSallesDiv.children.length;
+                const newSalleDiv = document.createElement('div');
+                newSalleDiv.className = 'mt-2 flex items-center';
 
-        const newSalleSelect = salleSelect.cloneNode(true);
-        newSalleSelect.name = `additional_salles[${salleCount}]`;
-        newSalleSelect.id = `additional_salle_${salleCount}`;
-        newSalleSelect.addEventListener('change', function() {
-            updateRemainingInscriptions();
-        });
+                const newSalleSelect = salleSelect.cloneNode(true);
+                newSalleSelect.name = `additional_salles[${salleCount}]`;
+                newSalleSelect.id = `additional_salle_${salleCount}`;
+                newSalleSelect.addEventListener('change', updateRemainingInscriptions);
 
-        const removeButton = document.createElement('button');
-        removeButton.type = 'button';
-        removeButton.innerText = '@lang('Supprimer')';
-        removeButton.className =
-            'ml-2 py-1 px-2 bg-red-500 hover:bg-red-700 text-white font-semibold rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75';
-        removeButton.addEventListener('click', function() {
-            additionalSallesDiv.removeChild(newSalleDiv);
-            updateRemainingInscriptions();
-        });
+                const removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.innerText = '@lang('Supprimer')';
+                removeButton.className =
+                    'ml-2 py-1 px-2 bg-red-500 hover:bg-red-700 text-white font-semibold rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75';
+                removeButton.addEventListener('click', function() {
+                    additionalSallesDiv.removeChild(newSalleDiv);
+                    updateRemainingInscriptions();
+                });
 
-        newSalleDiv.appendChild(newSalleSelect);
-        newSalleDiv.appendChild(removeButton);
-        additionalSallesDiv.appendChild(newSalleDiv);
-    });
+                newSalleDiv.appendChild(newSalleSelect);
+                newSalleDiv.appendChild(removeButton);
+                additionalSallesDiv.appendChild(newSalleDiv);
+            });
 
-    function updateRemainingInscriptions() {
-        let totalCapacity = 0;
+            function updateRemainingInscriptions() {
+                let totalCapacity = 0;
 
-        const mainSalleCapacity = salleSelect.options[salleSelect.selectedIndex]?.getAttribute('data-capacite');
-        if (mainSalleCapacity) {
-            totalCapacity += parseInt(mainSalleCapacity);
-        }
+                const mainSalleCapacity = salleSelect.options[salleSelect.selectedIndex]?.getAttribute(
+                    'data-capacite');
+                if (mainSalleCapacity) {
+                    totalCapacity += parseInt(mainSalleCapacity);
+                }
 
-        const additionalSalleSelects = additionalSallesDiv.querySelectorAll('select');
-        additionalSalleSelects.forEach(salleSelect => {
-            const capacity = salleSelect.options[salleSelect.selectedIndex]?.getAttribute('data-capacite');
-            if (capacity) {
-                totalCapacity += parseInt(capacity);
+                const additionalSalleSelects = additionalSallesDiv.querySelectorAll('select');
+                additionalSalleSelects.forEach(salleSelect => {
+                    const capacity = salleSelect.options[salleSelect.selectedIndex]?.getAttribute(
+                        'data-capacite');
+                    if (capacity) {
+                        totalCapacity += parseInt(capacity);
+                    }
+                });
+
+                const inscriptions = parseInt(inscriptionsCount.value) || 0;
+                const remaining = inscriptions - totalCapacity;
+
+                remainingInscriptions.value = remaining;
             }
+
+            // Gestion du mode d'affectation (manuel ou automatique)
+            allocationModeSelect.addEventListener('change', function() {
+                if (this.value === 'manual') {
+                    manualAllocationDiv.classList.remove('hidden');
+                    automaticAllocationDiv.classList.add('hidden');
+                } else {
+                    manualAllocationDiv.classList.add('hidden');
+                    automaticAllocationDiv.classList.remove('hidden');
+                }
+            });
+
+            // Initialisation de l'affichage
+            allocationModeSelect.dispatchEvent(new Event('change'));
         });
-
-        const inscriptions = parseInt(inscriptionsCount.value) || 0;
-        const remaining = inscriptions - totalCapacity;
-
-        remainingInscriptions.value = remaining; // Affiche le nombre directement, avec le signe moins si nécessaire
-    }
-});
-
-
     </script>
+
+
+
 </x-app-layout>

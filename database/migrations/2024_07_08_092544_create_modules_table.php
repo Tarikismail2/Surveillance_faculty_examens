@@ -15,7 +15,9 @@ class CreateModulesTable extends Migration
             $table->string('version_etape');
             $table->string('code_etape');
             $table->unsignedBigInteger('id_filiere')->nullable();
+            $table->unsignedBigInteger('id_session');
             $table->foreign('id_filiere')->references('id')->on('filieres')->onDelete('cascade');
+            $table->foreign('id_session')->references('id')->on('session_exams')->onDelete('cascade');
             $table->timestamps();
         });
     }

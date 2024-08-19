@@ -17,8 +17,7 @@
                 <h2 class="text-3xl font-semibold mb-6 text-gray-800">{{ __('Importer un fichier Excel') }}</h2>
 
                 <!-- Formulaire d'importation -->
-                <form id="import-form" action="{{ route('import.process') }}" method="POST"
-                    enctype="multipart/form-data" class="space-y-4">
+                <form id="import-form" action="{{ route('import.process', ['sessionId' => $session->id]) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                     @csrf
 
                     <!-- Sélecteur de fichier -->

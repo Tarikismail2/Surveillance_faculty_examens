@@ -16,5 +16,10 @@ class Filiere extends Model
         return $this->hasMany(Module::class, 'version_etape', 'version_etape');
     }
 
+    public function session()
+    {
+        return $this->belongsTo(SessionExam::class);
+    }
+    
     
 }

@@ -14,6 +14,7 @@ use App\Http\Controllers\EtudiantController;
 use App\Http\Controllers\ContrainteEnseignantController;
 use App\Http\Controllers\SurveillantsReservistesController;
 use App\Http\Controllers\TimetableController;
+use App\Http\Controllers\ContrainteSalleController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -79,12 +80,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/etudiants/{etudiant}', [EtudiantController::class, 'show'])->name('etudiants.show');
     Route::delete('/etudiants/{etudiant}', [EtudiantController::class, 'destroy'])->name('etudiants.destroy');
     Route::delete('/etudiants/delete-modules', [EtudiantController::class, 'deleteModules'])->name('etudiants.deleteModules');
-    Route::get('/test-pdf',  [EtudiantController::class, 'generatePdf'])->name('test.pdf');
+    // Route::get('/test-pdf',  [EtudiantController::class, 'generatePdf'])->name('test.pdf');
+    Route::get('/test-pdf/{sessionId}', [EtudiantController::class, 'generatePdf'])->name('test.pdf');
+
 
     //route upload
-    Route::get('/import', [ImportController::class, 'showForm'])->name('import.form');
-    Route::post('/import', [ImportController::class, 'import'])->name('import.process');
+    Route::get('/import/{sessionId}', [ImportController::class, 'showForm'])->name('import.form');
+    Route::post('/import/{sessionId}', [ImportController::class, 'import'])->name('import.process');
     Route::post('/import/cancel', [ImportController::class, 'cancelImport'])->name('import.cancel');
+
 
 
     //Affichage globale de la planification des examens
@@ -118,8 +122,17 @@ Route::middleware('auth')->group(function () {
     Route::patch('contraintes/{id}/valider', [ContrainteEnseignantController::class, 'valider'])->name('contraintes.valider');
     Route::delete('contraintes/{id}/annuler', [ContrainteEnseignantController::class, 'annuler'])->name('contraintes.annuler');
 
+
+
+    // Route::resource('contrainte_salles', ContrainteSalleController::class);
+    Route::get('/contrainte_salles', [ContrainteSalleController::class, 'index'])->name('contrainte_salles.index');
+    Route::get('/contrainte_salles/create', [ContrainteSalleController::class, 'create'])->name('contrainte_salles.create');
+    Route::post('/contrainte_salles', [ContrainteSalleController::class, 'store'])->name('contrainte_salles.store');
+    Route::patch('contraintes/{id}/valider', [ContrainteSalleController::class, 'valider'])->name('contrainte_salles.valider');
+    Route::delete('contraintes/{id}/annuler', [ContrainteSalleController::class, 'annuler'])->name('contrainte_salles.annuler');
+
     //Enseignants emploi selon department
-    Route::get('/select-department', [TimetableController::class, 'selectDepartment'])->name('select-department');
+    Route::get('/select-department', [TimetableController::class, 'selectDepartment'])->name('selectDepartment');
     Route::get('/displayScheduleByDepartment/{id_department}/{id_session}', [TimetableController::class, 'displayScheduleByDepartment'])->name('displayScheduleByDepartment');
     Route::get('/download-schedule/{id_department}/{id_session}', [TimetableController::class, 'downloadSchedule'])->name('download-schedule');
 });

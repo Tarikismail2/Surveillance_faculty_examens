@@ -35,4 +35,14 @@ class Module extends Model
     {
         return $this->belongsToMany(Etudiant::class, 'inscriptions', 'id_module', 'id_etudiant');
     }
+
+    public function session()
+    {
+        return $this->belongsTo(SessionExam::class);
+    }
+
+    public function modules()
+    {
+        return $this->hasMany(Module::class, 'id_filiere');
+    }
 }

@@ -12,6 +12,8 @@ return new class extends Migration
             $table->id();
             $table->string('code_etape')->unique();
             $table->string('version_etape');
+            $table->unsignedBigInteger('id_session');
+            $table->foreign('id_session')->references('id')->on('session_exams')->onDelete('cascade');
             $table->timestamps();
         });
     }

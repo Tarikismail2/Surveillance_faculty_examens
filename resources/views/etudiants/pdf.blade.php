@@ -64,9 +64,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <img src="{{ public_path('path/to/logo1.png') }}" alt="Logo 1">
             <h2>Liste des étudiants</h2>
-            <img src="{{ public_path('path/to/logo2.png') }}" alt="Logo 2">
         </div>
         @foreach ($exams as $examen)
             <div class="container">

@@ -12,8 +12,10 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('id_etudiant');
             $table->unsignedBigInteger('id_module');
+            $table->unsignedBigInteger('id_session');
             $table->timestamps();
 
+            $table->foreign('id_session')->references('id')->on('session_exams')->onDelete('cascade');
             $table->foreign('id_etudiant')->references('id')->on('etudiants')->onDelete('cascade');
             $table->foreign('id_module')->references('id')->on('modules')->onDelete('cascade');
         });

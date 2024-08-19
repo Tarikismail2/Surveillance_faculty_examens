@@ -34,7 +34,8 @@
                         <x-nav-link href="/enseignants" :active="request()->routeIs('enseignants')">Enseignant</x-nav-link>
                         <x-nav-link href="/salles" :active="request()->routeIs('locales')">Locale</x-nav-link>
                         <x-nav-link href="/etudiants" :active="request()->routeIs('etudiants')">Etudiant</x-nav-link>
-                        <x-nav-link href="/contraintes" :active="request()->routeIs('contraintes.index')">Contrainte</x-nav-link>
+                        <x-nav-link href="/contraintes" :active="request()->routeIs('contraintes.index')">Contrainte Enseignant</x-nav-link>
+                        <x-nav-link href="/contrainte_salles" :active="request()->routeIs('contrainte_salles.index')">Contrainte Salle</x-nav-link>
                         <x-dropdown align="right" width="48">
                             <x-slot name="trigger">
                                 <button

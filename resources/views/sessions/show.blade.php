@@ -56,7 +56,7 @@
                         </svg>
                         {{ __('Voir les examens') }}
                     </a>
-                    <a href="{{ route('import.form') }}"
+                    <a href="{{ route('import.form', ['sessionId' => $session->id]) }}"
                         class="flex items-center justify-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors duration-300 ease-in-out">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M10 3a7 7 0 100 14 7 7 0 000-14zM8 10a1 1 0 112 0v4a1 1 0 11-2 0v-4zm2-2a1 1 0 10-2 0v1a1 1 0 102 0V8z" />
