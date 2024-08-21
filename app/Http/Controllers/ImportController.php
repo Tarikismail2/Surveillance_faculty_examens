@@ -7,18 +7,20 @@ use App\Models\Etudiant;
 use App\Models\Module;
 use App\Models\Inscription;
 use App\Models\Filiere;
+use App\Models\SessionExam;
 use Illuminate\Support\Facades\Session;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\DB;
 
 class ImportController extends Controller
 {
-    public function showForm()
+    public function showForm($sessionId)
     {
-        return view('import-form');
+        $session = SessionExam::findOrFail($sessionId);
+        return view('import-form', compact('session'));
     }
 
-    public function import(Request $request)
+    public function import(Request $request, $sessionId)
     {
         $request->validate([
             'file' => 'required|mimes:xlsx,xls|max:2048',
@@ -43,7 +45,7 @@ class ImportController extends Controller
                 // Initialize import status
                 Session::put('import_status', 'in_progress');
 
-                DB::transaction(function () use ($rows, $batchSize, $totalRows) {
+                DB::transaction(function () use ($rows, $batchSize, $totalRows, $sessionId) { // Add $sessionId here
                     $filiereCache = [];
                     $moduleCache = [];
 
@@ -53,9 +55,10 @@ class ImportController extends Controller
                         }
 
                         $batch = array_slice($rows, $i, $batchSize);
-                        $this->processBatch($batch, $filiereCache, $moduleCache);
+                        $this->processBatch($batch, $filiereCache, $moduleCache, $sessionId); // Pass $sessionId here as well
                     }
                 });
+
 
                 return back()->with('success', 'Importation terminée avec succès.');
             } catch (\Exception $e) {

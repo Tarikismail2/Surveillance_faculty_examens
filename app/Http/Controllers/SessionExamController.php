@@ -41,6 +41,7 @@ class SessionExamController extends Controller
     public function show($id)
     {
         $session = SessionExam::findOrFail($id);
+        // dd($session);
         return view('sessions.show', compact('session'));
     }
 
