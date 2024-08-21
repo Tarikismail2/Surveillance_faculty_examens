@@ -24,17 +24,42 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
-
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+//midleware Etudiant
+Route::middleware('role:etudiant')->group(function () {
+
+    //Studeent planification
+    Route::get('/planification/select_student', [ExportController::class, 'selectStudent'])->name('selectStudent');
+    Route::get('/planification/display_student_schedule', [ExportController::class, 'displayStudentSchedule'])->name('displayStudentSchedule');
+    Route::get('/planification/download_student_schedule_pdf', [ExportController::class, 'downloadStudentSchedulePDF'])->name('downloadStudentSchedulePDF');
+});
+
+//midleware Enseignant
+Route::middleware('role:enseignant')->group(function () {
+
+    //prof planification
+    Route::get('/select-enseignant', [ExportController::class, 'selectEnseignant'])->name('selectEnseignant');
+    Route::get('/display-schedule', [ExportController::class, 'displaySchedule'])->name('displaySchedule');
+    Route::post('/download-surveillance-pdf', [ExportController::class, 'downloadSurveillancePDF'])->name('downloadSurveillancePDF');
+
+    // Route::resource('contrainte_enseignants')->names('contrainte_enseignants');
+    Route::get('/contraintes', [ContrainteEnseignantController::class, 'index'])->name('contrainte_enseignants.index');
+    Route::get('/contrainte_enseignants/create', [ContrainteEnseignantController::class, 'create'])->name('contrainte_enseignants.create');
+    Route::post('/contrainte_enseignants', [ContrainteEnseignantController::class, 'store'])->name('contrainte_enseignants.store');
+});
+
+//midleware Admin
+Route::middleware(['role:admin'])->group(function () {
 
     //route sessions
     Route::resource('sessions', SessionExamController::class);
 
     //route examens
-    // Route::resource('examens', ExamenController::class);
     Route::get('/examens/{sessionId}', [ExamenController::class, 'index'])->name('examens.index');
     Route::get('/examens/create/{id}', [ExamenController::class, 'create'])->name('examens.create');
     Route::post('/examens', [ExamenController::class, 'store'])->name('examens.store');
@@ -43,7 +68,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/examens/{examen}', [ExamenController::class, 'destroy'])->name('examens.destroy');
     Route::get('/examens/getModulesByFiliere/{id_filiere}', [ExamenController::class, 'getModulesByFiliere']);
     Route::post('/examens/getRooms', [ExamenController::class, 'getRooms'])->name('examens.getRooms');
-    // Route::get('/examens/getEnseignantsByDepartment/{departmentId}', [ExamenController::class, 'getEnseignantsByDepartment'])->name('examens.getEnseignantsByDepartment');
 
     //Affectation des surveillants sur les locaux   
     Route::get('/examens/form/{examen}', [ExamenController::class, 'showForm'])->name('examens.showForm');
@@ -55,9 +79,9 @@ Route::middleware('auth')->group(function () {
     // Affectation automatique des surveillants
     Route::post('/examens/assign-invigilators-to-all', [ExamenController::class, 'assignInvigilatorsToAll'])->name('examens.assignInvigilatorsToAll');
 
+    //surveiallance reservistes
     Route::get('/surveillants-reservistes', [SurveillantsReservistesController::class, 'index'])->name('surveillants_reservistes.index');
     Route::get('/surveillants-reservistes/download', [SurveillantsReservistesController::class, 'downloadPDF'])->name('surveillants_reservistes.download');
-
 
     //route departments
     Route::resource('departments', DepartmentController::class);
@@ -69,8 +93,6 @@ Route::middleware('auth')->group(function () {
     //route salles
     Route::resource('salles', SalleController::class);
 
-
-
     // route etudiants 
     Route::get('/etudiants', [EtudiantController::class, 'index'])->name('etudiants.index');
     Route::get('/etudiants/create', [EtudiantController::class, 'create'])->name('etudiants.create');
@@ -80,49 +102,26 @@ Route::middleware('auth')->group(function () {
     Route::get('/etudiants/{etudiant}', [EtudiantController::class, 'show'])->name('etudiants.show');
     Route::delete('/etudiants/{etudiant}', [EtudiantController::class, 'destroy'])->name('etudiants.destroy');
     Route::delete('/etudiants/delete-modules', [EtudiantController::class, 'deleteModules'])->name('etudiants.deleteModules');
-    // Route::get('/test-pdf',  [EtudiantController::class, 'generatePdf'])->name('test.pdf');
     Route::get('/test-pdf/{sessionId}', [EtudiantController::class, 'generatePdf'])->name('test.pdf');
-
 
     //route upload
     Route::get('/import/{sessionId}', [ImportController::class, 'showForm'])->name('import.form');
     Route::post('/import/{sessionId}', [ImportController::class, 'import'])->name('import.process');
     Route::post('/import/cancel', [ImportController::class, 'cancelImport'])->name('import.cancel');
 
-
-
     //Affichage globale de la planification des examens
     Route::get('/api/examens/{sessionId}/schedule', [PlanificationController::class, 'getExamsBySession']);
     Route::get('/examens/schedule', [PlanificationController::class, 'showExams'])->name('examens.schedule');
     Route::get('/global', [PlanificationController::class, 'showGlobalPlan'])->name('examens.global');
 
-
     //download du planification
     Route::get('/global/pdf', 'App\Http\Controllers\PlanificationController@downloadGlobalSchedulePDF')->name('examens.global.pdf');
     Route::get('/examens/global/pdf/{id_session}', [PlanificationController::class, 'downloadSurveillancePDF'])->name('examens_global.pdf');
 
-
-    //prof planification
-    Route::get('/select-enseignant', [ExportController::class, 'selectEnseignant'])->name('selectEnseignant');
-    Route::get('/display-schedule', [ExportController::class, 'displaySchedule'])->name('displaySchedule');
-    Route::post('/download-surveillance-pdf', [ExportController::class, 'downloadSurveillancePDF'])->name('downloadSurveillancePDF');
-
-
-    //Studeent planification
-    Route::get('/planification/select_student', [ExportController::class, 'selectStudent'])->name('selectStudent');
-    Route::get('/planification/display_student_schedule', [ExportController::class, 'displayStudentSchedule'])->name('displayStudentSchedule');
-    Route::get('/planification/download_student_schedule_pdf', [ExportController::class, 'downloadStudentSchedulePDF'])->name('downloadStudentSchedulePDF');
-
-
-
-    // Route::resource('contrainte_enseignants')->names('contrainte_enseignants');
-    Route::get('/contraintes', [ContrainteEnseignantController::class, 'index'])->name('contrainte_enseignants.index');
-    Route::get('/contrainte_enseignants/create', [ContrainteEnseignantController::class, 'create'])->name('contrainte_enseignants.create');
-    Route::post('/contrainte_enseignants', [ContrainteEnseignantController::class, 'store'])->name('contrainte_enseignants.store');
-    Route::patch('contraintes/{id}/valider', [ContrainteEnseignantController::class, 'valider'])->name('contraintes.valider');
-    Route::delete('contraintes/{id}/annuler', [ContrainteEnseignantController::class, 'annuler'])->name('contraintes.annuler');
-
-
+    //validation des contraintes enseignants
+    Route::get('/contraintes_admin', [ContrainteEnseignantController::class, 'index_admin'])->name('contrainte_enseignants.index_admin');
+    Route::patch('contraintes_admin/{id}/valider', [ContrainteEnseignantController::class, 'valider'])->name('contraintes.valider');
+    Route::delete('contraintes_admin/{id}/annuler', [ContrainteEnseignantController::class, 'annuler'])->name('contraintes.annuler');
 
     // Route::resource('contrainte_salles', ContrainteSalleController::class);
     Route::get('/contrainte_salles', [ContrainteSalleController::class, 'index'])->name('contrainte_salles.index');

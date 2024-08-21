@@ -24,21 +24,21 @@ class EtudiantController extends Controller
     {
         // Récupérer toutes les sessions disponibles
         $sessions = SessionExam::all();
-    
+
         // Si la requête est une requête AJAX
         if ($request->ajax()) {
             $sessionId = $request->input('session_id');
-    
+
             if (!$sessionId) {
                 // Renvoyer une réponse vide si aucune session n'est sélectionnée
                 return response()->json([
                     'data' => []
                 ]);
             }
-    
+
             // Requête pour récupérer les étudiants en fonction de la session sélectionnée
             $query = Etudiant::where('id_session', $sessionId);
-    
+
             return DataTables::of($query)
                 ->addColumn('fullName', function (Etudiant $etudiant) {
                     return $etudiant->nom . ' ' . $etudiant->prenom;
@@ -49,21 +49,19 @@ class EtudiantController extends Controller
                 ->rawColumns(['action'])
                 ->make(true);
         }
-    
+
         // Définir une valeur par défaut pour la variable selectedSessionId
         $selectedSessionId = $request->input('session_id', null);
-    
+
         // Passer la variable selectedSessionId à la vue
         return view('etudiants.index', compact('sessions', 'selectedSessionId'));
     }
-    
-    
-
 
     public function create()
     {
-        $modules = Module::all(); // Fetch all modules
-        return view('etudiants.create', compact('modules'));
+        $modules = Module::all(); // Récupérer tous les modules
+        $sessions = SessionExam::all(); // Récupérer toutes les sessions
+        return view('etudiants.create', compact('modules', 'sessions'));
     }
 
     public function store(Request $request)
@@ -76,10 +74,11 @@ class EtudiantController extends Controller
             'cin' => 'nullable|string|max:255',
             'cne' => 'required|string|max:255',
             'date_naissance' => 'nullable|date',
+            'session_id' => 'required|exists:session_exams,id', // Valider la session
             'modules' => 'required|array',
         ]);
 
-        // Créer l'étudiant
+        // Créer l'étudiant avec session_id
         $etudiant = Etudiant::create([
             'code_etudiant' => $validatedData['code_etudiant'],
             'nom' => $validatedData['nom'],
@@ -87,6 +86,7 @@ class EtudiantController extends Controller
             'cin' => $validatedData['cin'],
             'cne' => $validatedData['cne'],
             'date_naissance' => $validatedData['date_naissance'],
+            'session_id' => $validatedData['session_id'], // Ajouter session_id
         ]);
 
         // Attacher les modules à l'étudiant
@@ -94,6 +94,8 @@ class EtudiantController extends Controller
 
         return redirect()->route('etudiants.index')->with('success', 'Étudiant créé avec succès.');
     }
+
+
 
     public function deleteModules(Request $request)
     {
@@ -109,41 +111,54 @@ class EtudiantController extends Controller
 
     public function show(Etudiant $etudiant)
     {
+        // Récupérer les modules de l'étudiant
         $modules = $etudiant->modules;
-        return view('etudiants.show', compact('etudiant', 'modules'));
+    dd( $modules);
+        // Récupérer la session de l'étudiant
+        $session = $etudiant->session;
+    dd($session);
+        // Passer l'étudiant, les modules et la session à la vue
+        return view('etudiants.show', compact('etudiant', 'modules', 'session'));
     }
+    
 
     public function edit(Etudiant $etudiant)
     {
-        $modules = Module::all(); // Fetch all modules
-        $selectedModules = $etudiant->modules->pluck('id')->toArray(); // Get selected modules
-        // dd($selectedModules);
-        return view('etudiants.edit', compact('etudiant', 'modules', 'selectedModules'));
+        $modules = Module::all(); // Récupère tous les modules
+        $selectedModules = $etudiant->modules->pluck('id')->toArray();
+        $sessions = SessionExam::all(); // Récupère toutes les sessions
+
+        return view('etudiants.edit', compact('etudiant', 'modules', 'selectedModules', 'sessions'));
     }
+
 
     public function update(Request $request, Etudiant $etudiant)
     {
+        // Valider les données du formulaire
         $request->validate([
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
             'cin' => 'nullable|string|max:255',
             'cne' => 'nullable|string|max:255',
             'date_naissance' => 'nullable|date',
-            'modules' => 'nullable|array', // Validate module input
-            'modules.*' => 'exists:modules,id', // Validate each module ID
+            'session_id' => 'required|exists:session_exams,id', // Valider la session (correctement nommée)
+            'modules' => 'nullable|array',
+            'modules.*' => 'exists:modules,id',
         ]);
 
-        $etudiant->update($request->only(['nom', 'prenom', 'cin', 'cne', 'date_naissance']));
+        // Mettre à jour l'étudiant avec session_id
+        $etudiant->update($request->only(['nom', 'prenom', 'cin', 'cne', 'date_naissance', 'session_id']));
 
-        // Sync modules (update the modules list for the student)
+        // Synchroniser les modules
         if ($request->has('modules')) {
             $etudiant->modules()->sync($request->input('modules'));
         } else {
-            $etudiant->modules()->sync([]); // If no modules selected, detach all
+            $etudiant->modules()->sync([]); // Désassocier tous les modules si aucun n'est sélectionné
         }
 
         return redirect()->route('etudiants.index')->with('success', 'Étudiant mis à jour avec succès.');
     }
+
 
     public function destroy(Etudiant $etudiant)
     {
@@ -155,32 +170,31 @@ class EtudiantController extends Controller
 
 
     public function generatePdf($sessionId)
-{
-    ini_set('max_execution_time', 600);
-    $options = new DompdfOptions();
-    $options->set('defaultFont', 'Arial');
-    $options->set('isRemoteEnabled', true);
-    $options->set('isHtml5ParserEnabled', true);
-    $options->set('isPhpEnabled', true);
-    $dompdf = new Dompdf($options);
-    dd($sessionId);
+    {
+        ini_set('max_execution_time', 600);
+        $options = new DompdfOptions();
+        $options->set('defaultFont', 'Arial');
+        $options->set('isRemoteEnabled', true);
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isPhpEnabled', true);
+        $dompdf = new Dompdf($options);
+        dd($sessionId);
 
-    // Fetch data needed for PDF generation, filtering by the selected session
-    $exams = Examen::with(['module.etudiants', 'salles', 'responsable'])
-        ->where('id_session', $sessionId)  // Assuming 'session_id' is the foreign key in the 'exams' table
-        ->get();
+        // Fetch data needed for PDF generation, filtering by the selected session
+        $exams = Examen::with(['module.etudiants', 'salles', 'responsable'])
+            ->where('id_session', $sessionId)
+            ->get();
 
-    // Load HTML view file with data
-    $html = view('etudiants.pdf', ['exams' => $exams])->render();
+        // Load HTML view file with data
+        $html = view('etudiants.pdf', ['exams' => $exams])->render();
 
-    // Load HTML to Dompdf
-    $dompdf->loadHtml($html);
+        // Load HTML to Dompdf
+        $dompdf->loadHtml($html);
 
-    // Render the PDF
-    $dompdf->render();
+        // Render the PDF
+        $dompdf->render();
 
-    // Output the generated PDF to Browser
-    return $dompdf->stream('liste_etudiants.pdf', ['Attachment' => 0]);
-}
-
+        // Output the generated PDF to Browser
+        return $dompdf->stream('liste_etudiants.pdf', ['Attachment' => 0]);
+    }
 }

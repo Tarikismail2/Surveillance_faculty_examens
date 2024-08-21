@@ -24,6 +24,20 @@ class ContrainteEnseignantController extends Controller
         
         return view('contraintes.index', compact('contraintes', 'sessions'));
     }
+
+    public function index_admin(Request $request)
+    {
+        $sessions = SessionExam::all(); // Récupérer toutes les sessions
+        $contrainteQuery = ContrainteEnseignant::query();
+    
+        if ($request->has('id_session') && $request->input('id_session')) {
+            $contrainteQuery->where('id_session', $request->input('id_session'));
+        }
+    
+        $contraintes = $contrainteQuery->with('enseignant')->get();
+        
+        return view('contraintes.index_admin', compact('contraintes', 'sessions'));
+    }
     
     public function create()
     {
@@ -92,9 +106,6 @@ class ContrainteEnseignantController extends Controller
     
         return redirect()->route('contrainte_enseignants.index')->with('success', 'Contrainte créée avec succès.');
     }
-    
-
-
 
     public function valider($id)
     {
@@ -102,7 +113,7 @@ class ContrainteEnseignantController extends Controller
         $contrainte->validee = true;
         $contrainte->save();
 
-        return redirect()->route('contrainte_enseignants.index')->with('success', 'Contrainte validée avec succès.');
+        return redirect()->route('contrainte_enseignants.index_admin')->with('success', 'Contrainte validée avec succès.');
     }
 
     public function annuler($id)
@@ -110,6 +121,6 @@ class ContrainteEnseignantController extends Controller
         $contrainte = ContrainteEnseignant::findOrFail($id);
         $contrainte->delete();
 
-        return redirect()->route('contrainte_enseignants.index')->with('success', 'Contrainte annulée avec succès.');
+        return redirect()->route('contrainte_enseignants.index_admin')->with('success', 'Contrainte annulée avec succès.');
     }
 }

@@ -13,12 +13,15 @@ return new class extends Migration
     {
         Schema::create('contrainte_salles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_salle')->constrained()->onDelete('cascade');
-            $table->foreignId('id_session')->constrained('session_exams')->onDelete('cascade');
+            $table->unsignedBigInteger('id_salle');
+            $table->unsignedBigInteger('id_session');
             $table->date('date');
             $table->time('heure_debut');
             $table->time('heure_fin');
             $table->boolean('validee')->default(false);
+
+            $table->foreign('id_salle')->references('id')->on('salles')->onDelete('cascade');
+            $table->foreign('id_session')->references('id')->on('session_exams')->onDelete('cascade');
             $table->timestamps();
         });
     }

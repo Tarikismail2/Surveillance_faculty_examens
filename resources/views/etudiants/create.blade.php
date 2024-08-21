@@ -19,14 +19,15 @@
                         @foreach (['code_etudiant' => 'Code Étudiant', 'nom' => 'Nom', 'prenom' => 'Prénom', 'cin' => 'CIN', 'cne' => 'CNE'] as $field => $label)
                             <div class="mb-4">
                                 <label for="{{ $field }}" class="block text-gray-700 font-semibold">{{ $label }}</label>
-                                <input type="{{ $field == 'date_naissance' ? 'date' : 'text' }}" id="{{ $field }}" name="{{ $field }}"
+                                <input type="text" id="{{ $field }}" name="{{ $field }}"
                                     class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                    {{ $field == 'code_etudiant' || $field == 'nom' || $field == 'prenom' || $field == 'cne' ? 'required' : '' }}>
+                                    {{ in_array($field, ['code_etudiant', 'nom', 'prenom', 'cne']) ? 'required' : '' }}>
                                 @error($field)
                                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                         @endforeach
+
                         <div class="mb-4">
                             <label for="date_naissance" class="block text-gray-700 font-semibold">Date de Naissance</label>
                             <input type="date" id="date_naissance" name="date_naissance"
@@ -36,11 +37,25 @@
                             @enderror
                         </div>
 
+                         <!-- Sélection de la session -->
+                         <div class="mb-4">
+                            <label for="session_id" class="block text-gray-700 font-semibold">Session</label>
+                            <select id="session_id" name="session_id" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
+                                <option value="">{{ __('Sélectionner une session') }}</option>
+                                @foreach ($sessions as $session)
+                                    <option value="{{ $session->id }}">{{ $session->type }}</option>
+                                @endforeach
+                            </select>
+                            @error('session_id')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <!-- Sélection des modules -->
                         <div class="mb-4 col-span-2">
                             <label for="modules" class="block text-gray-700 font-semibold">Modules</label>
                             <div class="space-y-2">
-                                @foreach ($modules->chunk(10) as $chunk) <!-- Pagination simple -->
+                                @foreach ($modules->chunk(10) as $chunk)
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                         @foreach ($chunk as $module)
                                             <div class="flex items-center">
@@ -57,14 +72,15 @@
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
+
+                       
+
                     </div>
-                    <button type="submit"
-                        class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-4">
+                    <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-4">
                         {{ __('Créer') }}
                     </button>
                 </form>
             </div>
         </div>
     </div>
-
 </x-app-layout>

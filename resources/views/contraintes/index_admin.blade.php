@@ -4,9 +4,7 @@
             <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
                 {{ __('Liste des contraintes des enseignants') }}
             </h2>
-            <a href="{{ route('contrainte_enseignants.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center">
-                <i class="fas fa-plus"></i>
-            </a>
+            
         </div>
     </x-slot>
 
@@ -63,6 +61,9 @@
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         {{ __('Statut') }}
                                     </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        {{ __('Actions') }}
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -79,6 +80,24 @@
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $contrainte->heure_debut }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $contrainte->heure_fin }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $contrainte->validee ? 'Validée' : 'Non validée' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex items-center space-x-2">
+                                            @if (!$contrainte->validee)
+                                                <form action="{{ route('contraintes.valider', $contrainte->id) }}" method="POST" class="inline-block">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="text-green-600 hover:text-green-900">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                            <form action="{{ route('contraintes.annuler', $contrainte->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette contrainte ?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600 hover:text-red-900">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </form>
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
