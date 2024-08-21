@@ -23,7 +23,7 @@
                     <!-- Information de la session -->
                     <div class="mb-4">
                         <p class="font-semibold text-gray-700">{{ __('Session') }}:</p>
-                        <p class="text-gray-800">{{ $session->type }}</p> <!-- Affichez le nom de la session -->
+                        <p class="text-gray-800">{{ $session->type }}  ( {{ $session->date_debut }} -  {{ $session->date_fin }})</p>
                     </div>
                 </div>
 

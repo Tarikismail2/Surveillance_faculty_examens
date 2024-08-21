@@ -42,7 +42,12 @@ class Etudiant extends Model
     }
 
     public function sessions()
-{
-    return $this->belongsToMany(SessionExam::class);
-}
+    {
+        return $this->belongsToMany(SessionExam::class);
+    }
+
+    public function session()
+    {
+        return $this->belongsTo(SessionExam::class, 'id_session');
+    }
 }

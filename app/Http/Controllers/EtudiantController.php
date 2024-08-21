@@ -113,10 +113,10 @@ class EtudiantController extends Controller
     {
         // Récupérer les modules de l'étudiant
         $modules = $etudiant->modules;
-    dd( $modules);
+    // dd( $modules);
         // Récupérer la session de l'étudiant
         $session = $etudiant->session;
-    dd($session);
+    // dd($session);
         // Passer l'étudiant, les modules et la session à la vue
         return view('etudiants.show', compact('etudiant', 'modules', 'session'));
     }
