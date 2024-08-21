@@ -53,14 +53,14 @@ class ExamenController extends Controller
         $salles = Salle::all();
         $enseignants = Enseignant::all();
         $selected_session = SessionExam::findOrFail($id);
-        $filieres = Filiere::all();
+        $filieres = Filiere::where('id_session', $id)->get();
         $departments = Department::all();
-
+    
         $examen = new Examen();
-
+    
         return view('examens.create', compact('salles', 'selected_session', 'filieres', 'departments', 'enseignants', 'examen'));
     }
-
+    
     public function store(Request $request)
     {
         $validatedData = $request->validate([
