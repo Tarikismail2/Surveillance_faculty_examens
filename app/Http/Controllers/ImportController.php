@@ -45,9 +45,10 @@ class ImportController extends Controller
                 // Initialize import status
                 Session::put('import_status', 'in_progress');
 
-                DB::transaction(function () use ($rows, $batchSize, $totalRows, $sessionId) { // Add $sessionId here
+                DB::transaction(function () use ($rows, $batchSize, $totalRows, $sessionId) {
                     $filiereCache = [];
                     $moduleCache = [];
+                    $cinSet = [];
 
                     for ($i = 1; $i < $totalRows; $i += $batchSize) {
                         if (Session::get('import_status') === 'cancelled') {
@@ -55,10 +56,9 @@ class ImportController extends Controller
                         }
 
                         $batch = array_slice($rows, $i, $batchSize);
-                        $this->processBatch($batch, $filiereCache, $moduleCache, $sessionId); // Pass $sessionId here as well
+                        $this->processBatch($batch, $filiereCache, $moduleCache, $cinSet, $sessionId);
                     }
                 });
-
 
                 return back()->with('success', 'Importation terminée avec succès.');
             } catch (\Exception $e) {
@@ -69,7 +69,7 @@ class ImportController extends Controller
         return back()->withErrors(['error' => 'Le fichier n\'a pas pu être téléchargé.']);
     }
 
-    private function processBatch(array $batch, array &$filiereCache, array &$moduleCache, $sessionId)
+    private function processBatch(array $batch, array &$filiereCache, array &$moduleCache, array &$cinSet, $sessionId)
     {
         $etudiants = [];
         $inscriptions = [];
@@ -83,13 +83,20 @@ class ImportController extends Controller
                     $dateNaissance = null;
                 }
             }
-
+        
+            // Assurez-vous que le cin est valide
             $cin = isset($row[3]) && !empty($row[3]) ? $row[3] : null;
-
+        
             if ($cin !== null && Etudiant::where('cin', $cin)->exists()) {
-                $cin = null;
+                // Si un étudiant avec ce CIN existe déjà, ne le définir qu'en fonction de vos règles métier
+                $cin = null; // ou une autre gestion d'erreur
             }
-
+        
+            // Si le CIN est requis dans la base de données, vérifiez cela ici
+            if ($cin === null) {
+                continue; // Ignorer l'étudiant si le CIN est requis mais manquant
+            }
+        
             $etudiants[] = [
                 'code_etudiant' => $row[0],
                 'nom' => $row[1],
@@ -98,14 +105,20 @@ class ImportController extends Controller
                 'cne' => $row[4],
                 'date_naissance' => $dateNaissance ? $dateNaissance->format('Y-m-d') : null,
                 'id_session' => $sessionId,
-            ];
+            ];        
 
             // Cache or create Filiere
             if (!isset($filiereCache[$row[8]])) {
                 $filiere = Filiere::firstOrCreate(
-                    ['version_etape' => $row[8]],
-                    ['code_etape' => $row[9]]
+                    [
+                        'version_etape' => $row[8],
+                        'code_etape' => $row[9],
+                    ],
+                    [
+                        'id_session' => $sessionId,
+                    ]
                 );
+
                 $filiereCache[$row[8]] = $filiere->id;
             }
 
@@ -117,8 +130,12 @@ class ImportController extends Controller
                         'lib_elp' => $row[7],
                         'version_etape' => $row[8],
                         'code_etape' => $row[9],
+                    ],
+                    [
+                        'id_session' => $sessionId,
                     ]
                 );
+
                 // Associate the Module with the Filiere using the correct relationship
                 $module->filiere()->associate(Filiere::find($filiereCache[$row[8]]));
                 $module->save();
@@ -128,6 +145,7 @@ class ImportController extends Controller
             $inscriptions[] = [
                 'id_etudiant' => $row[0], // Use the student code as a temporary key
                 'id_module' => $moduleCache[$row[6]],
+                'id_session' => $sessionId,
             ];
         }
 

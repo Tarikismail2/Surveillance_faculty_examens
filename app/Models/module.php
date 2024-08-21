@@ -14,6 +14,7 @@ class Module extends Model
         'lib_elp',
         'version_etape',
         'code_etape',
+        'id_session',
     ];
 
     public function inscriptions()

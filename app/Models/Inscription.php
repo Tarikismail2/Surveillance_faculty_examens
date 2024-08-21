@@ -13,6 +13,7 @@ class Inscription extends Model
     protected $fillable = [
         'id_etudiant',
         'id_module',
+        'id_session',
     ];
 
     public function etudiant()

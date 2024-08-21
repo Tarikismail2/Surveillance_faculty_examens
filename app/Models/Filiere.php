@@ -9,7 +9,7 @@ class Filiere extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['code_etape','version_etape'];
+    protected $fillable = ['code_etape','version_etape', 'id_session'];
 
     public function modules()
     {

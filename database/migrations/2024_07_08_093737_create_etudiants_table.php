@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('code_etudiant')->unique();
             $table->string('nom');
             $table->string('prenom');
-            $table->string('cin');
+            $table->string('cin')->nullable(); 
             $table->string('cne');
             $table->date('date_naissance');
             $table->unsignedBigInteger('id_session');
