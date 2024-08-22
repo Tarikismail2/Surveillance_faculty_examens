@@ -126,8 +126,8 @@
                                 <option value="16:00"
                                     {{ old('heure_fin', $examen->heure_fin) == '16:00' ? 'selected' : '' }}>16:00
                                 </option>
-                                <option value="16:45"
-                                    {{ old('heure_fin', $examen->heure_fin) == '16:45' ? 'selected' : '' }}>16:45
+                                <option value="17:45"
+                                    {{ old('heure_fin', $examen->heure_fin) == '17:45' ? 'selected' : '' }}>16:45
                                 </option>
                             </select>
                             @error('heure_fin')

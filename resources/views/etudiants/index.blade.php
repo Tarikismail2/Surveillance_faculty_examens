@@ -23,8 +23,8 @@
                 @endif
 
                 <div class="p-6">
-                    <!-- Sélecteur de session -->
-                    <form method="GET" action="{{ route('etudiants.index') }}" class="mb-4">
+                    <!-- Formulaire pour sélectionner la session -->
+                    <form id="sessionForm" method="GET" action="{{ route('etudiants.index') }}" class="mb-4">
                         <label for="session"
                             class="block text-sm font-medium text-gray-700">{{ __('Sélectionner une session') }}</label>
                         <select id="session" name="session_id"
@@ -33,7 +33,7 @@
                             @foreach ($sessions as $session)
                                 <option value="{{ $session->id }}"
                                     {{ $selectedSessionId == $session->id ? 'selected' : '' }}>
-                                    {{ $session->type }}  ( {{ $session->date_debut }} -  {{ $session->date_fin }})
+                                    {{ $session->type }} ( {{ $session->date_debut }} - {{ $session->date_fin }})
                                 </option>
                             @endforeach
                         </select>
@@ -58,15 +58,14 @@
                         </tbody>
                     </table>
 
-                    <!-- Bouton de téléchargement -->
-                    @if ($selectedSessionId)
-                        <a href="{{ route('test.pdf', ['sessionId' => $selectedSessionId]) }}" id="downloadButton"
-                            class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 mt-4 inline-block">
-                            Télécharger PDF
-                        </a>
-                    @else
-                        <p>Veuillez sélectionner une session pour télécharger le PDF.</p>
-                    @endif
+                    <!-- Formulaire pour le bouton de téléchargement -->
+                    <form id="downloadForm" action="{{ route('test.pdf', ['sessionId' => $session->id]) }}" method="GET" style="display:none;">
+                        <input type="hidden" id="selectedSessionId" name="session_id" value="">
+                        <button type="submit" id="downloadButton"
+                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                            Télécharger le PDF
+                        </button>
+                    </form>
 
                 </div>
             </div>
@@ -85,66 +84,37 @@
                     url: '{{ route('etudiants.index') }}',
                     data: function(d) {
                         d.session_id = $('#session').val();
-                    },
-                    dataSrc: function(json) {
-                        if (json.data.length === 0) {
-                            $('#etudiantsTable').find('tbody').html(
-                                '<tr><td colspan="2" class="text-center">Aucun étudiant disponible pour cette session.</td></tr>'
-                            );
-                        }
-                        return json.data;
                     }
                 },
-                columns: [
-                    {
+                columns: [{
                         data: 'fullName',
-                        name: 'fullName',
-                        render: function(data, type, row) {
-                            return '<a href="/etudiants/' + row.id +
-                                '" class="text-blue-600 hover:text-blue-800 font-medium">' + data +
-                                '</a>';
-                        }
+                        name: 'fullName'
                     },
                     {
                         data: 'action',
                         name: 'action',
                         orderable: false,
-                        searchable: false,
-                        render: function(data, type, row) {
-                            return `
-                                <div class="flex space-x-2">
-                                    <a href="/etudiants/${row.id}/edit" class="text-blue-600 hover:text-blue-800 font-medium">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                            <path d="M17.414 2.586a2 2 0 00-2.828 0L5 12.172V15h2.828l9.586-9.586a2 2 0 000-2.828zM4 13H3v4a1 1 0 001 1h4v-1H4v-3z" />
-                                        </svg>
-                                    </a>
-                                    <form action="/etudiants/${row.id}" method="POST" onsubmit="return confirm('{{ __('Êtes-vous sûr de vouloir supprimer cet étudiant ?') }}');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-800 font-medium">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M6 8a1 1 0 011-1h6a1 1 0 011 1v9a1 1 0 11-2 0v-1H8v1a1 1 0 11-2 0V8zm3-3a1 1 0 00-1-1V3a1 1 0 112 0v1a1 1 0 00-1 1z" clip-rule="evenodd" />
-                                            </svg>
-                                        </button>
-                                    </form>
-                                </div>`;
-                        }
+                        searchable: false
                     }
-                ],
-                responsive: true,
-                paging: true,
-                searching: true,
-                ordering: true
+                ]
             });
-    
+
             $('#session').change(function() {
+                table.ajax.reload();
                 var selectedSession = $(this).val();
-                console.log("Session sélectionnée : " + selectedSession);
-                table.ajax.reload(); // Recharger le tableau lorsque la session change
-                $('#downloadButton').toggle(selectedSession !== '');
-                console.log("Le bouton de téléchargement est : " + ($('#downloadButton').is(':visible') ? 'visible' : 'caché'));
+                $('#selectedSessionId').val(selectedSession);
+
+                if (selectedSession) {
+                    $('#downloadForm').show(); // Afficher le formulaire de téléchargement
+                } else {
+                    $('#downloadForm').hide(); // Masquer le formulaire de téléchargement
+                }
             });
+
+            if ($('#session').val()) {
+                $('#downloadForm').show();
+            }
         });
     </script>
-    
+
 </x-app-layout>

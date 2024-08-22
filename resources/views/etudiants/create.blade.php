@@ -43,7 +43,8 @@
                             <select id="session_id" name="session_id" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
                                 <option value="">{{ __('Sélectionner une session') }}</option>
                                 @foreach ($sessions as $session)
-                                    <option value="{{ $session->id }}">{{ $session->type }}</option>
+                                    <option value="{{ $session->id }}">{{ $session->type }}  
+                                        ( {{ $session->date_debut }} - {{ $session->date_fin }})</option>
                                 @endforeach
                             </select>
                             @error('session_id')

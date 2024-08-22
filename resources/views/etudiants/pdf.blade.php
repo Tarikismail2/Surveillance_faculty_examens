@@ -70,7 +70,7 @@
             <div class="container">
                 <div class="header">
                     <h3>Examen: {{ $examen->module->lib_elp }}</h3>
-                    <p>Responsable de module: {{ $examen->responsable->name }}</p>
+                    <p>Responsable de module: {{ $examen->enseignant->name }}</p>
                     <p>Salle(s): {{ implode(', ', $examen->salles->pluck('name')->toArray()) }}</p>
                     <p>Date: {{ $examen->date }}</p>
                     <p>Heure: {{ $examen->heure_debut }} - {{ $examen->heure_fin }}</p>

@@ -22,23 +22,14 @@ class EtudiantController extends Controller
 {
     public function index(Request $request)
     {
-        // Récupérer toutes les sessions disponibles
         $sessions = SessionExam::all();
-
-        // Si la requête est une requête AJAX
+        $selectedSessionId = $request->input('session_id'); // Récupérer l'ID de la session sélectionnée
+    
         if ($request->ajax()) {
-            $sessionId = $request->input('session_id');
-
-            if (!$sessionId) {
-                // Renvoyer une réponse vide si aucune session n'est sélectionnée
-                return response()->json([
-                    'data' => []
-                ]);
+            if (!$selectedSessionId) {
+                return response()->json(['data' => []]);
             }
-
-            // Requête pour récupérer les étudiants en fonction de la session sélectionnée
-            $query = Etudiant::where('id_session', $sessionId);
-
+            $query = Etudiant::where('id_session', $selectedSessionId);
             return DataTables::of($query)
                 ->addColumn('fullName', function (Etudiant $etudiant) {
                     return $etudiant->nom . ' ' . $etudiant->prenom;
@@ -49,13 +40,11 @@ class EtudiantController extends Controller
                 ->rawColumns(['action'])
                 ->make(true);
         }
-
-        // Définir une valeur par défaut pour la variable selectedSessionId
-        $selectedSessionId = $request->input('session_id', null);
-
-        // Passer la variable selectedSessionId à la vue
+    
         return view('etudiants.index', compact('sessions', 'selectedSessionId'));
     }
+    
+    
 
     public function create()
     {
@@ -111,13 +100,10 @@ class EtudiantController extends Controller
 
     public function show(Etudiant $etudiant)
     {
-        // Récupérer les modules de l'étudiant
         $modules = $etudiant->modules;
-    // dd( $modules);
-        // Récupérer la session de l'étudiant
+
         $session = $etudiant->session;
-    // dd($session);
-        // Passer l'étudiant, les modules et la session à la vue
+
         return view('etudiants.show', compact('etudiant', 'modules', 'session'));
     }
     
@@ -178,10 +164,10 @@ class EtudiantController extends Controller
         $options->set('isHtml5ParserEnabled', true);
         $options->set('isPhpEnabled', true);
         $dompdf = new Dompdf($options);
-        dd($sessionId);
+        // dd($sessionId);
 
         // Fetch data needed for PDF generation, filtering by the selected session
-        $exams = Examen::with(['module.etudiants', 'salles', 'responsable'])
+        $exams = Examen::with(['module.etudiants', 'salles', 'enseignant'])
             ->where('id_session', $sessionId)
             ->get();
 

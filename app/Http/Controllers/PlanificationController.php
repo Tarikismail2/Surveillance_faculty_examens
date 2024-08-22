@@ -28,7 +28,7 @@ class PlanificationController extends Controller
         $exams = [];
         if ($selectedSessionId) {
             $exams = Examen::where('id_session', $selectedSessionId)
-                ->with(['module.filiere', 'salle', 'additionalSalles', 'enseignant', 'session', 'enseignants'])
+                ->with(['module.filiere', 'salles', 'sallesSupplementaires', 'enseignant', 'session', 'enseignants'])
                 ->get();
         }
 
@@ -46,7 +46,7 @@ class PlanificationController extends Controller
     public function getExamsBySession($sessionId)
     {
         $exams = Examen::where('id_session', $sessionId)
-            ->with(['module.filiere', 'salle', 'additionalSalles', 'enseignant', 'session', 'enseignants'])
+            ->with(['module.filiere', 'salle', 'sallesSupplementaires', 'enseignant', 'session', 'enseignants'])
             ->get()
             ->map(function ($exam) {
                 return [
@@ -55,7 +55,7 @@ class PlanificationController extends Controller
                     'heure_fin' => $exam->heure_fin,
                     'filiere' => $exam->module->filiere->version_etape,
                     'module' => $exam->module->lib_elp,
-                    'additionalSalles' => $exam->additionalSalles->pluck('name')->toArray(),
+                    'additionalSalles' => $exam->sallesSupplementaires->pluck('name')->toArray(),
                     'enseignant' => $exam->enseignant->name,
                     'session' => $exam->session->type,
                     'enseignants' => $exam->enseignants->pluck('name')->toArray(),
@@ -73,7 +73,7 @@ class PlanificationController extends Controller
         $exams = [];
         if ($selectedSessionId) {
             $exams = Examen::where('id_session', $selectedSessionId)
-                ->with(['module.filiere', 'salle', 'additionalSalles', 'enseignant', 'session', 'enseignants'])
+                ->with(['module.filiere', 'salle', 'sallesSupplementaires', 'enseignant', 'session', 'enseignants'])
                 ->get();
 
             if ($exams->isEmpty()) {
@@ -147,7 +147,7 @@ class PlanificationController extends Controller
         $surveillantsAssignments = [];
 
         foreach ($exams as $exam) {
-            $assignedSurveillants = ExamenSalleEnseignant::with(['surveillant', 'salle'])
+            $assignedSurveillants = ExamenSalleEnseignant::with(['surveillant', 'salles'])
                 ->where('id_examen', $exam->id)
                 ->get();
 

@@ -151,9 +151,9 @@
                                 @endif
                             </td>
                             <td>
-                                @if ($examen->additionalSalles && count($examen->additionalSalles) > 0)
-                                    @foreach ($examen->additionalSalles as $additionalSalle)
-                                        {{ $additionalSalle->name }}@if (!$loop->last), @endif
+                                @if ($examen->sallesSupplementaires && count($examen->sallesSupplementaires) > 0)
+                                    @foreach ($examen->sallesSupplementaires as $sallesSupplementaire)
+                                        {{ $sallesSupplementaire->name }}@if (!$loop->last), @endif
                                     @endforeach
                                 @else
                                     N/A

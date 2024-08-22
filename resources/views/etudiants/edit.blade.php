@@ -50,7 +50,7 @@ use Carbon\Carbon;
                                 class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
                                 @foreach($sessions as $session)
                                     <option value="{{ $session->id }}" {{ $etudiant->id_session == $session->id ? 'selected' : '' }}>
-                                        {{ $session->type }}
+                                        {{ $session->type }}  ( {{ $session->date_debut }} - {{ $session->date_fin }})
                                     </option>
                                 @endforeach
                             </select>

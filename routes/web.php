@@ -103,6 +103,7 @@ Route::middleware(['role:admin'])->group(function () {
     Route::delete('/etudiants/{etudiant}', [EtudiantController::class, 'destroy'])->name('etudiants.destroy');
     Route::delete('/etudiants/delete-modules', [EtudiantController::class, 'deleteModules'])->name('etudiants.deleteModules');
     Route::get('/test-pdf/{sessionId}', [EtudiantController::class, 'generatePdf'])->name('test.pdf');
+    // Route::get('/etudiants/generate-pdf', [EtudiantController::class, 'generatePdf'])->name('test.pdf');
 
     //route upload
     Route::get('/import/{sessionId}', [ImportController::class, 'showForm'])->name('import.form');
@@ -132,7 +133,7 @@ Route::middleware(['role:admin'])->group(function () {
 
     //Enseignants emploi selon department
     Route::get('/select-department', [TimetableController::class, 'selectDepartment'])->name('selectDepartment');
-    Route::get('/displayScheduleByDepartment/{id_department}/{id_session}', [TimetableController::class, 'displayScheduleByDepartment'])->name('displayScheduleByDepartment');
+    Route::get('/displayScheduleByDepartment/{id_department}/{id_session}', [TimetableController::class, 'show'])->name('displayScheduleByDepartment');
     Route::get('/download-schedule/{id_department}/{id_session}', [TimetableController::class, 'downloadSchedule'])->name('download-schedule');
 });
 

@@ -62,9 +62,9 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $examen->module->lib_elp }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            @if ($examen->additionalSalles && count($examen->additionalSalles) > 0)
-                                                @foreach ($examen->additionalSalles as $additionalSalle)
-                                                    {{ $additionalSalle->name }},
+                                            @if ($examen->sallesSupplementaires && count($examen->Salles) > 0)
+                                                @foreach ($examen->sallesSupplementaires as $sallesSupplementaire)
+                                                    {{ $sallesSupplementaire->name }},
                                                 @endforeach
                                             @else
                                                 N/A
@@ -82,7 +82,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             {{ $examen->enseignant ? $examen->enseignant->name : 'N/A' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            {{ $examen->session ? $examen->session->type : 'N/A' }}</td>
+                                            {{$examen->session->type}}  ({{$examen->session->date_debut}} - {{$examen->session->date_fin}})</td>
                                     </tr>
                                 @endforeach
                             </tbody>

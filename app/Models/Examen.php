@@ -11,8 +11,12 @@ class Examen extends Model
 
     protected $primaryKey = 'id';
     protected $fillable = [
-        'date', 'heure_debut', 'heure_fin', 'id_module', 
-        'id_enseignant', 'id_session'
+        'date',
+        'heure_debut',
+        'heure_fin',
+        'id_module',
+        'id_enseignant',
+        'id_session'
     ];
 
     // Relation pour la salle principale
@@ -25,14 +29,14 @@ class Examen extends Model
     public function sallesSupplementaires()
     {
         return $this->belongsToMany(Salle::class, 'examen_salle', 'id_examen', 'id_salle')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
     // Relation pour les salles (inclut la salle principale et les salles supplémentaires)
     public function salles()
     {
         return $this->belongsToMany(Salle::class, 'examen_salle', 'id_examen', 'id_salle')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
     // Relation pour le module
@@ -40,6 +44,13 @@ class Examen extends Model
     {
         return $this->belongsTo(Module::class, 'id_module');
     }
+
+    // Ensiegnant Examen 
+    public function enseignants()
+    {
+        return $this->belongsToMany(Enseignant::class, 'examen_salle_enseignant', 'id_examen', 'id_enseignant');
+    }
+
 
     // Relation pour l'enseignant
     public function enseignant()

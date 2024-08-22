@@ -110,7 +110,7 @@
                                 <option value="10:00">10:00</option>
                                 <option value="11:45">11:45</option>
                                 <option value="16:00">16:00</option>
-                                <option value="16:45">16:45</option>
+                                <option value="17:45">16:45</option>
                             </select>
                             @error('heure_fin')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -205,7 +205,7 @@
                                     class="block text-gray-700 dark:text-gray-300">@lang('Résumé de l\'affectation automatique')</label>
                                 <textarea id="automatic_allocation_summary" name="automatic_allocation_summary" rows="4"
                                     class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                    readonly></textarea>
+                                    readonly hidden></textarea>
                             </div>
                         </div>
 

@@ -79,7 +79,7 @@
                             <option value="10:00">10:00</option>
                             <option value="11:45">11:45</option>
                             <option value="16:00">16:00</option>
-                            <option value="16:45">16:45</option>
+                            <option value="17:45">16:45</option>
                         </select>
                     </div>
 
