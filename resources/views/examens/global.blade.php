@@ -23,7 +23,7 @@
                             @foreach ($sessions as $session)
                                 <option value="{{ $session->id }}"
                                     {{ $selectedSessionId == $session->id ? 'selected' : '' }}>
-                                    {{ $session->type }}
+                                    {{ $session->type }}  ({{$session->date_debut}} - {{$session->date_fin}})
                                 </option>
                             @endforeach
                         </select>

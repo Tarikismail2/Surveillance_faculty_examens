@@ -58,7 +58,15 @@
 
                     <div class="mb-4">
                         <label for="date" class="block text-gray-700 text-sm font-bold mb-2">Date</label>
-                        <select name="heure_debut" id="heure_debut"
+                        <input type="date" id="date" name="date"
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="heure_debut" class="block text-gray-700 text-sm font-bold mb-2">Heure de
+                            Début</label>
+                            <select name="heure_debut" id="heure_debut"
                             class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                             required>
                             <option value="">@lang('Sélectionnez une heure de début')</option>
@@ -70,24 +78,16 @@
                     </div>
 
                     <div class="mb-4">
-                        <label for="heure_debut" class="block text-gray-700 text-sm font-bold mb-2">Heure de
-                            Début</label>
-                        <select name="heure_fin" id="heure_fin"
-                            class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            required>
-                            <option value="">@lang('Sélectionnez une heure de fin')</option>
-                            <option value="10:00">10:00</option>
-                            <option value="11:45">11:45</option>
-                            <option value="16:00">16:00</option>
-                            <option value="17:45">16:45</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-4">
                         <label for="heure_fin" class="block text-gray-700 text-sm font-bold mb-2">Heure de Fin</label>
-                        <input type="time" id="heure_fin" name="heure_fin"
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            required>
+                        <select name="heure_fin" id="heure_fin"
+                        class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        required>
+                        <option value="">@lang('Sélectionnez une heure de fin')</option>
+                        <option value="10:00">10:00</option>
+                        <option value="11:45">11:45</option>
+                        <option value="16:00">16:00</option>
+                        <option value="17:45">17:45</option>
+                    </select>
                     </div>
 
                     <div class="mb-4">

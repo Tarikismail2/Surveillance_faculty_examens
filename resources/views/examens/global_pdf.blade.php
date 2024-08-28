@@ -117,7 +117,7 @@
         <div class="session-info">
             <div class="section-title">Détails de la Session :</div>
             <p><strong>Session :</strong> {{ $session->type }}</p>
-            <p><strong>Date :</strong> {{ $session->date_debut }}</p>
+            <p><strong>Date :</strong> {{ $session->date_debut }} - {{ $session->date_fin }}</p>
         </div>
 
         @foreach ($exams as $examen)
@@ -132,8 +132,8 @@
                             <th>Filière</th>
                             <th>Module</th>
                             <th>Locaux</th>
-                            <th>Responsable du module</th>
                             <th>Surveillants</th>
+                            <th>Responsable du module</th>
                             <th>Session</th>
                         </tr>
                     </thead>
@@ -177,7 +177,6 @@
                 </table>
             </div>
 
-            <!-- Ajouter une rupture de page après chaque ensemble de données si nécessaire -->
             @if (!$loop->last)
                 <div class="page-break"></div>
             @endif
@@ -185,7 +184,6 @@
 
         <!-- En-tête seulement sur la première page -->
         <div class="header-not-first">
-            <!-- En-tête uniquement sur la première page -->
             <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/fslogo.png'))) }}" alt="Logo">
             <h1>Faculté des Sciences El Jadida</h1>
         </div>

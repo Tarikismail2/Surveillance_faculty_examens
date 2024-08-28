@@ -4,9 +4,13 @@
             <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
                 {{ __('Enseignants') }}
             </h2>
-            <a href="{{ route('enseignants.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 00-2 0v3H6a1 1 0 000 2h3v3a1 1 0 002 0v-3h3a1 1 0 000-2h-3V7z" clip-rule="evenodd" />
+            <a href="{{ route('enseignants.create') }}"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20"
+                    fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 00-2 0v3H6a1 1 0 000 2h3v3a1 1 0 002 0v-3h3a1 1 0 000-2h-3V7z"
+                        clip-rule="evenodd" />
                 </svg>
                 {{ __('Créer un nouvel enseignant') }}
             </a>
@@ -19,7 +23,8 @@
                 <div class="p-6">
                     <!-- Messages de succès et d'erreur -->
                     @if (session('status'))
-                        <div class="mb-4 p-4 rounded-md {{ session('status')['type'] === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                        <div
+                            class="mb-4 p-4 rounded-md {{ session('status')['type'] === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
                             {{ session('status')['message'] }}
                         </div>
                     @endif
@@ -28,16 +33,20 @@
                         <table id="enseignants-table" class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                         {{ __('Nom') }}
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                         {{ __('Email') }}
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                         {{ __('Département') }}
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                         {{ __('Actions') }}
                                     </th>
                                 </tr>
@@ -52,14 +61,11 @@
         </div>
     </div>
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
-    <!-- Custom DataTables CSS -->
-    <link rel="stylesheet" type="text/css" href="{{ asset('css/custom-datatables.css') }}">
-    <!-- DataTables JS -->
-    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+    <!-- DataTables Scripts -->
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css">
 
     <script>
         $(document).ready(function() {
@@ -67,16 +73,24 @@
                 processing: true,
                 serverSide: true,
                 ajax: '{{ route('enseignants.index') }}',
-                columns: [
-                    { data: 'name', name: 'name' },
-                    { data: 'email', name: 'email' },
-                    { data: 'department_name', name: 'department_name' },
-                    { 
-                        data: null, 
+                columns: [{
+                        data: 'name',
+                        name: 'name'
+                    },
+                    {
+                        data: 'email',
+                        name: 'email'
+                    },
+                    {
+                        data: 'department_name',
+                        name: 'department_name'
+                    },
+                    {
+                        data: null,
                         name: 'actions',
                         orderable: false,
                         searchable: false,
-                        render: function (data, type, row) {
+                        render: function(data, type, row) {
                             return `
                                 <a href="/enseignants/${data.id}/edit" class="text-yellow-600 hover:text-yellow-700 font-medium" title="Modifier">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
@@ -99,13 +113,18 @@
                 language: {
                     url: "//cdn.datatables.net/plug-ins/1.11.5/i18n/French.json"
                 },
-                initComplete: function () {
-                    $('#enseignants-table_paginate .paginate_button').addClass('py-2 px-4 border rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300');
-                    $('#enseignants-table_paginate .paginate_button.current').addClass('bg-blue-600 text-white');
+                initComplete: function() {
+                    $('#enseignants-table_paginate .paginate_button').addClass(
+                        'py-2 px-4 border rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300');
+                    $('#enseignants-table_paginate .paginate_button.current').addClass(
+                        'bg-blue-600 text-white');
                     $('#enseignants-table_info').addClass('text-gray-700 text-sm');
-                    $('#enseignants-table_filter input').addClass('border border-gray-300 rounded-lg py-2 px-4');
-                    $('#enseignants-table_length select').addClass('border border-gray-300 rounded-lg py-2 px-4');
-                    $('#enseignants-table_processing').addClass('text-gray-700 font-medium bg-gray-100 p-2 rounded-lg');
+                    $('#enseignants-table_filter input').addClass(
+                        'border border-gray-300 rounded-lg py-2 px-4');
+                    $('#enseignants-table_length select').addClass(
+                        'border border-gray-300 rounded-lg py-2 px-4');
+                    $('#enseignants-table_processing').addClass(
+                        'text-gray-700 font-medium bg-gray-100 p-2 rounded-lg');
                     $('#enseignants-table_paginate').addClass('flex items-center space-x-2 mt-4');
                     $('#enseignants-table_filter').addClass('flex items-center space-x-4 mt-4');
                 }

@@ -18,6 +18,11 @@ class ExamenSalleEnseignant extends Model
         return $this->belongsTo(Salle::class, 'id_salle', 'id');
     }
 
+    public function salles()
+    {
+        return $this->belongsTo(Salle::class, 'id_salle', 'id');
+    }
+
     public function enseignant()
     {
         return $this->belongsTo(Enseignant::class, 'id_enseignant', 'id');

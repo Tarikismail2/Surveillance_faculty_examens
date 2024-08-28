@@ -59,7 +59,7 @@
                                             <form action="{{ route('salles.destroy', $salle->id) }}" method="POST" class="inline-block" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir supprimer cet salle ?') }}');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="bg-transparent border-0 p-0 m-0" title="{{ __('Supprimer') }}">
+                                                <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-600" title="{{ __('Supprimer') }}">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
                                                         <path fill-rule="evenodd" d="M6 8a1 1 0 011-1h6a1 1 0 011 1v9a1 1 0 11-2 0v-1H8v1a1 1 0 11-2 0V8zm3-3a1 1 0 00-1-1V3a1 1 0 112 0v1a1 1 0 00-1 1z" clip-rule="evenodd" />
                                                     </svg>
@@ -82,14 +82,11 @@
         </div>
     </div>
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
-    <!-- Custom DataTables CSS -->
-    <link rel="stylesheet" type="text/css" href="{{ asset('css/custom-datatables.css') }}">
-    <!-- DataTables JS -->
-    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+    <!-- DataTables Scripts -->
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css">
 
     <script>
         $(document).ready(function() {

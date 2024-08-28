@@ -110,7 +110,7 @@
                                 <option value="10:00">10:00</option>
                                 <option value="11:45">11:45</option>
                                 <option value="16:00">16:00</option>
-                                <option value="17:45">16:45</option>
+                                <option value="17:45">17:45</option>
                             </select>
                             @error('heure_fin')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>

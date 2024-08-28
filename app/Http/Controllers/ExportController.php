@@ -21,7 +21,7 @@ class ExportController extends Controller
     {
         $sessions = SessionExam::orderBy('type')->pluck('type', 'id');
         $enseignants = Enseignant::orderBy('name')->pluck('name', 'id');
-
+// dd($enseignants);
         return view('planification.select_enseignant', compact('sessions', 'enseignants'));
     }
 
@@ -124,8 +124,6 @@ class ExportController extends Controller
     }
 
 
-
-
     // Emploi du temps pour étudiant
     public function selectStudent(Request $request)
     {
@@ -151,9 +149,6 @@ class ExportController extends Controller
 
         return view('planification.select_student', compact('sessions', 'students', 'selectedSession', 'selectedStudent', 'examens'));
     }
-
-
-
 
     public function displayStudentSchedule(Request $request)
     {
@@ -182,8 +177,6 @@ class ExportController extends Controller
 
         return view('planification.select_student', compact('sessions', 'students', 'selectedSession', 'selectedStudent', 'examens'));
     }
-
-
 
     public function downloadStudentSchedulePDF(Request $request)
     {

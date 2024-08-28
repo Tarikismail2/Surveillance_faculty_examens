@@ -15,6 +15,7 @@ use App\Http\Controllers\ContrainteEnseignantController;
 use App\Http\Controllers\SurveillantsReservistesController;
 use App\Http\Controllers\TimetableController;
 use App\Http\Controllers\ContrainteSalleController;
+use App\Http\Controllers\FiliereController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -133,8 +134,27 @@ Route::middleware(['role:admin'])->group(function () {
 
     //Enseignants emploi selon department
     Route::get('/select-department', [TimetableController::class, 'selectDepartment'])->name('selectDepartment');
-    Route::get('/displayScheduleByDepartment/{id_department}/{id_session}', [TimetableController::class, 'show'])->name('displayScheduleByDepartment');
+    Route::get('/displayScheduleByDepartment', [TimetableController::class, 'displayScheduleByDepartment'])->name('displayScheduleByDepartment');
     Route::get('/download-schedule/{id_department}/{id_session}', [TimetableController::class, 'downloadSchedule'])->name('download-schedule');
+
+    // Define routes for Filiere
+    Route::get('/filiere', [FiliereController::class, 'index'])->name('filiere.index');
+    Route::get('/filiere/create', [FiliereController::class, 'create'])->name('filiere.create');
+    Route::post('/filiere', [FiliereController::class, 'store'])->name('filiere.store');
+    Route::get('/filiere/{filiere}', [FiliereController::class, 'show'])->name('filiere.show');
+    Route::get('/filiere/{filiere}/edit', [FiliereController::class, 'edit'])->name('filiere.edit');
+    Route::put('/filiere/{filiere}', [FiliereController::class, 'update'])->name('filiere.update');
+    Route::delete('/filiere/{filiere}', [FiliereController::class, 'destroy'])->name('filiere.destroy');
+
+    // Define routes for module management
+    Route::get('filiere/{filiere}/modules/create', [ModuleController::class, 'addModule'])->name('modules.create');
+    Route::post('filiere/{filiere}/modules', [ModuleController::class, 'storeModule'])->name('modules.store');
+    Route::get('modules/{module}', [ModuleController::class, 'show_module'])->name('modules.show');
+    Route::get('modules/{id}/students', [ModuleController::class, 'students'])->name('modules.students');
+    Route::get('filiere/{filiere}/modules/{module}/edit', [ModuleController::class, 'editModule'])->name('modules.edit');
+    Route::put('filiere/{filiere}/modules/{module}', [ModuleController::class, 'updateModule'])->name('modules.update');
+    Route::delete('filiere/{filiere}/modules/{module}', [ModuleController::class, 'destroyModule'])->name('modules.destroy');
+    
 });
 
 require __DIR__ . '/auth.php';

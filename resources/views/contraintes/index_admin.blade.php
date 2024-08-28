@@ -116,11 +116,12 @@
 
     <!-- Font Awesome -->
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-    <!-- DataTables JS -->
-    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.js"></script>
-    <!-- Initialize DataTables -->
+   <!-- DataTables Scripts -->
+   <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+   <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
+   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css">
+   
     <script>
         $(document).ready(function() {
             $('#constraintsTable').DataTable();
