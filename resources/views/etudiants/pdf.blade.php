@@ -64,16 +64,17 @@
 <body>
     <div class="container">
         <div class="header">
-            <h2>Liste des étudiants</h2>
+            <h2>UNIVERSITE CHOUAIB DOUKKALI</h2>
+            <h2>FACULTE DES SCIENCES EL JADIDA</h2>
         </div>
         @foreach ($exams as $examen)
             <div class="container">
                 <div class="header">
-                    <h3>Examen: {{ $examen->module->lib_elp }}</h3>
+                    <h3>Module: {{ $examen->module->lib_elp }}</h3>
                     <p>Responsable de module: {{ $examen->enseignant->name }}</p>
                     <p>Salle(s): {{ implode(', ', $examen->salles->pluck('name')->toArray()) }}</p>
                     <p>Date: {{ $examen->date }}</p>
-                    <p>Heure: {{ $examen->heure_debut }} - {{ $examen->heure_fin }}</p>
+                    <p>Heure d'examen: {{ $examen->heure_debut }} - {{ $examen->heure_fin }}</p>
                 </div>
 
                 @php

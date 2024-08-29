@@ -44,8 +44,6 @@ class EtudiantController extends Controller
         return view('etudiants.index', compact('sessions', 'selectedSessionId'));
     }
     
-    
-
     public function create()
     {
         $modules = Module::all(); // Récupérer tous les modules

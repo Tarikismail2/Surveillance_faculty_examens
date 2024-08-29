@@ -7,6 +7,7 @@ use App\Models\Department;
 use App\Models\Enseignant;
 use App\Models\ExamenSalleEnseignant;
 use App\Models\SessionExam;
+use Carbon\Carbon;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\Support\Facades\Validator;
@@ -70,29 +71,46 @@ class TimetableController extends Controller
 
     public function downloadSchedule($id_department, $id_session)
     {
-        $enseignants = Enseignant::where('id_department', $id_department)->pluck('id');
-        $schedule = ExamenSalleEnseignant::whereIn('id_enseignant', $enseignants)
+        $enseignants = Enseignant::where('id_department', $id_department)->get();
+    
+        $session = SessionExam::find($id_session);
+    
+        if (!$session) {
+            return redirect()->back()->with('error', 'Session not found.');
+        }
+    
+        $dateDebut = Carbon::parse($session->date_debut);
+        $dateFin = Carbon::parse($session->date_fin);
+    
+        $dates = [];
+        $currentDate = $dateDebut->copy();
+    
+        while ($currentDate <= $dateFin) {
+            $dates[] = $currentDate->format('Y-m-d');
+            $currentDate->addDay();
+        }
+    
+        // Retrieve the schedule and group it by teacher, date, and time
+        $schedule = ExamenSalleEnseignant::whereIn('id_enseignant', $enseignants->pluck('id'))
             ->whereHas('examen', function ($query) use ($id_session) {
                 $query->where('id_session', $id_session);
             })
             ->with(['examen', 'salle', 'enseignant'])
-            ->get()
-            ->sortBy([
-                fn($a, $b) => $a->examen->date <=> $b->examen->date,
-                fn($a, $b) => $a->examen->heure_debut <=> $b->examen->heure_debut,
-            ]);
+            ->get();
 
         // Generate PDF
-        $html = view('emploi.schedule', compact('schedule', 'id_department', 'id_session'))->render();
-
+        $html = view('emploi.schedule', compact('schedule', 'id_department', 'id_session', 'enseignants', 'dates'))->render();
+    
         $options = new Options();
         $options->set('defaultFont', 'DejaVu Sans');
-
+    
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html);
-        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
-
+    
         return $dompdf->stream('Surveillance_Schedule_by_Department.pdf', ['Attachment' => 0]);
     }
+    
+
 }

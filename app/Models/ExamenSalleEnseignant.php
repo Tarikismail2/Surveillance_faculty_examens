@@ -33,8 +33,8 @@ class ExamenSalleEnseignant extends Model
         return $this->belongsTo(Enseignant::class, 'id_enseignant', 'id'); 
     }
 
-    public function examen() {
-        return $this->belongsTo(Examen::class, 'id_examen');
+    public function examen()
+    {
+        return $this->belongsTo(Examen::class, 'id_examen', 'id');
     }
-
 }
