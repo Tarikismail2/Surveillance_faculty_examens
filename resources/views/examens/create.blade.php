@@ -52,15 +52,15 @@
                                 class="block text-gray-700 dark:text-gray-300">@lang('Filière')</label>
                             <select
                                 class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                id="filiere" name="id_filiere" required>
+                                id="filiere" name="code_etape" required>
                                 <option value="">@lang('Sélectionnez une filière')</option>
                                 @foreach ($filieres as $filiere)
-                                    <option value="{{ $filiere->version_etape }}"
-                                        {{ old('$filiere->version_etape') == $filiere->version_etape ? 'selected' : '' }}>
+                                    <option value="{{ $filiere->code_etape }}"
+                                        {{ old('code_etape') == $filiere->code_etape ? 'selected' : '' }}>
                                         {{ $filiere->version_etape }}</option>
                                 @endforeach
                             </select>
-                            @error('id_filiere')
+                            @error('code_etape')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
@@ -73,10 +73,14 @@
                                 class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 required>
                                 <option value="">@lang('Sélectionnez une heure de début')</option>
-                                <option value="08:30">08:30</option>
-                                <option value="10:15">10:15</option>
-                                <option value="14:30">14:30</option>
-                                <option value="16:15">16:15</option>
+                                <option value="08:30" {{ old('heure_debut') == '08:30' ? 'selected' : '' }}>08:30
+                                </option>
+                                <option value="10:15" {{ old('heure_debut') == '10:15' ? 'selected' : '' }}>10:15
+                                </option>
+                                <option value="14:30" {{ old('heure_debut') == '14:30' ? 'selected' : '' }}>14:30
+                                </option>
+                                <option value="16:15" {{ old('heure_debut') == '16:15' ? 'selected' : '' }}>16:15
+                                </option>
                             </select>
                             @error('heure_debut')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -107,10 +111,14 @@
                                 class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 required>
                                 <option value="">@lang('Sélectionnez une heure de fin')</option>
-                                <option value="10:00">10:00</option>
-                                <option value="11:45">11:45</option>
-                                <option value="16:00">16:00</option>
-                                <option value="17:45">17:45</option>
+                                <option value="10:00" {{ old('heure_fin') == '10:00' ? 'selected' : '' }}>10:00
+                                </option>
+                                <option value="11:45" {{ old('heure_fin') == '11:45' ? 'selected' : '' }}>11:45
+                                </option>
+                                <option value="16:00" {{ old('heure_fin') == '16:00' ? 'selected' : '' }}>16:00
+                                </option>
+                                <option value="17:45" {{ old('heure_fin') == '17:45' ? 'selected' : '' }}>17:45
+                                </option>
                             </select>
                             @error('heure_fin')
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -262,28 +270,40 @@
             const automaticAllocationDiv = document.getElementById('automatic_allocation');
             const automaticAllocationSummary = document.getElementById('automatic_allocation_summary');
 
-            filiereSelect.addEventListener('change', function() {
+            document.getElementById('filiere').addEventListener('change', function() {
                 const filiereId = this.value;
+                const moduleSelect = document.getElementById('module');
+
+                // Vider le select des modules
                 moduleSelect.innerHTML = '<option value="">@lang('Sélectionnez un module')</option>';
 
                 if (filiereId) {
+                    // Envoyer une requête AJAX pour récupérer les modules
                     fetch(`/examens/getModulesByFiliere/${filiereId}`)
                         .then(response => response.json())
                         .then(data => {
-                            data.forEach(module => {
-                                const option = document.createElement('option');
-                                option.value = module.id;
-                                option.textContent =
-                                    `${module.lib_elp} (${module.inscriptions_count} @lang('inscrits'))`;
-                                option.setAttribute('data-inscriptions', module
-                                    .inscriptions_count);
-                                option.setAttribute('data-capacite', module.capacite);
-                                moduleSelect.appendChild(option);
-                            });
+                            if (data.modules.length > 0) {
+                                data.modules.forEach(module => {
+                                    const option = document.createElement('option');
+                                    option.value = module.id;
+                                    // Vérifier si inscriptions_count est défini
+                                    const inscriptionsCount = module.inscriptions_count !==
+                                        undefined ? module.inscriptions_count : '0';
+                                    option.textContent =
+                                        `${module.lib_elp} - (${inscriptionsCount} étudiants)`;
+                                    option.setAttribute('data-inscriptions', module
+                                        .inscriptions_count);
+                                    option.setAttribute('data-capacite', module.capacite);
+                                    moduleSelect.appendChild(option);
+                                });
+                            }
                         })
-                        .catch(error => console.error('Error fetching modules:', error));
+                        .catch(error => {
+                            console.error('Erreur lors de la récupération des modules:', error);
+                        });
                 }
             });
+
 
             moduleSelect.addEventListener('change', function() {
                 const selectedModule = moduleSelect.options[moduleSelect.selectedIndex];
@@ -291,7 +311,6 @@
                 inscriptionsCount.value = inscriptions;
                 updateRemainingInscriptions();
             });
-
             salleSelect.addEventListener('change', function() {
                 updateRemainingInscriptions();
             });
@@ -344,6 +363,7 @@
 
                 remainingInscriptions.value = remaining;
             }
+
 
             // Gestion du mode d'affectation (manuel ou automatique)
             allocationModeSelect.addEventListener('change', function() {

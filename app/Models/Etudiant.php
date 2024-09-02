@@ -37,9 +37,9 @@ class Etudiant extends Model
     }
 
     public function examens()
-    {
-        return $this->hasManyThrough(Examen::class, Module::class, 'id', 'id_module', 'id', 'id');
-    }
+{
+    return $this->hasManyThrough(Examen::class, Inscription::class, 'id_etudiant', 'id_module', 'id', 'id_module');
+}
 
     public function sessions()
     {
@@ -49,5 +49,15 @@ class Etudiant extends Model
     public function session()
     {
         return $this->belongsTo(SessionExam::class, 'id_session');
+    }
+
+    public function filiere()
+    {
+        return $this->belongsTo(Filiere::class, 'code_etape');
+    }
+
+    public function module()
+    {
+        return $this->belongsTo(Module::class, 'id_module');
     }
 }

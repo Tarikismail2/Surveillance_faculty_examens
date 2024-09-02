@@ -8,14 +8,8 @@ use App\Models\Module;
 use App\Models\SessionExam;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
-use Illuminate\Support\Facades\DB;
-use PDF;
 use Dompdf\Dompdf;
 use Dompdf\Options as DompdfOptions;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Collection;
-use Dompdf\Options;
 
 
 class EtudiantController extends Controller

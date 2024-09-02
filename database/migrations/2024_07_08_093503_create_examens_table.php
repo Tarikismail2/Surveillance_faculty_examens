@@ -14,11 +14,9 @@ class CreateExamensTable extends Migration
             $table->time('heure_debut');
             $table->time('heure_fin');
             $table->unsignedBigInteger('id_module');
-            // $table->unsignedBigInteger('id_salle');
             $table->unsignedBigInteger('id_enseignant');
             $table->unsignedBigInteger('id_session');
             $table->foreign('id_module')->references('id')->on('modules')->onDelete('cascade');
-            // $table->foreign('id_salle')->references('id')->on('salles')->onDelete('cascade');
             $table->foreign('id_enseignant')->references('id')->on('enseignants')->onDelete('cascade');
             $table->foreign('id_session')->references('id')->on('session_exams')->onDelete('cascade');
             $table->timestamps();

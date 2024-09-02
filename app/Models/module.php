@@ -12,15 +12,14 @@ class Module extends Model
     protected $fillable = [
         'code_elp',
         'lib_elp',
-        'version_etape',
         'code_etape',
         'id_session',
     ];
 
     public function inscriptions()
-    {
-        return $this->hasMany(Inscription::class, 'id_module');
-    }
+{
+    return $this->hasMany(Inscription::class, 'id_module');
+}
 
     public function examens()
     {
@@ -29,7 +28,7 @@ class Module extends Model
 
     public function filiere()
     {
-        return $this->belongsTo(Filiere::class, 'version_etape', 'version_etape');
+        return $this->belongsTo(Filiere::class, 'code_etape', 'code_etape');
     }
 
     public function etudiants()
@@ -44,6 +43,6 @@ class Module extends Model
 
     public function modules()
     {
-        return $this->hasMany(Module::class, 'id_filiere');
+        return $this->hasMany(Module::class, 'code_etape');
     }
 }

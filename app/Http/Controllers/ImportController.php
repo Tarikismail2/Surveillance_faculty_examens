@@ -11,6 +11,7 @@ use App\Models\SessionExam;
 use Illuminate\Support\Facades\Session;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ImportController extends Controller
 {
@@ -73,97 +74,106 @@ class ImportController extends Controller
     {
         $etudiants = [];
         $inscriptions = [];
-
+    
         foreach ($batch as $row) {
             $dateNaissance = null;
             if (isset($row[5]) && !empty($row[5])) {
                 try {
                     $dateNaissance = \DateTime::createFromFormat('m/d/Y', $row[5]);
+                    $dateNaissance = $dateNaissance->format('Y-m-d');
                 } catch (\Exception $e) {
                     $dateNaissance = null;
                 }
             }
-        
-            // Assurez-vous que le cin est valide
+    
             $cin = isset($row[3]) && !empty($row[3]) ? $row[3] : null;
-        
             if ($cin !== null && Etudiant::where('cin', $cin)->exists()) {
-                // Si un étudiant avec ce CIN existe déjà, ne le définir qu'en fonction de vos règles métier
-                $cin = null; // ou une autre gestion d'erreur
+                $cin = null;
             }
-        
-            // Si le CIN est requis dans la base de données, vérifiez cela ici
+    
             if ($cin === null) {
-                continue; // Ignorer l'étudiant si le CIN est requis mais manquant
+                continue;
             }
-        
+    
             $etudiants[] = [
                 'code_etudiant' => $row[0],
                 'nom' => $row[1],
                 'prenom' => $row[2],
                 'cin' => $cin,
                 'cne' => $row[4],
-                'date_naissance' => $dateNaissance ? $dateNaissance->format('Y-m-d') : null,
+                'date_naissance' => $dateNaissance,
                 'id_session' => $sessionId,
-            ];        
-
-            // Cache or create Filiere
-            if (!isset($filiereCache[$row[8]])) {
-                $filiere = Filiere::firstOrCreate(
-                    [
+            ];
+    
+            // Vérifier que 'code_etape' et les informations de module sont présentes
+            if (empty($row[9]) || empty($row[6]) || empty($row[7])) {
+                Log::error('Skipping row due to missing code_etape or module information', $row);
+                continue;
+            }
+    
+            // Si la filière n'existe pas dans le cache, la créer ou la récupérer de la base de données
+            if (!isset($filiereCache[$row[9]])) {
+                $filiere = Filiere::where('code_etape', $row[9])->first();
+    
+                if (!$filiere) {
+                    $filiere = Filiere::create([
                         'version_etape' => $row[8],
                         'code_etape' => $row[9],
-                    ],
-                    [
                         'id_session' => $sessionId,
-                    ]
-                );
-
-                $filiereCache[$row[8]] = $filiere->id;
+                    ]);
+                }
+    
+                $filiereCache[$row[9]] = $filiere->id;
             }
-
-            // Cache or create Module and associate it with the correct Filiere
-            if (!isset($moduleCache[$row[6]])) {
-                $module = Module::updateOrCreate(
-                    [
+    
+            // Assurer que chaque module est associé à la filière correcte
+            $moduleKey = $row[6] . '_' . $row[9]; // Unique key combining module code and filiere
+    
+            if (!isset($moduleCache[$moduleKey])) {
+                // Créer ou récupérer le module pour la filière donnée
+                $module = Module::where('code_elp', $row[6])
+                    ->where('code_etape', $row[9])
+                    ->first();
+    
+                if (!$module) {
+                    $module = Module::create([
                         'code_elp' => $row[6],
                         'lib_elp' => $row[7],
-                        'version_etape' => $row[8],
                         'code_etape' => $row[9],
-                    ],
-                    [
                         'id_session' => $sessionId,
-                    ]
-                );
-
-                // Associate the Module with the Filiere using the correct relationship
-                $module->filiere()->associate(Filiere::find($filiereCache[$row[8]]));
-                $module->save();
-                $moduleCache[$row[6]] = $module->id;
+                        'filiere_id' => $filiereCache[$row[9]], // Associer le module à la filière
+                    ]);
+                }
+    
+                $moduleCache[$moduleKey] = $module->id;
             }
-
+    
             $inscriptions[] = [
-                'id_etudiant' => $row[0], // Use the student code as a temporary key
-                'id_module' => $moduleCache[$row[6]],
+                'id_etudiant' => $row[0],
+                'id_module' => $moduleCache[$moduleKey],
                 'id_session' => $sessionId,
             ];
         }
-
-        // Bulk insert students
+    
+        // Insertion en masse des étudiants
         Etudiant::upsert($etudiants, ['code_etudiant'], ['nom', 'prenom', 'cin', 'cne', 'date_naissance']);
-
-        // Resolve student IDs after bulk insert
+    
+        // Récupération des IDs des étudiants après l'insertion
         $studentIds = Etudiant::whereIn('code_etudiant', array_column($etudiants, 'code_etudiant'))
             ->pluck('id', 'code_etudiant');
-
-        // Map the student IDs to inscriptions
+    
+        // Mapper les IDs des étudiants aux inscriptions
         foreach ($inscriptions as &$inscription) {
             $inscription['id_etudiant'] = $studentIds[$inscription['id_etudiant']];
         }
-
-        // Bulk insert inscriptions
+    
+        // Insertion en masse des inscriptions
         Inscription::insert($inscriptions);
     }
+    
+    
+    
+    
 
     public function cancelImport(Request $request)
     {

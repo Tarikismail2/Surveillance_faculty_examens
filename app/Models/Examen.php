@@ -67,7 +67,7 @@ class Examen extends Model
     // Relation pour la filière
     public function filiere()
     {
-        return $this->belongsTo(Filiere::class, 'id_filiere');
+        return $this->belongsTo(Filiere::class, 'code_etape');
     }
 
     // Relation pour les contraintes de l'enseignant

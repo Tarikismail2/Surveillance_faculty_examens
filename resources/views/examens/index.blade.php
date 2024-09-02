@@ -71,7 +71,7 @@
                                     <td class="px-4 py-2">{{ $examen->heure_debut ?? 'N/A' }}</td>
                                     <td class="px-4 py-2">{{ $examen->heure_fin ?? 'N/A' }}</td>
                                     <td class="px-4 py-2">{{ optional($examen->module)->lib_elp ?? 'N/A' }}</td>
-                                    <td class="px-4 py-2">{{ optional($examen->module)->version_etape ?? 'N/A' }}</td>
+                                    <td class="px-4 py-2">{{ optional($examen->module->filiere)->version_etape ?? 'N/A' }}</td>
                                     <td class="px-4 py-2">
                                         @if ($examen->sallesSupplementaires && $examen->sallesSupplementaires->isNotEmpty())
                                             @foreach ($examen->sallesSupplementaires as $salle)

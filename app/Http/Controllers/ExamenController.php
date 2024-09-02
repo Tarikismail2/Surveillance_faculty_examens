@@ -35,7 +35,7 @@ class ExamenController extends Controller
             })
             ->when($request->input('filiere_id'), function ($query, $filiereId) {
                 return $query->whereHas('module', function ($query) use ($filiereId) {
-                    $query->where('id_filiere', $filiereId);
+                    $query->where('code_etape', $filiereId);
                 });
             })
             ->with(['sallePrincipale', 'sallesSupplementaires', 'module', 'enseignant'])
@@ -55,7 +55,7 @@ class ExamenController extends Controller
         $selected_session = SessionExam::findOrFail($id);
         $filieres = Filiere::where('id_session', $id)->get();
         $departments = Department::all();
-
+        // dd($filieres);
         $examen = new Examen();
 
         return view('examens.create', compact('salles', 'selected_session', 'filieres', 'departments', 'enseignants', 'examen'));
@@ -65,7 +65,7 @@ class ExamenController extends Controller
     {
         $validatedData = $request->validate([
             'date' => 'required|date',
-            'id_filiere' => 'required|exists:filieres,version_etape',
+            'code_etape' => 'required|exists:filieres,code_etape',
             'heure_debut' => 'required|date_format:H:i',
             'id_module' => 'required|exists:modules,id',
             'heure_fin' => 'required|date_format:H:i|after:heure_debut',
@@ -99,7 +99,7 @@ class ExamenController extends Controller
         // Validation de l'examen existant
         $existingExam = Examen::where('id_module', $request->id_module)
             ->whereHas('module', function ($query) use ($request) {
-                $query->where('id_filiere', $request->id_filiere);
+                $query->where('code_etape', $request->code_etape);
             })->exists();
 
         if ($existingExam) {
@@ -117,7 +117,7 @@ class ExamenController extends Controller
                     });
             })
             ->whereHas('module', function ($query) use ($request) {
-                $query->where('id_filiere', $request->id_filiere);
+                $query->where('code_etape', $request->code_etape);
             })
             ->exists();
 
@@ -224,7 +224,7 @@ class ExamenController extends Controller
         return redirect()->route('examens.index', ['sessionId' => $request->id_session])
             ->with('success', 'Examen ajouté avec succès.');
     }
-    
+
     //Affectation des salles d'une maniere automatique
     protected function allocateAutomaticSalles($date, $heure_debut, $heure_fin, $inscriptions_count)
     {
@@ -298,7 +298,7 @@ class ExamenController extends Controller
             'additional_salles.*' => 'nullable|exists:salles,id',
             'id_enseignant' => 'required|exists:enseignants,id',
             'id_session' => 'required|exists:session_exams,id',
-            'id_filiere' => 'required|exists:filieres,version_etape',
+            'code_etape' => 'required|exists:filieres,code_etape',
         ]);
 
         // Convert times to timestamps for comparison
@@ -319,7 +319,7 @@ class ExamenController extends Controller
         $existingExam = Examen::where('id_module', $request->id_module)
             ->where('id', '!=', $examen->id)
             ->whereHas('module', function ($query) use ($request) {
-                $query->where('version_etape', $request->id_filiere);
+                $query->where('code_etape', $request->code_etape);
             })->exists();
 
         if ($existingExam) {
@@ -338,7 +338,7 @@ class ExamenController extends Controller
                     });
             })
             ->whereHas('module', function ($query) use ($request) {
-                $query->where('version_etape', $request->id_filiere);
+                $query->where('code_etape', $request->code_etape);
             })->exists();
 
         if ($overlappingExam) {
@@ -449,7 +449,7 @@ class ExamenController extends Controller
             'additional_salles' => $request->additional_salles,
             'id_enseignant' => $request->id_enseignant,
             'id_session' => $request->id_session,
-            'id_filiere' => $request->id_filiere,
+            'code_etape' => $request->code_etape,
         ]);
 
         return redirect()->route('examens.index')->with('success', 'L\'examen a été mis à jour avec succès.');
@@ -481,12 +481,12 @@ class ExamenController extends Controller
         ]);
     }
 
-    public function getModulesByFiliere($filiere_id)
+    public function getModulesByFiliere($filiereId)
     {
-        $modules = Module::where('version_etape', $filiere_id)
+        $modules = Module::where('code_etape', $filiereId)
             ->withCount('inscriptions')
             ->get();
-        return response()->json($modules);
+        return response()->json(['modules' => $modules]);
     }
 
     public function getEnseignantsByDepartment($departmentId)

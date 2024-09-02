@@ -16,6 +16,7 @@ use App\Http\Controllers\SurveillantsReservistesController;
 use App\Http\Controllers\TimetableController;
 use App\Http\Controllers\ContrainteSalleController;
 use App\Http\Controllers\FiliereController;
+use App\Models\Module;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -67,8 +68,8 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('/examens/edit/{id}', [ExamenController::class, 'edit'])->name('examens.editExamen');
     Route::put('/examens/{examen}', [ExamenController::class, 'update'])->name('examens.update');
     Route::delete('/examens/{examen}', [ExamenController::class, 'destroy'])->name('examens.destroy');
-    Route::get('/examens/getModulesByFiliere/{id_filiere}', [ExamenController::class, 'getModulesByFiliere']);
-    Route::post('/examens/getRooms', [ExamenController::class, 'getRooms'])->name('examens.getRooms');
+    Route::get('/examens/getModulesByFiliere/{filiereId}',[ExamenController::class, 'getModulesByFiliere']);
+        Route::post('/examens/getRooms', [ExamenController::class, 'getRooms'])->name('examens.getRooms');
 
     //Affectation des surveillants sur les locaux   
     Route::get('/examens/form/{examen}', [ExamenController::class, 'showForm'])->name('examens.showForm');
@@ -104,7 +105,9 @@ Route::middleware(['role:admin'])->group(function () {
     Route::delete('/etudiants/{etudiant}', [EtudiantController::class, 'destroy'])->name('etudiants.destroy');
     Route::delete('/etudiants/delete-modules', [EtudiantController::class, 'deleteModules'])->name('etudiants.deleteModules');
     Route::get('/test-pdf/{sessionId}', [EtudiantController::class, 'generatePdf'])->name('test.pdf');
-    // Route::get('/etudiants/generate-pdf', [EtudiantController::class, 'generatePdf'])->name('test.pdf');
+    Route::get('/filiere/{filiereId}/modules', [EtudiantController::class, 'getModulesByFiliere'])->name('getModulesByFiliere');
+
+
 
     //route upload
     Route::get('/import/{sessionId}', [ImportController::class, 'showForm'])->name('import.form');

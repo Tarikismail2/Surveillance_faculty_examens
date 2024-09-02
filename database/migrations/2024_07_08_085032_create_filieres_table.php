@@ -9,8 +9,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('filieres', function (Blueprint $table) {
-            $table->id();
-            $table->string('code_etape')->unique();
+            $table->string('code_etape')->primary();
             $table->string('version_etape');
             $table->unsignedBigInteger('id_session');
             $table->foreign('id_session')->references('id')->on('session_exams')->onDelete('cascade');            

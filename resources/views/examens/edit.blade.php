@@ -54,11 +54,11 @@
                                 class="block text-gray-700 dark:text-gray-300">@lang('Filière')</label>
                             <select
                                 class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                id="filiere" name="id_filiere" required>
+                                id="filiere" name="code_etape" required>
                                 <option value="">@lang('Sélectionnez une filière')</option>
                                 @foreach ($filieres as $filiere)
-                                    <option value="{{ $filiere->version_etape }}"
-                                        {{ old('version_etape', optional($examen->module)->version_etape) == $filiere->version_etape ? 'selected' : '' }}>
+                                    <option value="{{ $filiere->code_etape }}"
+                                        {{ old('code_etape', optional($examen->module)->code_etape) == $filiere->code_etape ? 'selected' : '' }}>
                                         {{ $filiere->version_etape }}
                                     </option>
                                 @endforeach
