@@ -33,9 +33,9 @@ class ExamenController extends Controller
             ->when($request->input('module_id'), function ($query, $moduleId) {
                 return $query->where('id_module', $moduleId);
             })
-            ->when($request->input('filiere_id'), function ($query, $filiereId) {
+            ->when($request->input('filiereId'), function ($query, $filiereId) {
                 return $query->whereHas('module', function ($query) use ($filiereId) {
-                    $query->where('code_etape', $filiereId);
+                    $query->where('id_filiere', $filiereId);
                 });
             })
             ->with(['sallePrincipale', 'sallesSupplementaires', 'module', 'enseignant'])
@@ -55,7 +55,7 @@ class ExamenController extends Controller
         $selected_session = SessionExam::findOrFail($id);
         $filieres = Filiere::where('id_session', $id)->get();
         $departments = Department::all();
-        // dd($filieres);
+
         $examen = new Examen();
 
         return view('examens.create', compact('salles', 'selected_session', 'filieres', 'departments', 'enseignants', 'examen'));
@@ -77,7 +77,32 @@ class ExamenController extends Controller
             'inscriptions_count' => 'required|integer|min:1',
         ]);
 
+        // Déterminer le type de filière (ancienne ou nouvelle)
+        $filiere = Filiere::where('code_etape', $request->id_filiere)->first();
+
+        if (!$filiere) {
+            return back()->withErrors(['error' => 'Filière non trouvée.'])->withInput();
+        }
+
+        // Initialiser le compteur d'inscriptions
         $inscriptions_count = $request->inscriptions_count;
+
+        // Logique de gestion des filières nouvelles
+        if ($filiere->type === 'new') {
+            // Récupérer tous les étudiants inscrits dans les modules avec le même lib_elp
+            $module = Module::find($request->id_module);
+            $modulesGroup = Module::where('lib_elp', $module->lib_elp)->get();
+
+            // Récupérer les inscriptions de tous les étudiants des modules groupés
+            $studentIds = Inscription::whereIn('id_module', $modulesGroup->pluck('id'))
+                ->pluck('id_etudiant')
+                ->unique()
+                ->toArray();
+
+            // Mettre à jour le nombre total d'étudiants pour l'allocation des salles
+            $inscriptions_count = count($studentIds);
+        }
+
 
         // Validation des horaires
         $heure_debut = new \DateTime($request->heure_debut);
@@ -99,7 +124,8 @@ class ExamenController extends Controller
         // Validation de l'examen existant
         $existingExam = Examen::where('id_module', $request->id_module)
             ->whereHas('module', function ($query) use ($request) {
-                $query->where('code_etape', $request->code_etape);
+                // $query->where('id_filiere', $request->id_filiere);
+                $query->where('code_etape', $request->id_filiere);
             })->exists();
 
         if ($existingExam) {
@@ -117,7 +143,8 @@ class ExamenController extends Controller
                     });
             })
             ->whereHas('module', function ($query) use ($request) {
-                $query->where('code_etape', $request->code_etape);
+                // $query->where('id_filiere', $request->id_filiere);
+                $query->where('code_etape', $request->id_filiere);
             })
             ->exists();
 
@@ -319,7 +346,7 @@ class ExamenController extends Controller
         $existingExam = Examen::where('id_module', $request->id_module)
             ->where('id', '!=', $examen->id)
             ->whereHas('module', function ($query) use ($request) {
-                $query->where('code_etape', $request->code_etape);
+                $query->where('code_etape', $request->id_filiere);
             })->exists();
 
         if ($existingExam) {
@@ -338,7 +365,7 @@ class ExamenController extends Controller
                     });
             })
             ->whereHas('module', function ($query) use ($request) {
-                $query->where('code_etape', $request->code_etape);
+                $query->where('code_etape', $request->id_filiere);
             })->exists();
 
         if ($overlappingExam) {
@@ -449,7 +476,7 @@ class ExamenController extends Controller
             'additional_salles' => $request->additional_salles,
             'id_enseignant' => $request->id_enseignant,
             'id_session' => $request->id_session,
-            'code_etape' => $request->code_etape,
+            'id_filiere' => $request->id_filiere,
         ]);
 
         return redirect()->route('examens.index')->with('success', 'L\'examen a été mis à jour avec succès.');
@@ -481,6 +508,35 @@ class ExamenController extends Controller
         ]);
     }
 
+    // public function getModulesByFiliere($filiereId)
+    // {
+    //     $filiere = Filiere::where('code_etape', $filiereId)->first();
+    //     if ($filiere) {
+    //         if ($filiere->type === 'new') {
+    //             // Query for 'new' filiere type
+    //             $modules = Module::join('filiere_gp', 'modules.id', '=', 'filiere_gp.id_module')
+    //                 ->leftJoin('inscriptions', 'modules.id', '=', 'inscriptions.id_module')
+    //                 ->where('modules.code_etape', $filiere->id)
+    //                 ->whereDoesntHave('examens')
+    //                 ->select('modules.lib_elp', DB::raw('COUNT(inscriptions.id) as inscriptions_count'))
+    //                 ->groupBy('modules.lib_elp')
+    //                 ->get();
+    //         } else {
+    //             // Query for 'old' filiere type
+    //             $modules = Module::leftJoin('inscriptions', 'modules.id', '=', 'inscriptions.id_module')
+    //                 ->where('code_etape', $filiere->code_etape)
+    //                 ->whereDoesntHave('examens')
+    //                 ->select('modules.lib_elp', DB::raw('COUNT(inscriptions.id) as inscriptions_count'))
+    //                 ->groupBy('modules.lib_elp')
+    //                 ->get();
+    //         }
+
+    //         return response()->json($modules);
+    //     } else {
+    //         // Return an empty response or an error if the filiere is not found
+    //         return response()->json([], 404);
+    //     }
+    // }
     public function getModulesByFiliere($filiereId)
     {
         $modules = Module::where('code_etape', $filiereId)

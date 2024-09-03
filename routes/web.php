@@ -68,8 +68,8 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('/examens/edit/{id}', [ExamenController::class, 'edit'])->name('examens.editExamen');
     Route::put('/examens/{examen}', [ExamenController::class, 'update'])->name('examens.update');
     Route::delete('/examens/{examen}', [ExamenController::class, 'destroy'])->name('examens.destroy');
-    Route::get('/examens/getModulesByFiliere/{filiereId}',[ExamenController::class, 'getModulesByFiliere']);
-        Route::post('/examens/getRooms', [ExamenController::class, 'getRooms'])->name('examens.getRooms');
+    Route::get('/examens/getModulesByFiliere/{filiereId}', [ExamenController::class, 'getModulesByFiliere']);
+    Route::post('/examens/getRooms', [ExamenController::class, 'getRooms'])->name('examens.getRooms');
 
     //Affectation des surveillants sur les locaux   
     Route::get('/examens/form/{examen}', [ExamenController::class, 'showForm'])->name('examens.showForm');
@@ -157,7 +157,6 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('filiere/{filiere}/modules/{module}/edit', [ModuleController::class, 'editModule'])->name('modules.edit');
     Route::put('filiere/{filiere}/modules/{module}', [ModuleController::class, 'updateModule'])->name('modules.update');
     Route::delete('filiere/{filiere}/modules/{module}', [ModuleController::class, 'destroyModule'])->name('modules.destroy');
-    
 });
 
 require __DIR__ . '/auth.php';
