@@ -9,11 +9,11 @@ class FiliereGp extends Model
 {
     use HasFactory;
     protected $table = 'filiere_gp'; // Update this line
-    protected $fillable = ['version_etape', 'code_etape', 'id_filiere', 'id_module', 'id_session'];
+    protected $fillable = ['version_etape', 'code_etape', 'id_module', 'id_session'];
 
     public function filiere()
     {
-        return $this->belongsTo(Filiere::class, 'id_filiere');
+        return $this->belongsTo(Filiere::class, 'code_etape');
     }
 
     public function module()
