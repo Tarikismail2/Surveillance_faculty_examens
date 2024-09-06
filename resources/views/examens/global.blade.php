@@ -87,10 +87,10 @@
                                 @endforeach
                             </tbody>
                         </table>
-
+                       
                         <!-- Download Buttons -->
                         <div class="mt-6 flex gap-4">
-                            <a href="{{ route('examens.global.pdf', ['id_session' => $selectedSessionId]) }}"
+                            <a href="{{ route('examens.global.pdf', ['sessionId' => $selectedSessionId]) }}"
                                class="flex items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md shadow-lg transition duration-200 transform hover:scale-105">
                                 <i class="fas fa-file-pdf mr-2"></i>
                                 @lang('Download PDF Planification')

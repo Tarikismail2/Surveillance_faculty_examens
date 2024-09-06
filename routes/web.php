@@ -91,6 +91,8 @@ Route::middleware(['role:admin'])->group(function () {
 
     //route enseignants
     Route::resource('enseignants', EnseignantController::class);
+    // Route::get('/generate-pdf/{sessionId}', [EnseignantController::class, 'generatePDF'])->name('generate.pdf');
+    Route::get('/generate-pdf/{sessionId}', [EnseignantController::class, 'generatePDFEnseignant'])->name('examens.global.pdf');
 
     //route salles
     Route::resource('salles', SalleController::class);
@@ -105,8 +107,14 @@ Route::middleware(['role:admin'])->group(function () {
     Route::delete('/etudiants/{etudiant}', [EtudiantController::class, 'destroy'])->name('etudiants.destroy');
     Route::delete('/etudiants/delete-modules', [EtudiantController::class, 'deleteModules'])->name('etudiants.deleteModules');
     Route::get('/test-pdf/{sessionId}', [EtudiantController::class, 'generatePdf'])->name('test.pdf');
+    Route::get('/examens/{sessionId}/{codeEtape}/download-pdf', [EtudiantController::class, 'downloadPDF'])
+        ->name('examens.downloadPDF');
+    
     Route::get('/filiere/{filiereId}/modules', [EtudiantController::class, 'getModulesByFiliere'])->name('getModulesByFiliere');
 
+    Route::get('/select-filiere', [EtudiantController::class, 'selectFiliere'])->name('selectFiliere');
+    Route::get('/etudiants/{sessionId}/{code_etape}/download-pdf', [EtudiantController::class, 'downloadStudentsPDF'])
+        ->name('downloadStudentsPDF');
 
 
     //route upload
@@ -120,7 +128,7 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('/global', [PlanificationController::class, 'showGlobalPlan'])->name('examens.global');
 
     //download du planification
-    Route::get('/global/pdf', 'App\Http\Controllers\PlanificationController@downloadGlobalSchedulePDF')->name('examens.global.pdf');
+    // Route::get('/global/pdf', 'App\Http\Controllers\PlanificationController@downloadGlobalSchedulePDF')->name('examens.global.pdf');
     Route::get('/examens/global/pdf/{id_session}', [PlanificationController::class, 'downloadSurveillancePDF'])->name('examens_global.pdf');
 
     //validation des contraintes enseignants

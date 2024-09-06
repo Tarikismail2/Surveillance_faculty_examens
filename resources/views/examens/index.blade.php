@@ -71,7 +71,7 @@
                                     <td class="px-4 py-2">{{ $examen->heure_debut ?? 'N/A' }}</td>
                                     <td class="px-4 py-2">{{ $examen->heure_fin ?? 'N/A' }}</td>
                                     <td class="px-4 py-2">{{ optional($examen->module)->lib_elp ?? 'N/A' }}</td>
-                                    <td class="px-4 py-2">{{ optional($examen->module->filiere)->version_etape ?? 'N/A' }}</td>
+                                    <td class="px-4 py-2">{{ optional($examen->module->filiere)->code_etape ?? 'N/A' }}</td>
                                     <td class="px-4 py-2">
                                         @if ($examen->sallesSupplementaires && $examen->sallesSupplementaires->isNotEmpty())
                                             @foreach ($examen->sallesSupplementaires as $salle)
@@ -99,6 +99,11 @@
                                                 </button>
                                             </form>
                                         </div>
+                                    </td>
+                                    <td class="px-4 py-2">
+                                        <a href="{{ route('examens.downloadPDF', ['sessionId' => $examen->id_session, 'codeEtape' => $examen->module->filiere->code_etape]) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                            Télécharger
+                                        </a>
                                     </td>
                                 </tr>
                             @empty

@@ -64,6 +64,7 @@
                             </x-slot>
                             <x-slot name="content">
                                 <x-dropdown-link :href="route('examens.global')">{{ __('Emploi Globale') }}</x-dropdown-link>
+                                <x-dropdown-link :href="route('selectFiliere')">{{ __('Emploi des etudiants') }}</x-dropdown-link>
                                 <x-dropdown-link :href="route('selectDepartment')">{{ __('Emploi d\'Enseignant Dépertement') }}</x-dropdown-link>
                                 <x-dropdown-link :href="route('surveillants_reservistes.index')">{{ __('Emploi des Réservistes') }}</x-dropdown-link>
                             </x-slot>

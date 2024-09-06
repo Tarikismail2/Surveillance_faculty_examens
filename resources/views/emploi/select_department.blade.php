@@ -47,7 +47,7 @@
                                 <option value="" disabled selected>Choisissez une session</option>
                                 @foreach ($sessions as $id => $type)
                                     <option value="{{ $id }}" {{ request('id_session') == $id ? 'selected' : '' }}>
-                                        {{ $type }}
+                                        {{ $type }} 
                                     </option>
                                 @endforeach
                             </select>

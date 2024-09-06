@@ -827,7 +827,7 @@ class ExamenController extends Controller
         return redirect()->route('examens.showForm', ['examen' => $examen->id])->with('success', 'Les surveillants ont été mis à jour avec succès.');
     }
 
-    //Affectation des surveillants d'une facon manuel
+    // Affectation des surveillants d'une facon manuel
     // public function assignInvigilators(Request $request, $id)
     // {
     //     // Récupérer l'examen
