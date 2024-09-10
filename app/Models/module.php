@@ -14,16 +14,17 @@ class Module extends Model
         'lib_elp',
         'code_etape',
         'id_session',
+        'id_enseignant',
     ];
 
     public function inscriptions()
-{
-    return $this->hasMany(Inscription::class, 'id_module');
-}
+    {
+        return $this->hasMany(Inscription::class, 'id_module');
+    }
 
     public function examens()
     {
-        return $this->hasMany(Examen::class, 'id_module');
+        return $this->belongsToMany(Examen::class, 'exam_module', 'module_id', 'exam_id');
     }
 
     public function filiere()
@@ -40,9 +41,18 @@ class Module extends Model
     {
         return $this->belongsTo(SessionExam::class);
     }
-
-    public function modules()
+    // Add this relationship for the responsible teacher
+    public function enseignant()
     {
-        return $this->hasMany(Module::class, 'code_etape');
+        return $this->belongsTo(Enseignant::class, 'id_enseignant');
     }
+    // public function modules()
+    // {
+    //     return $this->hasMany(Module::class, 'code_etape');
+    // }
+    public function filiereGp()
+{
+    return $this->belongsTo(FiliereGp::class, 'id_module', 'id');
+}
+
 }

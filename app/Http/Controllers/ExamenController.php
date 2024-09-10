@@ -7,8 +7,10 @@ use App\Models\Department;
 use App\Models\Examen;
 use App\Models\Module;
 use App\Models\Salle;
+use App\Models\ExamModule;
 use App\Models\Enseignant;
 use App\Models\ExamenSalleEnseignant;
+use App\Models\FiliereGp;
 use App\Models\Inscription;
 use App\Models\SessionExam;
 use App\Models\Filiere;
@@ -26,27 +28,40 @@ use Psy\Readline\Hoa\Console;
 
 class ExamenController extends Controller
 {
-
     public function index(Request $request, $sessionId)
     {
+        // Fetch the IDs of modules related to the provided code_etape (filiereId)
+        $moduleIds = Module::where('code_etape', $request->input('filiereId'))->pluck('id');
+
+        // Fetch the exams for the provided session ID and filter by module and filiere if specified
         $examens = Examen::where('id_session', $sessionId)
             ->when($request->input('module_id'), function ($query, $moduleId) {
-                return $query->where('id_module', $moduleId);
-            })
-            ->when($request->input('filiereId'), function ($query, $filiereId) {
-                return $query->whereHas('module', function ($query) use ($filiereId) {
-                    $query->where('id_filiere', $filiereId);
+                return $query->whereHas('modules', function ($query) use ($moduleId) {
+                    $query->where('modules.id', $moduleId);
                 });
             })
-            ->with(['sallePrincipale', 'sallesSupplementaires', 'module', 'enseignant'])
+            ->when($request->input('filiereId'), function ($query, $filiereId) use ($moduleIds) {
+                return $query->whereHas('modules', function ($query) use ($moduleIds) {
+                    $query->whereIn('modules.id', $moduleIds);
+                });
+            })
+            ->with(['sallePrincipale', 'sallesSupplementaires', 'modules', 'enseignant'])
             ->get();
 
+        // Check if there are any exams and handle accordingly
+        if ($examens->isEmpty()) {
+            return back()->withErrors(['error' => 'Aucun examen trouvé pour cette session.']);
+        }
+
+        // Retrieve modules, filieres, and session
         $modules = Module::all();
         $filieres = Filiere::all();
         $session = SessionExam::findOrFail($sessionId);
 
         return view('examens.index', compact('examens', 'modules', 'filieres', 'session'));
     }
+
+
 
     public function create($id)
     {
@@ -61,24 +76,136 @@ class ExamenController extends Controller
         return view('examens.create', compact('salles', 'selected_session', 'filieres', 'departments', 'enseignants', 'examen'));
     }
 
+    // public function store(Request $request)
+    // {
+    //     // Validate the input data
+    //     $validatedData = $request->validate([
+    //         'date' => 'required|date',
+    //         'code_etape' => 'required|exists:filieres,code_etape',
+    //         'heure_debut' => 'required|date_format:H:i',
+    //         'id_module' => 'required|exists:modules,lib_elp', // Validate lib_elp instead of id
+    //         'heure_fin' => 'required|date_format:H:i|after:heure_debut',
+    //         'id_enseignant' => 'required|exists:enseignants,id',
+    //         'id_session' => 'required|exists:session_exams,id',
+    //         'allocation_mode' => 'required|in:manual,automatic',
+    //         'id_salle' => 'required_if:allocation_mode,manual|nullable|exists:salles,id',
+    //         'additional_salles.*' => 'nullable|exists:salles,id',
+    //         'inscriptions_count' => 'required|integer|min:1',
+    //     ]);
+
+    //     // Determine if the filière is new or old
+    //     $filiere = Filiere::where('code_etape', $request->code_etape)->first();
+
+    //     if (!$filiere) {
+    //         return back()->withErrors(['error' => 'Filière non trouvée.'])->withInput();
+    //     }
+
+    //     // Initialize the inscription count
+    //     $inscriptions_count = $request->inscriptions_count;
+
+    //     // Fetch module IDs based on code_etape and lib_elp
+    //     // Fetch and log raw data for debugging
+    //     $rawModules = Module::where('code_etape', $request->code_etape)
+    //         ->where('lib_elp', $request->id_module)
+    //         ->get(); // Retrieve all matching modules
+
+    //     Log::info('Raw modules data:', $rawModules->toArray());
+
+    //     // Then fetch and log IDs
+    //     $modules = $rawModules->pluck('id');
+    //     Log::info('Fetched module IDs:', $modules->toArray());
+
+    //     if ($modules->isEmpty()) {
+    //         return back()->withErrors(['error' => 'Aucun module trouvé avec ce libellé.'])->withInput();
+    //     }
+
+    //     // Logic for new filière
+    //     if ($filiere->type === 'new') {
+    //         // Fetch all student IDs registered in the modules with the same lib_elp
+    //         $studentIds = Inscription::whereIn('id_module', $modules)
+    //             ->pluck('id_etudiant')
+    //             ->unique()
+    //             ->toArray();
+
+    //         // Update the total number of students for room allocation
+    //         $inscriptions_count = count($studentIds);
+    //     }
+
+    //     // Handle exam allocation
+    //     if ($request->allocation_mode === 'automatic') {
+    //         $resultatAllocation = $this->allocateAutomaticSalles(
+    //             $request->date,
+    //             $request->heure_debut,
+    //             $request->heure_fin,
+    //             $inscriptions_count
+    //         );
+
+    //         if (!$resultatAllocation['success']) {
+    //             return back()->withErrors(['error' => $resultatAllocation['message']])->withInput();
+    //         }
+
+    //         $sallesAllouees = $resultatAllocation['sallesAllouees'];
+    //     } else {
+    //         $sallesAllouees = array_merge([$request->id_salle], $request->additional_salles ?? []);
+    //     }
+
+    //     // Validate room capacity
+    //     $salles = Salle::whereIn('id', $sallesAllouees)->get();
+    //     $total_capacity = $salles->sum('capacite');
+
+    //     if ($total_capacity < $inscriptions_count) {
+    //         return back()->withErrors(['error' => 'La capacité totale des salles sélectionnées est insuffisante.'])->withInput();
+    //     }
+
+    //     // Create the exam record
+    //     $examen = Examen::create([
+    //         'date' => $request->date,
+    //         'heure_debut' => $request->heure_debut,
+    //         'heure_fin' => $request->heure_fin,
+    //         'id_enseignant' => $request->id_enseignant,
+    //         'id_session' => $request->id_session,
+    //         'id_salle' => $request->allocation_mode === 'manual' ? $request->id_salle : null,
+    //     ]);
+
+    //     // log::info('id_module'.$modules->module_ids.'exam id '.$examen->id);
+    //     // Store related modules in the exam_module table
+    //     foreach ($modules as $id_module) {
+    //         log::info('id_module' . $id_module . 'exam id ' . $examen->id);
+    //         ExamModule::create([
+    //             'exam_id' => $examen->id,
+    //             'module_id' => $id_module,
+    //         ]);
+    //     }
+
+    //     // Attach additional rooms to the exam
+    //     if (!empty($sallesAllouees)) {
+    //         $examen->salles()->attach($sallesAllouees);
+    //     }
+
+    //     return redirect()->route('examens.index', ['sessionId' => $request->id_session])
+    //         ->with('success', 'Examen ajouté avec succès.');
+    // }
+
+
     public function store(Request $request)
     {
+
         $validatedData = $request->validate([
             'date' => 'required|date',
             'code_etape' => 'required|exists:filieres,code_etape',
             'heure_debut' => 'required|date_format:H:i',
-            'id_module' => 'required|exists:modules,id',
+            'id_module' => 'required|exists:modules,lib_elp',
             'heure_fin' => 'required|date_format:H:i|after:heure_debut',
             'id_enseignant' => 'required|exists:enseignants,id',
             'id_session' => 'required|exists:session_exams,id',
             'allocation_mode' => 'required|in:manual,automatic',
             'id_salle' => 'required_if:allocation_mode,manual|nullable|exists:salles,id',
-            'additional_salles.*' => 'nullable|exists:salles,id',
+            'additional_salles.*' => 'nullable|exists:salfles,id',
             'inscriptions_count' => 'required|integer|min:1',
         ]);
 
         // Déterminer le type de filière (ancienne ou nouvelle)
-        $filiere = Filiere::where('code_etape', $request->id_filiere)->first();
+        $filiere = Filiere::where('code_etape', $request->code_etape)->first();
 
         if (!$filiere) {
             return back()->withErrors(['error' => 'Filière non trouvée.'])->withInput();
@@ -87,21 +214,6 @@ class ExamenController extends Controller
         // Initialiser le compteur d'inscriptions
         $inscriptions_count = $request->inscriptions_count;
 
-        // Logique de gestion des filières nouvelles
-        if ($filiere->type === 'new') {
-            // Récupérer tous les étudiants inscrits dans les modules avec le même lib_elp
-            $module = Module::find($request->id_module);
-            $modulesGroup = Module::where('lib_elp', $module->lib_elp)->get();
-
-            // Récupérer les inscriptions de tous les étudiants des modules groupés
-            $studentIds = Inscription::whereIn('id_module', $modulesGroup->pluck('id'))
-                ->pluck('id_etudiant')
-                ->unique()
-                ->toArray();
-
-            // Mettre à jour le nombre total d'étudiants pour l'allocation des salles
-            $inscriptions_count = count($studentIds);
-        }
 
 
         // Validation des horaires
@@ -122,11 +234,12 @@ class ExamenController extends Controller
         }
 
         // Validation de l'examen existant
-        $existingExam = Examen::where('id_module', $request->id_module)
-            ->whereHas('module', function ($query) use ($request) {
-                // $query->where('id_filiere', $request->id_filiere);
-                $query->where('code_etape', $request->id_filiere);
-            })->exists();
+        $existingExam = Examen::whereHas('modules', function ($query) use ($request) {
+            $query->where('lib_elp', $request->id_module) // Use lib_elp for module identification
+                ->where('code_etape', $request->code_etape); // Check for code_etape
+        })->exists();
+
+        Log::info("the existing exam" . $existingExam);
 
         if ($existingExam) {
             return back()->withErrors(['error' => 'Un examen pour ce module et cette filière existe déjà.'])->withInput();
@@ -142,9 +255,8 @@ class ExamenController extends Controller
                             ->where('heure_fin', '>=', $request->heure_fin);
                     });
             })
-            ->whereHas('module', function ($query) use ($request) {
-                // $query->where('id_filiere', $request->id_filiere);
-                $query->where('code_etape', $request->id_filiere);
+            ->whereHas('modules', function ($query) use ($request) {
+                $query->where('code_etape', $request->code_etape);
             })
             ->exists();
 
@@ -237,11 +349,47 @@ class ExamenController extends Controller
             'date' => $request->date,
             'heure_debut' => $request->heure_debut,
             'heure_fin' => $request->heure_fin,
-            'id_module' => $request->id_module,
+            // 'id_module' => $request->id_module,
             'id_enseignant' => $request->id_enseignant,
             'id_session' => $request->id_session,
             'id_salle' => $request->allocation_mode === 'manual' ? $request->id_salle : null,
         ]);
+
+        // Determine if the filière is new or old
+        $filiere = Filiere::where('code_etape', $request->code_etape)->first();
+
+        if ($filiere && $filiere->type === 'new') {
+            // If the filière is new, fetch modules from the filiere_gp table
+            $rawModules = FiliereGp::join('modules', 'filiere_gp.id_module', '=', 'modules.id')
+                ->where('filiere_gp.code_etape', $request->code_etape)
+                ->where('modules.lib_elp', $request->id_module)
+                ->get(['modules.id']); // Only get the module IDs
+
+            Log::info('Fetched modules for new filiere:', $rawModules->toArray());
+        } else {
+            // If the filière is old, keep the same process
+            $rawModules = Module::where('code_etape', $request->code_etape)
+                ->where('lib_elp', $request->id_module)
+                ->get(['id']); // Only get the module IDs
+
+            Log::info('Fetched modules for old filiere:', $rawModules->toArray());
+        }
+
+        // Then fetch and log IDs
+        $modules = $rawModules->pluck('id');
+
+
+        if ($modules->isEmpty()) {
+            return back()->withErrors(['error' => 'Aucun module trouvé avec ce libellé.'])->withInput();
+        }
+
+        foreach ($modules as $id_module) {
+            log::info('id_module' . $id_module . 'exam id ' . $examen->id);
+            ExamModule::create([
+                'exam_id' => $examen->id,
+                'module_id' => $id_module,
+            ]);
+        }
 
         // Lier les salles supplémentaires à l'examen
         if (!empty($sallesAllouees)) {
@@ -289,18 +437,26 @@ class ExamenController extends Controller
     public function edit($id)
     {
         $examen = Examen::findOrFail($id);
-        $examen->load('module', 'additionalSalles');
+        $examen->load('modules', 'sallesSupplementaires');
 
         $modules = Module::all();
         $salles = Salle::all();
         $enseignants = Enseignant::all();
-        $filieres = Filiere::all();
+        $filieres = Filiere::all(); // Normal filieres
         $selected_session = SessionExam::findOrFail($examen->id_session);
 
+        // Fetch filiere_gp records linked to modules associated with this exam
+        $moduleIds = $examen->modules->pluck('id'); // Get the module IDs associated with the exam
+        $filieresGp = FiliereGp::whereIn('id_module', $moduleIds)->get(); // Get filieres_gp linked to those module IDs
+
+        // Extract unique code_etape values from filieresGp
+        $codeEtapesFromFiliereGp = $filieresGp->pluck('code_etape')->unique(); // Get unique values
+
+        log::info($codeEtapesFromFiliereGp[0]);
         // Fetch the ID of the primary room
         $primaryRoomId = $examen->id_salle;
 
-        $additionalSalles = $examen->additionalSalles->pluck('id')->filter(function ($id) use ($primaryRoomId) {
+        $additionalSalles = $examen->sallesSupplementaires->pluck('id')->filter(function ($id) use ($primaryRoomId) {
             return $id !== $primaryRoomId;
         })->toArray();
 
@@ -310,8 +466,11 @@ class ExamenController extends Controller
         $examen->heure_debut = \Carbon\Carbon::parse($examen->heure_debut)->format('H:i');
         $examen->heure_fin = \Carbon\Carbon::parse($examen->heure_fin)->format('H:i');
 
-        return view('examens.edit', compact('examen', 'modules', 'salles', 'enseignants', 'selected_session', 'filieres', 'additionalSalles', 'departements'));
+        return view('examens.edit', compact('examen', 'modules', 'salles', 'enseignants', 'selected_session', 'filieres', 'codeEtapesFromFiliereGp', 'additionalSalles', 'departements'));
     }
+
+
+
 
     public function update(Request $request, Examen $examen)
     {
@@ -345,7 +504,7 @@ class ExamenController extends Controller
         // Ensure the exam is unique for the module and filiere
         $existingExam = Examen::where('id_module', $request->id_module)
             ->where('id', '!=', $examen->id)
-            ->whereHas('module', function ($query) use ($request) {
+            ->whereHas('modules', function ($query) use ($request) {
                 $query->where('code_etape', $request->id_filiere);
             })->exists();
 
@@ -364,7 +523,7 @@ class ExamenController extends Controller
                             ->where('heure_fin', '>=', $request->heure_fin);
                     });
             })
-            ->whereHas('module', function ($query) use ($request) {
+            ->whereHas('modules', function ($query) use ($request) {
                 $query->where('code_etape', $request->id_filiere);
             })->exists();
 
@@ -508,42 +667,43 @@ class ExamenController extends Controller
         ]);
     }
 
-    // public function getModulesByFiliere($filiereId)
-    // {
-    //     $filiere = Filiere::where('code_etape', $filiereId)->first();
-    //     if ($filiere) {
-    //         if ($filiere->type === 'new') {
-    //             // Query for 'new' filiere type
-    //             $modules = Module::join('filiere_gp', 'modules.id', '=', 'filiere_gp.id_module')
-    //                 ->leftJoin('inscriptions', 'modules.id', '=', 'inscriptions.id_module')
-    //                 ->where('modules.code_etape', $filiere->id)
-    //                 ->whereDoesntHave('examens')
-    //                 ->select('modules.lib_elp', DB::raw('COUNT(inscriptions.id) as inscriptions_count'))
-    //                 ->groupBy('modules.lib_elp')
-    //                 ->get();
-    //         } else {
-    //             // Query for 'old' filiere type
-    //             $modules = Module::leftJoin('inscriptions', 'modules.id', '=', 'inscriptions.id_module')
-    //                 ->where('code_etape', $filiere->code_etape)
-    //                 ->whereDoesntHave('examens')
-    //                 ->select('modules.lib_elp', DB::raw('COUNT(inscriptions.id) as inscriptions_count'))
-    //                 ->groupBy('modules.lib_elp')
-    //                 ->get();
-    //         }
-
-    //         return response()->json($modules);
-    //     } else {
-    //         // Return an empty response or an error if the filiere is not found
-    //         return response()->json([], 404);
-    //     }
-    // }
     public function getModulesByFiliere($filiereId)
     {
-        $modules = Module::where('code_etape', $filiereId)
-            ->withCount('inscriptions')
-            ->get();
-        return response()->json(['modules' => $modules]);
+        $filiere = Filiere::where('code_etape', $filiereId)->first();
+        if ($filiere) {
+            if ($filiere->type === 'new') {
+                // Query for 'new' filiere type
+                $modules = Module::join('filiere_gp', 'modules.id', '=', 'filiere_gp.id_module')
+                    ->leftJoin('inscriptions', 'modules.id', '=', 'inscriptions.id_module')
+                    ->where('filiere_gp.code_etape', $filiereId)
+                    // ->whereDoesntHave('examens')
+                    ->select('modules.lib_elp', DB::raw('COUNT(inscriptions.id) as inscriptions_count'))
+                    ->groupBy('modules.lib_elp')
+                    ->get();
+                Log::info('Modules selected this this new filiere are:', $modules->toArray());
+            } else {
+                // Query for 'old' filiere type
+                $modules = Module::leftJoin('inscriptions', 'modules.id', '=', 'inscriptions.id_module')
+                    ->where('code_etape', $filiere->code_etape)
+                    // ->whereDoesntHave('examens')
+                    ->select('modules.lib_elp', DB::raw('COUNT(inscriptions.id) as inscriptions_count'))
+                    ->groupBy('modules.lib_elp')
+                    ->get();
+            }
+
+            return response()->json($modules);
+        } else {
+            // Return an empty response or an error if the filiere is not found
+            return response()->json([], 404);
+        }
     }
+    // public function getModulesByFiliere($codeetape)
+    // {
+    //     $modules = Module::where('code_etape', $codeetape)
+    //         ->withCount('inscriptions')
+    //         ->get();
+    //     return response()->json(['modules' => $modules]);
+    // }
 
     public function getEnseignantsByDepartment($departmentId)
     {
@@ -963,7 +1123,8 @@ class ExamenController extends Controller
             $heure_debut = $examen->heure_debut;
             $heure_fin = $examen->heure_fin;
 
-            $responsableModuleId = $examen->module->id_enseignant;
+            $responsableModuleId = $examen->id_enseignant;
+            log::info('exam' . $examen . 'id respo' . $responsableModuleId);
 
             // Vérifier si les surveillants ont déjà été affectés à cet examen
             if ($examen->surveillants()->exists()) {

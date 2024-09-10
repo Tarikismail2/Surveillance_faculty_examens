@@ -19,72 +19,80 @@ class Examen extends Model
         'id_session'
     ];
 
-    // Relation pour la salle principale
+    // Relation for the main room
     public function sallePrincipale()
     {
         return $this->belongsTo(Salle::class, 'id_salle');
     }
 
-    // Relation pour les salles supplémentaires
+    // Relation for additional rooms
     public function sallesSupplementaires()
     {
         return $this->belongsToMany(Salle::class, 'examen_salle', 'id_examen', 'id_salle')
             ->withTimestamps();
     }
 
-    // Relation pour les salles (inclut la salle principale et les salles supplémentaires)
+    // Relation for all rooms (including main and additional rooms)
     public function salles()
     {
         return $this->belongsToMany(Salle::class, 'examen_salle', 'id_examen', 'id_salle')
             ->withTimestamps();
     }
 
-    // Relation pour le module
-    public function module()
+    public function modules()
     {
-        return $this->belongsTo(Module::class, 'id_module');
+        return $this->belongsToMany(Module::class, 'exam_module', 'exam_id', 'module_id');
     }
-
-    // Ensiegnant Examen 
-    public function enseignants()
-    {
-        return $this->belongsToMany(Enseignant::class, 'examen_salle_enseignant', 'id_examen', 'id_enseignant');
-    }
-
-
-    // Relation pour l'enseignant
+    // Relation for the exam's main teacher
     public function enseignant()
     {
         return $this->belongsTo(Enseignant::class, 'id_enseignant');
     }
 
-    // Relation pour la session
+    // Relation for multiple teachers (if there are many teachers per exam)
+    public function enseignants()
+    {
+        return $this->belongsToMany(Enseignant::class, 'examen_salle_enseignant', 'id_examen', 'id_enseignant');
+    }
+
+    // Relation for the session
     public function session()
     {
         return $this->belongsTo(SessionExam::class, 'id_session');
     }
 
-    // Relation pour la filière
+    // Relation for the filière
     public function filiere()
     {
         return $this->belongsTo(Filiere::class, 'code_etape');
     }
 
-    // Relation pour les contraintes de l'enseignant
+    // Relation for teacher constraints
     public function contraintes()
     {
         return $this->hasMany(ContrainteEnseignant::class, 'id_enseignant', 'id_enseignant');
     }
 
-    // Relation pour les surveillants associés
+    // Relation for associated invigilators
     public function surveillants()
     {
         return $this->hasMany(ExamenSalleEnseignant::class, 'id_examen');
     }
 
-    // Vérifie si des surveillants sont assignés
+    // Check if invigilators are assigned
     public function hasAssignedInvigilators()
     {
         return $this->surveillants()->exists();
     }
+
+    public function module()
+    {
+        return $this->belongsTo(Module::class, 'id_module');
+    }
+
+    public function salle()
+    {
+        return $this->belongsToMany(Salle::class, 'examen_salle', 'id_examen', 'id_salle'); // Assuming many-to-many relation
+    }
+
 }

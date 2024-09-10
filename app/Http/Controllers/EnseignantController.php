@@ -7,6 +7,7 @@ use App\Models\Department;
 use App\Models\Etudiant;
 use App\Models\Examen;
 use App\Models\SessionExam;
+use App\Models\SurveillantReserviste;
 use Dompdf\Dompdf;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -85,28 +86,50 @@ class EnseignantController extends Controller
 
     public function generatePDFEnseignant($sessionId)
     {
-        // Retrieve session details
-        // dd($sessionId);
         $session = SessionExam::findOrFail($sessionId);
-    // dd($session);
-        // Retrieve exams for the session
-        $examens = Examen::with(['module.filiere', 'salles', 'surveillants'])
-            ->where('id_session', $sessionId)
-            ->get();
     
-        // Load the PDF view and pass data
+        // Récupérer tous les examens associés à cette session
+        $examens = Examen::with(['module', 'salles', 'enseignants', 'surveillants'])
+                         ->where('id_session', $sessionId)
+                         ->get();
+    
+        // Grouper les examens par date et demi-journée (matin/après-midi) et par salle
+        $groupedExams = [];
+    
+        foreach ($examens as $examen) {
+            $date = $examen->date;
+            $timeOfDay = $examen->heure_debut < '12:00:00' ? 'morning' : 'afternoon';
+    
+            // Si la date n'existe pas dans le tableau, l'initialiser
+            if (!isset($groupedExams[$date])) {
+                $groupedExams[$date] = ['morning' => [], 'afternoon' => []];
+            }
+    
+            // Grouper par salle
+            foreach ($examen->salles as $salle) {
+                $groupedExams[$date][$timeOfDay][$salle->name][] = $examen;
+            }
+        }
+    
+        // Récupérer les surveillants réservistes par date
+        $reservists = SurveillantReserviste::where('affecte', false)
+                                           ->whereIn('date', $examens->pluck('date'))
+                                           ->get()
+                                           ->groupBy('date');
+    
+        // Charger la vue dans Dompdf
         $pdf = new Dompdf();
-        $pdf->loadHtml(view('enseignants.global_pdf', compact('session', 'examens'))->render());
-    
-        // Set paper size and orientation
+        $pdf->loadHtml(view('enseignants.global_pdf', compact('session', 'groupedExams', 'reservists'))->render());
         $pdf->setPaper('A4', 'portrait');
-    
-        // Render the PDF
         $pdf->render();
     
-        // Stream the PDF to the browser without downloading
         return $pdf->stream('Examen_Enseignant.pdf', ['Attachment' => 0]);
     }
+    
+    
+    
+    
+    
     
 
 }

@@ -95,11 +95,11 @@
                                 <i class="fas fa-file-pdf mr-2"></i>
                                 @lang('Download PDF Planification')
                             </a>
-                            <a href="{{ route('examens_global.pdf', ['id_session' => $selectedSessionId]) }}"
+                            {{-- <a href="{{ route('examens_global.pdf', ['id_session' => $selectedSessionId]) }}"
                                class="flex items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md shadow-lg transition duration-200 transform hover:scale-105">
                                 <i class="fas fa-file-pdf mr-2"></i>
                                 @lang('Download PDF Surveillants')
-                            </a>
+                            </a> --}}
                         </div>
                     @else
                         <p class="text-center text-gray-500 py-4">@lang('No exams scheduled for this session.')</p>

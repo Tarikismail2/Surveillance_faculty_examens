@@ -129,7 +129,7 @@ Route::middleware(['role:admin'])->group(function () {
 
     //download du planification
     // Route::get('/global/pdf', 'App\Http\Controllers\PlanificationController@downloadGlobalSchedulePDF')->name('examens.global.pdf');
-    Route::get('/examens/global/pdf/{id_session}', [PlanificationController::class, 'downloadSurveillancePDF'])->name('examens_global.pdf');
+    // Route::get('/examens/global/pdf/{id_session}', [PlanificationController::class, 'downloadSurveillancePDF'])->name('examens_global.pdf');
 
     //validation des contraintes enseignants
     Route::get('/contraintes_admin', [ContrainteEnseignantController::class, 'index_admin'])->name('contrainte_enseignants.index_admin');

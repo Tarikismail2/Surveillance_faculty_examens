@@ -221,11 +221,6 @@ class EtudiantController extends Controller
         // Récupérer tous les modules de la filière
         $modules = Module::where('code_etape', $code_etape)->get();
 
-        // Vérifier si des modules sont trouvés
-        if ($modules->isEmpty()) {
-            return response()->json(['message' => 'Aucun module trouvé pour cette filière.'], 404);
-        }
-
         // Récupérer les étudiants inscrits dans les modules de la filière pour la session
         $students = Etudiant::whereHas('inscriptions', function ($query) use ($code_etape, $sessionId) {
             $query->whereHas('module', function ($q) use ($code_etape) {
@@ -245,7 +240,7 @@ class EtudiantController extends Controller
             })
             ->with(['module', 'sallePrincipale', 'sallesSupplementaires'])
             ->get();
-
+// dd($exams);
         $pdf = new Dompdf();
 
         $pdf->loadHtml(view('etudiants.students_pdf', compact('session', 'filiere', 'students', 'exams', 'modules'))->render());

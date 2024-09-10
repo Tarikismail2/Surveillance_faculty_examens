@@ -11,22 +11,22 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
                 @if ($errors->any())
-                    <div class="mb-4">
-                        <div class="font-medium text-red-600">@lang('Whoops! Quelque chose s\'est mal passé.')</div>
-                        <ul class="mt-3 list-disc list-inside text-sm text-red-600">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
+                <div class="mb-4">
+                    <div class="font-medium text-red-600">@lang('Whoops! Quelque chose s\'est mal passé.')</div>
+                    <ul class="mt-3 list-disc list-inside text-sm text-red-600">
+                        @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
                 @endif
 
                 @if (session('success'))
-                    <div class="mb-4">
-                        <ul class="mt-3 list-disc list-inside text-sm text-green-600">
-                            <li>{{ session('success') }}</li>
-                        </ul>
-                    </div>
+                <div class="mb-4">
+                    <ul class="mt-3 list-disc list-inside text-sm text-green-600">
+                        <li>{{ session('success') }}</li>
+                    </ul>
+                </div>
                 @endif
 
 
@@ -42,28 +42,46 @@
                                 class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 required>
                             @error('date')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
-
                         <!-- Filière -->
-                        <div class="form-group">
-                            <label for="filiere"
-                                class="block text-gray-700 dark:text-gray-300">@lang('Filière')</label>
-                            <select
-                                class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                id="filiere" name="code_etape" required>
-                                <option value="">@lang('Sélectionnez une filière')</option>
-                                @foreach ($filieres as $filiere)
-                                    <option value="{{ $filiere->code_etape }}"
-                                        {{ old('code_etape') == $filiere->code_etape ? 'selected' : '' }}>
-                                        {{ $filiere->version_etape }}</option>
-                                @endforeach
-                            </select>
-                            @error('code_etape')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+                     <div class="form-group">
+    <label for="filiere" class="block text-gray-700 dark:text-gray-300">@lang('Filière')</label>
+    <select class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        id="filiere" name="code_etape" required>
+        <option value="">@lang('Sélectionnez une filière')</option>
+
+        <!-- New Filière -->
+        <optgroup label="@lang('Nouveaux Filières')">
+            @foreach ($filieres as $filiere)
+                @if ($filiere->type === 'new')
+                    <option 
+                        value="{{ $filiere->code_etape }}" 
+                       >
+                        {{ $filiere->version_etape }}
+                    </option>
+                @endif
+            @endforeach
+        </optgroup>
+
+        <!-- Normal Filière -->
+        <optgroup label="@lang('Filières Normales')">
+            @foreach ($filieres as $filiere)
+                @if ($filiere->type === 'old')
+                    <option value="{{ $filiere->code_etape }}" 
+                    >
+                        {{ $filiere->version_etape }}
+                    </option>
+                @endif
+            @endforeach
+        </optgroup>
+    </select>
+    @error('code_etape')
+        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+    @enderror
+</div>
+
 
                         <!-- Heure de Début -->
                         <div class="form-group">
@@ -73,17 +91,13 @@
                                 class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 required>
                                 <option value="">@lang('Sélectionnez une heure de début')</option>
-                                <option value="08:30" {{ old('heure_debut') == '08:30' ? 'selected' : '' }}>08:30
-                                </option>
-                                <option value="10:15" {{ old('heure_debut') == '10:15' ? 'selected' : '' }}>10:15
-                                </option>
-                                <option value="14:30" {{ old('heure_debut') == '14:30' ? 'selected' : '' }}>14:30
-                                </option>
-                                <option value="16:15" {{ old('heure_debut') == '16:15' ? 'selected' : '' }}>16:15
-                                </option>
+                                <option value="08:30">08:30</option>
+                                <option value="10:15">10:15</option>
+                                <option value="14:30">14:30</option>
+                                <option value="16:15">16:15</option>
                             </select>
                             @error('heure_debut')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -99,7 +113,7 @@
                                 <!-- Les modules seront remplis dynamiquement -->
                             </select>
                             @error('id_module')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -111,17 +125,13 @@
                                 class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 required>
                                 <option value="">@lang('Sélectionnez une heure de fin')</option>
-                                <option value="10:00" {{ old('heure_fin') == '10:00' ? 'selected' : '' }}>10:00
-                                </option>
-                                <option value="11:45" {{ old('heure_fin') == '11:45' ? 'selected' : '' }}>11:45
-                                </option>
-                                <option value="16:00" {{ old('heure_fin') == '16:00' ? 'selected' : '' }}>16:00
-                                </option>
-                                <option value="17:45" {{ old('heure_fin') == '17:45' ? 'selected' : '' }}>17:45
-                                </option>
+                                <option value="10:00">10:00</option>
+                                <option value="11:45">11:45</option>
+                                <option value="16:00">16:00</option>
+                                <option value="17:45">17:45</option>
                             </select>
                             @error('heure_fin')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -133,13 +143,14 @@
                                 class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                 <option value="">@lang('Choisir un enseignant')</option>
                                 @foreach ($enseignants as $enseignant)
-                                    <option value="{{ $enseignant->id }}"
-                                        {{ old('id_enseignant') == $enseignant->id ? 'selected' : '' }}>
-                                        {{ $enseignant->name }}</option>
+                                <option value="{{ $enseignant->id }}"
+                                    {{ old('id_enseignant') == $enseignant->id ? 'selected' : '' }}>
+                                    {{ $enseignant->name }}
+                                </option>
                                 @endforeach
                             </select>
                             @error('id_enseignant')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -154,7 +165,7 @@
                                     ({{ $selected_session->date_debut }} - {{ $selected_session->date_fin }})</option>
                             </select>
                             @error('id_session')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -178,14 +189,14 @@
                                     class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                     <option value="">@lang('Choisir une salle')</option>
                                     @foreach ($salles as $salle)
-                                        <option value="{{ $salle->id }}" data-capacite="{{ $salle->capacite }}"
-                                            {{ old('id_salle') == $salle->id ? 'selected' : '' }}>
-                                            {{ $salle->name }} (Capacité: {{ $salle->capacite }})
-                                        </option>
+                                    <option value="{{ $salle->id }}" data-capacite="{{ $salle->capacite }}"
+                                        {{ old('id_salle') == $salle->id ? 'selected' : '' }}>
+                                        {{ $salle->name }} (Capacité: {{ $salle->capacite }})
+                                    </option>
                                     @endforeach
                                 </select>
                                 @error('id_salle')
-                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
 
@@ -270,40 +281,27 @@
             const automaticAllocationDiv = document.getElementById('automatic_allocation');
             const automaticAllocationSummary = document.getElementById('automatic_allocation_summary');
 
-            document.getElementById('filiere').addEventListener('change', function() {
-                const filiereId = this.value;
-                const moduleSelect = document.getElementById('module');
+            filiereSelect.addEventListener('change', function() {
+                const code_etape = this.value;
+                moduleSelect.innerHTML = '<option value="">@lang('Sélectionnez un module ')</option>';
 
-                // Vider le select des modules
-                moduleSelect.innerHTML = '<option value="">@lang('Sélectionnez un module')</option>';
-
-                if (filiereId) {
-                    // Envoyer une requête AJAX pour récupérer les modules
-                    fetch(`/examens/getModulesByFiliere/${filiereId}`)
+                if (code_etape) {
+                    fetch(/examens/getModulesByFiliere/${code_etape})
                         .then(response => response.json())
                         .then(data => {
-                            if (data.modules.length > 0) {
-                                data.modules.forEach(module => {
-                                    const option = document.createElement('option');
-                                    option.value = module.id;
-                                    // Vérifier si inscriptions_count est défini
-                                    const inscriptionsCount = module.inscriptions_count !==
-                                        undefined ? module.inscriptions_count : '0';
-                                    option.textContent =
-                                        `${module.lib_elp} - (${inscriptionsCount} étudiants)`;
-                                    option.setAttribute('data-inscriptions', module
-                                        .inscriptions_count);
-                                    option.setAttribute('data-capacite', module.capacite);
-                                    moduleSelect.appendChild(option);
-                                });
-                            }
+                            data.forEach(module => {
+                                const option = document.createElement('option');
+                                option.value = module.lib_elp;
+                                option.textContent =
+                                    ${module.lib_elp} (${module.inscriptions_count} @lang('inscrits'));
+                                option.setAttribute('data-inscriptions', module.inscriptions_count);
+                                option.setAttribute('data-capacite', module.capacite);
+                                moduleSelect.appendChild(option);
+                            });
                         })
-                        .catch(error => {
-                            console.error('Erreur lors de la récupération des modules:', error);
-                        });
+                        .catch(error => console.error('Error fetching modules:', error));
                 }
             });
-
 
             moduleSelect.addEventListener('change', function() {
                 const selectedModule = moduleSelect.options[moduleSelect.selectedIndex];
@@ -311,6 +309,7 @@
                 inscriptionsCount.value = inscriptions;
                 updateRemainingInscriptions();
             });
+
             salleSelect.addEventListener('change', function() {
                 updateRemainingInscriptions();
             });
@@ -321,13 +320,13 @@
                 newSalleDiv.className = 'mt-2 flex items-center';
 
                 const newSalleSelect = salleSelect.cloneNode(true);
-                newSalleSelect.name = `additional_salles[${salleCount}]`;
-                newSalleSelect.id = `additional_salle_${salleCount}`;
+                newSalleSelect.name = additional_salles[${salleCount}];
+                newSalleSelect.id = additional_salle_${salleCount};
                 newSalleSelect.addEventListener('change', updateRemainingInscriptions);
 
                 const removeButton = document.createElement('button');
                 removeButton.type = 'button';
-                removeButton.innerText = '@lang('Supprimer')';
+                removeButton.innerText = '@lang('Supprimer ')';
                 removeButton.className =
                     'ml-2 py-1 px-2 bg-red-500 hover:bg-red-700 text-white font-semibold rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75';
                 removeButton.addEventListener('click', function() {
@@ -363,7 +362,6 @@
 
                 remainingInscriptions.value = remaining;
             }
-
 
             // Gestion du mode d'affectation (manuel ou automatique)
             allocationModeSelect.addEventListener('change', function() {
