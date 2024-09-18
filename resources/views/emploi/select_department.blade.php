@@ -26,6 +26,13 @@
                     </div>
                 @endif
 
+                <!-- Display success message -->
+                @if (session('success'))
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
                 <!-- Form for selecting department and session -->
                 <form action="{{ route('displayScheduleByDepartment') }}" method="GET">
                     @csrf
@@ -47,7 +54,7 @@
                                 <option value="" disabled selected>Choisissez une session</option>
                                 @foreach ($sessions as $id => $type)
                                     <option value="{{ $id }}" {{ request('id_session') == $id ? 'selected' : '' }}>
-                                        {{ $type }} 
+                                        {{ $type }}
                                     </option>
                                 @endforeach
                             </select>
@@ -63,12 +70,25 @@
                     @if (!$schedule->isEmpty())
                         <div class="overflow-x-auto mt-6">
                             <div class="flex justify-end mb-4">
-                                <form action="{{ route('download-schedule', ['id_department' => $id_department, 'id_session' => $id_session]) }}" method="GET">
+                                <!-- Formulaire d'envoi d'email -->
+                                <form action="{{ route('sendScheduleEmails') }}" method="POST" class="mt-4">
                                     @csrf
-                                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md">Télécharger l'emploi du temps</button>
+                                    <input type="hidden" name="id_department" value="{{ request('id_department') }}">
+                                    <input type="hidden" name="id_session" value="{{ request('id_session') }}">
+                                    <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded-md">
+                                        Envoyer l'emploi du temps par email
+                                    </button>
+                                </form>
+
+                                <form action="{{ route('download-schedule', ['id_department' => request('id_department'), 'id_session' => request('id_session')]) }}" method="GET">
+                                    @csrf
+                                    <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors duration-300 ease-in-out flex items-center space-x-2">
+                                        <i class="fas fa-download"></i>
+                                        <span>Télécharger l'emploi du temps sous forme PDF</span>
+                                    </button>
                                 </form>
                             </div>
-                            <table class="min-w-full divide-y divide-gray-200 bg-white shadow-md rounded-lg">
+                            {{-- <table class="min-w-full divide-y divide-gray-200 bg-white shadow-md rounded-lg">
                                 <thead class="bg-gray-100 text-gray-600">
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Date</th>
@@ -90,7 +110,7 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                        </div>
+                        </div> --}}
                     @else
                         <div class="mt-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
                             <p>Aucune donnée disponible pour le département et la session sélectionnés.</p>

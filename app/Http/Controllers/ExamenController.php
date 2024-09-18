@@ -61,8 +61,6 @@ class ExamenController extends Controller
         return view('examens.index', compact('examens', 'modules', 'filieres', 'session'));
     }
 
-
-
     public function create($id)
     {
         $salles = Salle::all();
@@ -76,120 +74,8 @@ class ExamenController extends Controller
         return view('examens.create', compact('salles', 'selected_session', 'filieres', 'departments', 'enseignants', 'examen'));
     }
 
-    // public function store(Request $request)
-    // {
-    //     // Validate the input data
-    //     $validatedData = $request->validate([
-    //         'date' => 'required|date',
-    //         'code_etape' => 'required|exists:filieres,code_etape',
-    //         'heure_debut' => 'required|date_format:H:i',
-    //         'id_module' => 'required|exists:modules,lib_elp', // Validate lib_elp instead of id
-    //         'heure_fin' => 'required|date_format:H:i|after:heure_debut',
-    //         'id_enseignant' => 'required|exists:enseignants,id',
-    //         'id_session' => 'required|exists:session_exams,id',
-    //         'allocation_mode' => 'required|in:manual,automatic',
-    //         'id_salle' => 'required_if:allocation_mode,manual|nullable|exists:salles,id',
-    //         'additional_salles.*' => 'nullable|exists:salles,id',
-    //         'inscriptions_count' => 'required|integer|min:1',
-    //     ]);
-
-    //     // Determine if the filière is new or old
-    //     $filiere = Filiere::where('code_etape', $request->code_etape)->first();
-
-    //     if (!$filiere) {
-    //         return back()->withErrors(['error' => 'Filière non trouvée.'])->withInput();
-    //     }
-
-    //     // Initialize the inscription count
-    //     $inscriptions_count = $request->inscriptions_count;
-
-    //     // Fetch module IDs based on code_etape and lib_elp
-    //     // Fetch and log raw data for debugging
-    //     $rawModules = Module::where('code_etape', $request->code_etape)
-    //         ->where('lib_elp', $request->id_module)
-    //         ->get(); // Retrieve all matching modules
-
-    //     Log::info('Raw modules data:', $rawModules->toArray());
-
-    //     // Then fetch and log IDs
-    //     $modules = $rawModules->pluck('id');
-    //     Log::info('Fetched module IDs:', $modules->toArray());
-
-    //     if ($modules->isEmpty()) {
-    //         return back()->withErrors(['error' => 'Aucun module trouvé avec ce libellé.'])->withInput();
-    //     }
-
-    //     // Logic for new filière
-    //     if ($filiere->type === 'new') {
-    //         // Fetch all student IDs registered in the modules with the same lib_elp
-    //         $studentIds = Inscription::whereIn('id_module', $modules)
-    //             ->pluck('id_etudiant')
-    //             ->unique()
-    //             ->toArray();
-
-    //         // Update the total number of students for room allocation
-    //         $inscriptions_count = count($studentIds);
-    //     }
-
-    //     // Handle exam allocation
-    //     if ($request->allocation_mode === 'automatic') {
-    //         $resultatAllocation = $this->allocateAutomaticSalles(
-    //             $request->date,
-    //             $request->heure_debut,
-    //             $request->heure_fin,
-    //             $inscriptions_count
-    //         );
-
-    //         if (!$resultatAllocation['success']) {
-    //             return back()->withErrors(['error' => $resultatAllocation['message']])->withInput();
-    //         }
-
-    //         $sallesAllouees = $resultatAllocation['sallesAllouees'];
-    //     } else {
-    //         $sallesAllouees = array_merge([$request->id_salle], $request->additional_salles ?? []);
-    //     }
-
-    //     // Validate room capacity
-    //     $salles = Salle::whereIn('id', $sallesAllouees)->get();
-    //     $total_capacity = $salles->sum('capacite');
-
-    //     if ($total_capacity < $inscriptions_count) {
-    //         return back()->withErrors(['error' => 'La capacité totale des salles sélectionnées est insuffisante.'])->withInput();
-    //     }
-
-    //     // Create the exam record
-    //     $examen = Examen::create([
-    //         'date' => $request->date,
-    //         'heure_debut' => $request->heure_debut,
-    //         'heure_fin' => $request->heure_fin,
-    //         'id_enseignant' => $request->id_enseignant,
-    //         'id_session' => $request->id_session,
-    //         'id_salle' => $request->allocation_mode === 'manual' ? $request->id_salle : null,
-    //     ]);
-
-    //     // log::info('id_module'.$modules->module_ids.'exam id '.$examen->id);
-    //     // Store related modules in the exam_module table
-    //     foreach ($modules as $id_module) {
-    //         log::info('id_module' . $id_module . 'exam id ' . $examen->id);
-    //         ExamModule::create([
-    //             'exam_id' => $examen->id,
-    //             'module_id' => $id_module,
-    //         ]);
-    //     }
-
-    //     // Attach additional rooms to the exam
-    //     if (!empty($sallesAllouees)) {
-    //         $examen->salles()->attach($sallesAllouees);
-    //     }
-
-    //     return redirect()->route('examens.index', ['sessionId' => $request->id_session])
-    //         ->with('success', 'Examen ajouté avec succès.');
-    // }
-
-
     public function store(Request $request)
     {
-
         $validatedData = $request->validate([
             'date' => 'required|date',
             'code_etape' => 'required|exists:filieres,code_etape',
@@ -403,6 +289,7 @@ class ExamenController extends Controller
     //Affectation des salles d'une maniere automatique
     protected function allocateAutomaticSalles($date, $heure_debut, $heure_fin, $inscriptions_count)
     {
+        // Fetch available rooms
         $salles = Salle::whereDoesntHave('examens', function ($query) use ($date, $heure_debut, $heure_fin) {
             $query->where('date', $date)
                 ->where(function ($query) use ($heure_debut, $heure_fin) {
@@ -413,11 +300,21 @@ class ExamenController extends Controller
                                 ->where('heure_fin', '>=', $heure_fin);
                         });
                 });
-        })->orderBy('capacite', 'desc')->get();
+        });
+
+        // Decide sorting strategy based on inscription count
+        if ($inscriptions_count > 100) {
+            // For larger inscription counts, prioritize larger rooms first (descending order)
+            $salles = $salles->orderBy('capacite', 'desc')->get();
+        } else {
+            // For smaller inscription counts, prioritize smaller rooms first (ascending order)
+            $salles = $salles->orderBy('capacite', 'asc')->get();
+        }
 
         $salles_allouees = [];
         $total_capacity = 0;
 
+        // Allocate rooms based on the strategy
         foreach ($salles as $salle) {
             if ($total_capacity >= $inscriptions_count) {
                 break;
@@ -427,10 +324,12 @@ class ExamenController extends Controller
             $total_capacity += $salle->capacite;
         }
 
+        // If total capacity meets the required inscriptions
         if ($total_capacity >= $inscriptions_count) {
             return ['success' => true, 'sallesAllouees' => $salles_allouees];
         }
 
+        // If not enough rooms, return failure message
         return ['success' => false, 'message' => 'Aucune salle disponible n\'a une capacité suffisante pour les inscriptions.'];
     }
 
@@ -445,20 +344,34 @@ class ExamenController extends Controller
         $filieres = Filiere::all(); // Normal filieres
         $selected_session = SessionExam::findOrFail($examen->id_session);
 
-        // Fetch filiere_gp records linked to modules associated with this exam
-        $moduleIds = $examen->modules->pluck('id'); // Get the module IDs associated with the exam
-        $filieresGp = FiliereGp::whereIn('id_module', $moduleIds)->get(); // Get filieres_gp linked to those module IDs
+        // Fetch module IDs related to this exam
+        $moduleIds = $examen->modules->pluck('id');
 
-        // Extract unique code_etape values from filieresGp
-        $codeEtapesFromFiliereGp = $filieresGp->pluck('code_etape')->unique(); // Get unique values
+        // Fetch FiliereGp records related to the modules
+        $filieresGp = FiliereGp::whereIn('id_module', $moduleIds)->get();
 
-        log::info($codeEtapesFromFiliereGp[0]);
+        if ($filieresGp->isNotEmpty()) {
+            // If there are related FiliereGp records, set $code to the unique code_etape from FiliereGp
+            $codeEtapesFromFiliereGp = $filieresGp->pluck('code_etape')->unique();
+            $code = $codeEtapesFromFiliereGp->first(); // Get the first unique code_etape
+            $firstModuleCodeEtape = ''; // Set to empty as we are using FiliereGp
+        } else {
+            // If no related FiliereGp records, set $code to the code_etape from the first module
+            $firstModuleCodeEtape = $examen->modules->first()->code_etape ?? '';
+            $code = ''; // Set to empty as we are using normal Filiere
+        }
+
+
+
         // Fetch the ID of the primary room
         $primaryRoomId = $examen->id_salle;
 
         $additionalSalles = $examen->sallesSupplementaires->pluck('id')->filter(function ($id) use ($primaryRoomId) {
             return $id !== $primaryRoomId;
         })->toArray();
+        $additionalSall = $examen->sallesSupplementaires->pluck('id')->filter(function ($id) use ($primaryRoomId) {
+            return $id !== $primaryRoomId;
+        });
 
         $departements = Department::all();
 
@@ -466,10 +379,8 @@ class ExamenController extends Controller
         $examen->heure_debut = \Carbon\Carbon::parse($examen->heure_debut)->format('H:i');
         $examen->heure_fin = \Carbon\Carbon::parse($examen->heure_fin)->format('H:i');
 
-        return view('examens.edit', compact('examen', 'modules', 'salles', 'enseignants', 'selected_session', 'filieres', 'codeEtapesFromFiliereGp', 'additionalSalles', 'departements'));
+        return view('examens.edit', compact('examen', 'modules', 'salles', 'enseignants', 'selected_session', 'filieres', 'code', 'firstModuleCodeEtape', 'additionalSalles', 'departements'));
     }
-
-
 
 
     public function update(Request $request, Examen $examen)
@@ -479,8 +390,8 @@ class ExamenController extends Controller
             'date' => 'required|date',
             'heure_debut' => 'required|date_format:H:i|before_or_equal:heure_fin',
             'heure_fin' => 'required|date_format:H:i|after_or_equal:heure_debut|before_or_equal:18:30',
-            'id_module' => 'required|exists:modules,id',
-            'id_salle' => 'required|exists:salles,id',
+            'id_module' => 'required|exists:modules,lib_elp',
+            'id_salle' => 'nullable|exists:salles,id',
             'additional_salles.*' => 'nullable|exists:salles,id',
             'id_enseignant' => 'required|exists:enseignants,id',
             'id_session' => 'required|exists:session_exams,id',
@@ -494,28 +405,64 @@ class ExamenController extends Controller
         $matin_end = strtotime('12:30');
         $apres_midi_start = strtotime('14:00');
         $apres_midi_end = strtotime('18:30');
-
+        Log::info(" ---------------------------- ");
         // Ensure the exam falls within allowed time ranges
         if (!(($heure_debut >= $matin_start && $heure_fin <= $matin_end && $heure_debut < $heure_fin) ||
             ($heure_debut >= $apres_midi_start && $heure_fin <= $apres_midi_end && $heure_debut < $heure_fin))) {
             return back()->withErrors(['error' => 'La durée de l\'examen doit être entre 08:00 et 12:30 pour le matin ou entre 14:00 et 18:30 pour l\'après-midi.']);
         }
 
-        // Ensure the exam is unique for the module and filiere
-        $existingExam = Examen::where('id_module', $request->id_module)
-            ->where('id', '!=', $examen->id)
+        // Retrieve the filière from the filiere table based on the code_etape
+        $filiere = Filiere::where('code_etape', $request->code_etape)->first();
+
+        $exis = Examen::where('id', '!=', $examen->id)
             ->whereHas('modules', function ($query) use ($request) {
-                $query->where('code_etape', $request->id_filiere);
-            })->exists();
+                $query->where('code_etape', $request->id_filiere)
+                    ->where('lib_elp', $request->id_module);
+            })
+            ->exists(); // Check if any matching record exists
+
+        Log::info("Filiere selected: " . ($filiere ? $filiere->code_etape : 'None') . ", Exam exists: " . ($exis ? 'Yes' : 'No'));
+
+        // return $filiere;
+        if (!$filiere) {
+            // Handle the case where filière is not found
+            $existingExam = false;
+        } else {
+            if ($filiere->type === 'old') {
+                $existingExam  = Examen::where('id', '!=', $examen->id)
+                    ->whereHas('modules', function ($query) use ($request) {
+                        $query->where('code_etape', $request->id_filiere)
+                            ->where('lib_elp', $request->id_module);
+                    })
+                    ->exists();
+            } else {
+                $existingExam  = Examen::where('id', '!=', $examen->id)
+                    ->whereHas('modules', function ($query) use ($request) {
+                        $query->where('lib_elp', $request->id_module)
+                            ->whereHas('filiereGp', function ($query) use ($request) {
+                                $query->where('code_etape', $request->id_filiere)
+                                    ->whereColumn('filiere_gp.id_module', 'modules.id');
+                            });
+                    })
+                    ->exists();
+            }
+        }
+
 
         if ($existingExam) {
             return back()->withErrors(['error' => 'Un examen pour ce module et cette filière existe déjà.']);
         }
+        Log::info("existing exam true or false: " . ($existingExam ? 'true' : 'false'));
+
+
+
+
 
         // Ensure no overlapping exams for the same filiere
         $overlappingExam = Examen::where('date', $request->date)
             ->where('id', '!=', $examen->id)
-            ->where(function ($query) use ($request, $heure_debut, $heure_fin) {
+            ->where(function ($query) use ($request) {
                 $query->whereBetween('heure_debut', [$request->heure_debut, $request->heure_fin])
                     ->orWhereBetween('heure_fin', [$request->heure_debut, $request->heure_fin])
                     ->orWhere(function ($query) use ($request) {
@@ -524,12 +471,15 @@ class ExamenController extends Controller
                     });
             })
             ->whereHas('modules', function ($query) use ($request) {
-                $query->where('code_etape', $request->id_filiere);
-            })->exists();
+                $query->where('code_etape', $request->code_etape); // Update to use code_etape from request
+            })
+            ->exists();
 
         if ($overlappingExam) {
-            return back()->withErrors(['error' => 'Il existe déjà un examen pour cette filière dans la même durée.']);
+            return back()->withErrors(['error' => 'Il existe déjà un examen pour cette filière dans la même durée.'])->withInput();
         }
+        Log::info("Overlapping exam true or false: " . ($overlappingExam ? 'true' : 'false'));
+
 
         // Ensure the selected salle is not occupied
         $occupiedSalle = Examen::where('date', $request->date)
@@ -546,6 +496,8 @@ class ExamenController extends Controller
                 $query->where('salles.id', $request->id_salle);
             })->exists();
 
+        // Log the result of the salle occupation check
+        Log::info("Occupied salle true or false: " . ($occupiedSalle ? 'true' : 'false'));
         if ($occupiedSalle) {
             return back()->withErrors(['error' => 'Cette salle est déjà occupée pendant cette période.']);
         }
@@ -555,7 +507,7 @@ class ExamenController extends Controller
             foreach ($request->additional_salles as $additional_salle) {
                 $occupiedAdditionalSalle = Examen::where('date', $request->date)
                     ->where('id', '!=', $examen->id)
-                    ->where(function ($query) use ($request, $heure_debut, $heure_fin) {
+                    ->where(function ($query) use ($request) {
                         $query->whereBetween('heure_debut', [$request->heure_debut, $request->heure_fin])
                             ->orWhereBetween('heure_fin', [$request->heure_debut, $request->heure_fin])
                             ->orWhere(function ($query) use ($request) {
@@ -565,26 +517,56 @@ class ExamenController extends Controller
                     })
                     ->whereHas('salles', function ($query) use ($additional_salle) {
                         $query->where('salles.id', $additional_salle);
-                    })->exists();
+                    })
+                    ->exists();
+
+                // Log the result for each additional salle check
+                Log::info("Additional salle ID {$additional_salle} occupied: " . ($occupiedAdditionalSalle ? 'true' : 'false'));
 
                 if ($occupiedAdditionalSalle) {
                     return back()->withErrors(['error' => 'La salle supplémentaire sélectionnée est déjà occupée pendant cette période.']);
                 }
             }
         }
+        // return $additional_salle;
 
-        // Calculate the total capacity of selected salles
-        $salles_ids = array_filter(array_merge([$request->id_salle], $request->additional_salles ?? []));
-        $capacite_totale = Salle::whereIn('id', $salles_ids)->sum('capacite');
-        $module = Module::findOrFail($request->id_module);
+
+        // Retrieve the IDs of additional salles from the request
+        $salles_ids = $request->additional_salles ?? [];
+        // Log the selected salle IDs
+        Log::info("Selected salles IDs: " . implode(', ', $salles_ids));
+
+        $sql = "SELECT SUM(capacite) AS capacite_totale FROM salles WHERE id IN (" . implode(',', $salles_ids) . ")";
+        $capacite_totale = DB::selectOne($sql)->capacite_totale;
+
+        Log::info("Total capacity of selected salles: $capacite_totale");
+        Log::info("id_module: $request->id_module");
+        // Assuming Module ID is retrieved differently or replaced with another method
+        $module = Module::where('lib_elp', $request->id_module)->firstOrFail(); // Adjust this if the module ID is retrieved differently
+
+        // Count the number of registered students for the module
         $nombreInscrits = Inscription::where('id_module', $module->id)->count();
 
+        // Log the details for debugging purposes
+        // Log the selected salle IDs
+
+
+
+        Log::info("Number of registered students: $nombreInscrits");
+
+        // Check if the total capacity is sufficient
         if ($capacite_totale < $nombreInscrits) {
             return back()->withErrors(['error' => 'La capacité totale des salles sélectionnées est insuffisante pour accueillir cet examen.']);
         }
 
+
         // Ensure the exam date is within the session duration
         $session = SessionExam::findOrFail($request->id_session);
+        Log::info("the exam date is within the session duration: ");
+        Log::info("date: $request->date ");
+        Log::info("date_debut: $session->date_debut");
+        Log::info("date_fin: $session->date_fin");
+        Log::info("session: $session");
         if ($request->date < $session->date_debut || $request->date > $session->date_fin) {
             return back()->withErrors(['error' => 'La date de l\'examen doit être incluse dans la durée de la session d\'examen.']);
         }
@@ -625,20 +607,77 @@ class ExamenController extends Controller
             return back()->withErrors(['error' => 'L\'enseignant a déjà une contrainte validée à cette date et heure.']);
         }
 
+        // Determine if the filière is new or old
+        $filiere = Filiere::where('code_etape', $request->code_etape)->first();
+
+        if ($filiere && $filiere->type === 'new') {
+            // If the filière is new, fetch modules from the filiere_gp table
+            $rawModules = FiliereGp::join('modules', 'filiere_gp.id_module', '=', 'modules.id')
+                ->where('filiere_gp.code_etape', $request->code_etape)
+                ->where('modules.lib_elp', $request->id_module)
+                ->get(['modules.id']); // Only get the module IDs
+
+            Log::info('Fetched modules for new filiere:', $rawModules->toArray());
+        } else {
+            // If the filière is old, keep the same process
+            $rawModules = Module::where('code_etape', $request->code_etape)
+                ->where('lib_elp', $request->id_module)
+                ->get(['id']); // Only get the module IDs
+
+            Log::info('Fetched modules for old filiere:', $rawModules->toArray());
+        }
+
+        // Fetch and log IDs
+        $modules = $rawModules->pluck('id');
+        // return $module;
+        if ($modules->isEmpty()) {
+            return back()->withErrors(['error' => 'Aucun module trouvé avec ce libellé.'])->withInput();
+        }
+
         // Update the exam details
         $examen->update([
             'date' => $request->date,
             'heure_debut' => $request->heure_debut,
             'heure_fin' => $request->heure_fin,
-            'id_module' => $request->id_module,
-            'id_salle' => $request->id_salle,
-            'additional_salles' => $request->additional_salles,
             'id_enseignant' => $request->id_enseignant,
             'id_session' => $request->id_session,
-            'id_filiere' => $request->id_filiere,
+            'id_salle' => $request->id_salle,
         ]);
 
-        return redirect()->route('examens.index')->with('success', 'L\'examen a été mis à jour avec succès.');
+        // Get the current ExamModule entries for this exam
+        $currentModules = ExamModule::where('exam_id', $examen->id)->pluck('module_id');
+
+        // Find modules to add or remove
+        $modulesToAdd = $modules->diff($currentModules);
+        $modulesToRemove = $currentModules->diff($modules);
+
+        // Add new ExamModule entries
+        foreach ($modulesToAdd as $id_module) {
+            Log::info('Adding id_module: ' . $id_module . ' to exam id: ' . $examen->id);
+            ExamModule::create([
+                'exam_id' => $examen->id,
+                'module_id' => $id_module,
+            ]);
+        }
+
+        // Remove outdated ExamModule entries
+        foreach ($modulesToRemove as $id_module) {
+            Log::info('Removing id_module: ' . $id_module . ' from exam id: ' . $examen->id);
+            ExamModule::where('exam_id', $examen->id)
+                ->where('module_id', $id_module)
+                ->delete();
+        }
+
+        // Attach additional salles to the exam
+        if (!empty($request->additional_salles)) {
+            $examen->salles()->sync($request->additional_salles);
+        } else {
+            $examen->salles()->detach(); // Detach any previous salles if no additional salles are provided
+        }
+        // return $request->id_session ;
+
+        return redirect()->route('examens.index', ['sessionId' => $request->id_session])
+            ->with('success', "L'examen a été mis à jour avec succès.");
     }
 
     public function destroy(Examen $examen)
@@ -697,13 +736,6 @@ class ExamenController extends Controller
             return response()->json([], 404);
         }
     }
-    // public function getModulesByFiliere($codeetape)
-    // {
-    //     $modules = Module::where('code_etape', $codeetape)
-    //         ->withCount('inscriptions')
-    //         ->get();
-    //     return response()->json(['modules' => $modules]);
-    // }
 
     public function getEnseignantsByDepartment($departmentId)
     {
@@ -987,103 +1019,6 @@ class ExamenController extends Controller
         return redirect()->route('examens.showForm', ['examen' => $examen->id])->with('success', 'Les surveillants ont été mis à jour avec succès.');
     }
 
-    // Affectation des surveillants d'une facon manuel
-    // public function assignInvigilators(Request $request, $id)
-    // {
-    //     // Récupérer l'examen
-    //     $examen = Examen::findOrFail($id);
-    //     $date = $examen->date;
-    //     $heure_debut = strtotime($examen->heure_debut);
-    //     $heure_fin = strtotime($examen->heure_fin);
-
-    //     // Récupérer le responsable du module
-    //     $responsableModuleId = $examen->module->id_enseignant;
-
-    //     // Récupérer les surveillants disponibles en excluant le responsable du module
-    //     $enseignantsDisponibles = Enseignant::where('id', '!=', $responsableModuleId)->get();
-
-    //     $errors = [];
-
-    //     foreach ($examen->salles as $salle) {
-    //         // Déterminer le nombre de surveillants nécessaires
-    //         $nombreSurveillants = 2; // par défaut
-    //         if ($salle->capacite >= 100) {
-    //             $nombreSurveillants = 4;
-    //         } elseif ($salle->capacite >= 80) {
-    //             $nombreSurveillants = 3;
-    //         }
-
-    //         // Filtrer les surveillants disponibles en vérifiant les contraintes
-    //         $surveillantsAffectes = 0;
-    //         foreach ($enseignantsDisponibles as $enseignant) {
-    //             // Vérifier si l'enseignant a déjà deux surveillances pour cette journée
-    //             $nombreSurveillancesJour = DB::table('examen_salle_enseignant')
-    //                 ->join('examens', 'examen_salle_enseignant.id_examen', '=', 'examens.id')
-    //                 ->where('examen_salle_enseignant.id_enseignant', $enseignant->id)
-    //                 ->where('examens.date', $date)
-    //                 ->count();
-
-    //             if ($nombreSurveillancesJour >= 2) {
-    //                 continue;
-    //             }
-
-    //             // Vérifier si l'enseignant est déjà affecté à une autre salle pour ce créneau horaire
-    //             $chevauchement = DB::table('examen_salle_enseignant')
-    //                 ->join('examens', 'examen_salle_enseignant.id_examen', '=', 'examens.id')
-    //                 ->where('examen_salle_enseignant.id_enseignant', $enseignant->id)
-    //                 ->where('examens.date', $date)
-    //                 ->where(function ($query) use ($heure_debut, $heure_fin) {
-    //                     $query->whereBetween('examens.heure_debut', [date('H:i', $heure_debut), date('H:i', $heure_fin)])
-    //                           ->orWhereBetween('examens.heure_fin', [date('H:i', $heure_debut), date('H:i', $heure_fin)])
-    //                           ->orWhere(function ($query) use ($heure_debut, $heure_fin) {
-    //                               $query->where('examens.heure_debut', '<=', date('H:i', $heure_debut))
-    //                                     ->where('examens.heure_fin', '>=', date('H:i', $heure_fin));
-    //                           });
-    //                 })
-    //                 ->exists();
-
-    //             if ($chevauchement) {
-    //                 continue;
-    //             }
-
-    //             // Assigner l'enseignant à la salle
-    //             DB::table('examen_salle_enseignant')->insert([
-    //                 'id_examen' => $examen->id,
-    //                 'id_salle' => $salle->id,
-    //                 'id_enseignant' => $enseignant->id,
-    //                 'created_at' => now(),
-    //                 'updated_at' => now(),
-    //             ]);
-
-    //             $surveillantsAffectes++;
-
-    //             // Si le nombre requis de surveillants est atteint, passer à la salle suivante
-    //             if ($surveillantsAffectes >= $nombreSurveillants) {
-    //                 break;
-    //             }
-    //         }
-
-    //         // Si le nombre requis de surveillants n'est pas atteint, essayer d'assigner des réservistes
-    //         if ($surveillantsAffectes < $nombreSurveillants) {
-    //             $this->assignReservistIfNeeded($date, $salle->id, $examen->id);
-    //         }
-
-    //         // Si après avoir essayé les réservistes, il manque encore des surveillants, ajouter une erreur
-    //         if ($surveillantsAffectes < $nombreSurveillants) {
-    //             $errors[] = "Il n'y a pas assez de surveillants disponibles pour la salle {$salle->name}.";
-    //         }
-    //     }
-
-    //     // Si des erreurs sont détectées, les retourner à la vue
-    //     if (!empty($errors)) {
-    //         return back()->withErrors($errors);
-    //     }
-
-    //     return redirect()->route('examens.showForm', ['examen' => $examen->id])->with('success', 'Les surveillants ont été assignés automatiquement avec succès.');
-    // }
-
-
-
     //Affectation des surveilants d'une maniere automatique
     protected function canAssignInvigilator($enseignant, $date, $heure_debut, $heure_fin)
     {
@@ -1123,8 +1058,7 @@ class ExamenController extends Controller
             $heure_debut = $examen->heure_debut;
             $heure_fin = $examen->heure_fin;
 
-            $responsableModuleId = $examen->id_enseignant;
-            log::info('exam' . $examen . 'id respo' . $responsableModuleId);
+            $responsableModuleId = $examen->module->id_enseignant;
 
             // Vérifier si les surveillants ont déjà été affectés à cet examen
             if ($examen->surveillants()->exists()) {
@@ -1226,6 +1160,7 @@ class ExamenController extends Controller
         }
     }
 
+
     protected function createReservistsForSession($sessionId)
     {
         $examDates = Examen::where('id_session', $sessionId)
@@ -1304,4 +1239,100 @@ class ExamenController extends Controller
 
         return $dompdf->stream("examens_enseignant_{$enseignant->name}.pdf");
     }
+
+    //Affectation des surveillants d'une facon manuel
+    // public function assignInvigilators(Request $request, $id)
+    // {
+    //     // Récupérer l'examen
+    //     $examen = Examen::findOrFail($id);
+    //     $date = $examen->date;
+    //     $heure_debut = strtotime($examen->heure_debut);
+    //     $heure_fin = strtotime($examen->heure_fin);
+
+    //     // Récupérer le responsable du module
+    //     $responsableModuleId = $examen->module->id_enseignant;
+
+    //     // Récupérer les surveillants disponibles en excluant le responsable du module
+    //     $enseignantsDisponibles = Enseignant::where('id', '!=', $responsableModuleId)->get();
+
+    //     $errors = [];
+
+    //     foreach ($examen->salles as $salle) {
+    //         // Déterminer le nombre de surveillants nécessaires
+    //         $nombreSurveillants = 2; // par défaut
+    //         if ($salle->capacite >= 100) {
+    //             $nombreSurveillants = 4;
+    //         } elseif ($salle->capacite >= 80) {
+    //             $nombreSurveillants = 3;
+    //         }
+
+    //         // Filtrer les surveillants disponibles en vérifiant les contraintes
+    //         $surveillantsAffectes = 0;
+    //         foreach ($enseignantsDisponibles as $enseignant) {
+    //             // Vérifier si l'enseignant a déjà deux surveillances pour cette journée
+    //             $nombreSurveillancesJour = DB::table('examen_salle_enseignant')
+    //                 ->join('examens', 'examen_salle_enseignant.id_examen', '=', 'examens.id')
+    //                 ->where('examen_salle_enseignant.id_enseignant', $enseignant->id)
+    //                 ->where('examens.date', $date)
+    //                 ->count();
+
+    //             if ($nombreSurveillancesJour >= 2) {
+    //                 continue;
+    //             }
+
+    //             // Vérifier si l'enseignant est déjà affecté à une autre salle pour ce créneau horaire
+    //             $chevauchement = DB::table('examen_salle_enseignant')
+    //                 ->join('examens', 'examen_salle_enseignant.id_examen', '=', 'examens.id')
+    //                 ->where('examen_salle_enseignant.id_enseignant', $enseignant->id)
+    //                 ->where('examens.date', $date)
+    //                 ->where(function ($query) use ($heure_debut, $heure_fin) {
+    //                     $query->whereBetween('examens.heure_debut', [date('H:i', $heure_debut), date('H:i', $heure_fin)])
+    //                           ->orWhereBetween('examens.heure_fin', [date('H:i', $heure_debut), date('H:i', $heure_fin)])
+    //                           ->orWhere(function ($query) use ($heure_debut, $heure_fin) {
+    //                               $query->where('examens.heure_debut', '<=', date('H:i', $heure_debut))
+    //                                     ->where('examens.heure_fin', '>=', date('H:i', $heure_fin));
+    //                           });
+    //                 })
+    //                 ->exists();
+
+    //             if ($chevauchement) {
+    //                 continue;
+    //             }
+
+    //             // Assigner l'enseignant à la salle
+    //             DB::table('examen_salle_enseignant')->insert([
+    //                 'id_examen' => $examen->id,
+    //                 'id_salle' => $salle->id,
+    //                 'id_enseignant' => $enseignant->id,
+    //                 'created_at' => now(),
+    //                 'updated_at' => now(),
+    //             ]);
+
+    //             $surveillantsAffectes++;
+
+    //             // Si le nombre requis de surveillants est atteint, passer à la salle suivante
+    //             if ($surveillantsAffectes >= $nombreSurveillants) {
+    //                 break;
+    //             }
+    //         }
+
+    //         // Si le nombre requis de surveillants n'est pas atteint, essayer d'assigner des réservistes
+    //         if ($surveillantsAffectes < $nombreSurveillants) {
+    //             $this->assignReservistIfNeeded($date, $salle->id, $examen->id);
+    //         }
+
+    //         // Si après avoir essayé les réservistes, il manque encore des surveillants, ajouter une erreur
+    //         if ($surveillantsAffectes < $nombreSurveillants) {
+    //             $errors[] = "Il n'y a pas assez de surveillants disponibles pour la salle {$salle->name}.";
+    //         }
+    //     }
+
+    //     // Si des erreurs sont détectées, les retourner à la vue
+    //     if (!empty($errors)) {
+    //         return back()->withErrors($errors);
+    //     }
+
+    //     return redirect()->route('examens.showForm', ['examen' => $examen->id])->with('success', 'Les surveillants ont été assignés automatiquement avec succès.');
+    // }
+
 }

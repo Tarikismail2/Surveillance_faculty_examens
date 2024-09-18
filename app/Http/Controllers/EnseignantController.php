@@ -89,10 +89,10 @@ class EnseignantController extends Controller
         $session = SessionExam::findOrFail($sessionId);
     
         // Récupérer tous les examens associés à cette session
-        $examens = Examen::with(['module', 'salles', 'enseignants', 'surveillants'])
+        $examens = Examen::with(['modules', 'salles', 'enseignants', 'surveillants'])
                          ->where('id_session', $sessionId)
                          ->get();
-    
+    // dd($examens);
         // Grouper les examens par date et demi-journée (matin/après-midi) et par salle
         $groupedExams = [];
     

@@ -11,24 +11,24 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
                 @if ($errors->any())
-                    <div class="mb-4">
-                        <div class="font-medium text-red-600">@lang('Whoops! Quelque chose s\'est mal passé.')</div>
-                        <ul class="mt-3 list-disc list-inside text-sm text-red-600">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
+                <div class="mb-4">
+                    <div class="font-medium text-red-600">@lang('Whoops! Quelque chose s\'est mal passé.')</div>
+                    <ul class="mt-3 list-disc list-inside text-sm text-red-600">
+                        @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
                 @endif
 
                 @if (session('success'))
-                    <div class="mb-4">
-                        <ul class="mt-3 list-disc list-inside text-sm text-green-600">
-                            @foreach (session('success') as $successful)
-                                <li>{{ $successful }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
+                <div class="mb-4">
+                    <ul class="mt-3 list-disc list-inside text-sm text-green-600">
+                        @foreach (session('success') as $successful)
+                        <li>{{ $successful }}</li>
+                        @endforeach
+                    </ul>
+                </div>
                 @endif
 
                 <form action="{{ route('examens.update', $examen->id) }}" method="POST">
@@ -44,29 +44,47 @@
                                 class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 required>
                             @error('date')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
-                        <!-- Filière -->
-                        <div class="form-group">
-                            <label for="filiere"
-                                class="block text-gray-700 dark:text-gray-300">@lang('Filière')</label>
-                            <select
-                                class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                id="filiere" name="code_etape" required>
-                                <option value="">@lang('Sélectionnez une filière')</option>
+                                   <!-- Filière -->
+                                   <div class="form-group">
+                        <label for="filiere" class="block text-gray-700 dark:text-gray-300">@lang('Filière')</label>
+                        <select class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            id="filiere" name="code_etape" required>
+                            <option value="">@lang('Sélectionnez une filière')</option>
+                            <!-- New Filière -->
+                            <optgroup label="@lang('Nouveaux Filières')">
                                 @foreach ($filieres as $filiere)
-                                    <option value="{{ $filiere->code_etape }}"
-                                        {{ old('code_etape', optional($examen->module)->code_etape) == $filiere->code_etape ? 'selected' : '' }}>
-                                        {{ $filiere->version_etape }}
-                                    </option>
+                                    @if ($filiere->type === 'new')
+                                        <option 
+                                            value="{{ $filiere->code_etape }}" 
+                                            {{ old('code_etape', $code) == $filiere->code_etape ? 'selected' : '' }}>
+                                            {{ $filiere->version_etape }}
+                                        </option>
+                                    @endif
                                 @endforeach
-                            </select>
-                            @error('id_filiere')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+                            </optgroup>
+
+                            <!-- Normal Filière -->
+                            <optgroup label="@lang('Filières Normales')">
+                                @foreach ($filieres as $filiere)
+                                    @if ($filiere->type === 'old')
+                                        <option 
+                                            value="{{ $filiere->code_etape }}" 
+                                            {{ old('code_etape', $firstModuleCodeEtape) == $filiere->code_etape ? 'selected' : '' }}>
+                                            {{ $filiere->version_etape }}
+                                        </option>
+                                    @endif
+                                @endforeach
+                            </optgroup>
+
+                                </select>
+                                @error('code_etape')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
 
                         <!-- Heure de Début -->
                         <div class="form-group">
@@ -90,7 +108,7 @@
                                 </option>
                             </select>
                             @error('heure_debut')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -105,7 +123,7 @@
                                 <!-- Les modules seront remplis dynamiquement -->
                             </select>
                             @error('id_module')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -131,7 +149,7 @@
                                 </option>
                             </select>
                             @error('heure_fin')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -143,13 +161,14 @@
                                 class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                 <option value="">@lang('Choisir un enseignant')</option>
                                 @foreach ($enseignants as $enseignant)
-                                    <option value="{{ $enseignant->id }}"
-                                        {{ old('id_enseignant', $examen->id_enseignant) == $enseignant->id ? 'selected' : '' }}>
-                                        {{ $enseignant->name }}</option>
+                                <option value="{{ $enseignant->id }}"
+                                    {{ old('id_enseignant', $examen->id_enseignant) == $enseignant->id ? 'selected' : '' }}>
+                                    {{ $enseignant->name }}
+                                </option>
                                 @endforeach
                             </select>
                             @error('id_enseignant')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -164,57 +183,38 @@
                                     ({{ $selected_session->date_debut }} - {{ $selected_session->date_fin }})</option>
                             </select>
                             @error('id_session')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Salle Principale -->
-                        <div class="form-group">
-                            <label for="id_salle"
-                                class="block text-gray-700 dark:text-gray-300">@lang('Salle Principale')</label>
-                            <select name="id_salle" id="id_salle"
-                                class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                <option value="">@lang('Choisir une salle')</option>
-                                @foreach ($salles as $salle)
-                                    <option value="{{ $salle->id }}" data-capacite="{{ $salle->capacite }}"
-                                        {{ old('id_salle', $examen->id_salle) == $salle->id ? 'selected' : '' }}>
-                                        {{ $salle->name }} (Capacité: {{ $salle->capacite }})
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('id_salle')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
                         <!-- Salles supplémentaires -->
                         <div id="additional-rooms" class="space-y-4">
                             @foreach ($additionalSalles as $index => $salleId)
-                                @php
-                                    $salle = $salles->firstWhere('id', $salleId);
-                                @endphp
-                                <div
-                                    class="flex items-center space-x-4 p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800">
-                                    <div class="w-full">
-                                        <label for="additional_salles[{{ $index }}]"
-                                            class="block text-gray-700 dark:text-gray-300 text-sm font-medium">@lang('Salle Supplémentaire')</label>
-                                        <select name="additional_salles[{{ $index }}]"
-                                            id="additional_salles[{{ $index }}]"
-                                            class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm additional-salle-select">
-                                            <option value="">@lang('Choisir une salle')</option>
-                                            @foreach ($salles as $salleOption)
-                                                <option value="{{ $salleOption->id }}"
-                                                    {{ $salleOption->id == $salle->id ? 'selected' : '' }}
-                                                    data-capacite="{{ $salleOption->capacite }}">
-                                                    {{ $salleOption->name }} (Capacité: {{ $salleOption->capacite }})
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        <p class="text-red-500 text-xs mt-1"></p>
-                                    </div>
-                                    <button type="button"
-                                        class="remove-room bg-red-500 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 hover:bg-red-600 transition">@lang('Supprimer')</button>
+                            @php
+                            $salle = $salles->firstWhere('id', $salleId);
+                            @endphp
+                            <div
+                                class="flex items-center space-x-4 p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800">
+                                <div class="w-full">
+                                    <label for="additional_salles[{{ $index }}]"
+                                        class="block text-gray-700 dark:text-gray-300 text-sm font-medium">@lang('Salle Supplémentaire')</label>
+                                    <select name="additional_salles[{{ $index }}]"
+                                        id="additional_salles[{{ $index }}]"
+                                        class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm additional-salle-select">
+                                        <option value="">@lang('Choisir une salle')</option>
+                                        @foreach ($salles as $salleOption)
+                                        <option value="{{ $salleOption->id }}"
+                                            {{ $salleOption->id == $salle->id ? 'selected' : '' }}
+                                            data-capacite="{{ $salleOption->capacite }}">
+                                            {{ $salleOption->name }} (Capacité: {{ $salleOption->capacite }})
+                                        </option>
+                                        @endforeach
+                                    </select>
+                                    <p class="text-red-500 text-xs mt-1"></p>
                                 </div>
+                                <button type="button"
+                                    class="remove-room bg-red-500 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 hover:bg-red-600 transition">@lang('Supprimer')</button>
+                            </div>
                             @endforeach
                         </div>
 
@@ -270,31 +270,32 @@
         const additionalRoomsDiv = document.getElementById('additional-rooms');
 
         function updateModuleOptions() {
-            const filiereId = filiereSelect.value;
-            moduleSelect.innerHTML = '<option value="">@lang('Sélectionnez un module')</option>';
+    const code_etape = filiereSelect.value;
+    moduleSelect.innerHTML = '<option value="">@lang('Sélectionnez un module')</option>';
 
-            if (filiereId) {
-                fetch(`/examens/getModulesByFiliere/${filiereId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        data.forEach(module => {
-                            const option = document.createElement('option');
-                            option.value = module.id;
-                            option.textContent =
-                                `${module.lib_elp} (${module.inscriptions_count} @lang('inscrits'))`;
-                            option.setAttribute('data-inscriptions', module.inscriptions_count);
-                            moduleSelect.appendChild(option);
+    if (code_etape) {
+        fetch(`/examens/getModulesByFiliere/${code_etape}`)
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(module => {
+                    const option = document.createElement('option');
+                    option.value = module.lib_elp;
+                    option.textContent =
+                        `${module.lib_elp} (${module.inscriptions_count} @lang('inscrits'))`;
+                    option.setAttribute('data-inscriptions', module.inscriptions_count);
+                    moduleSelect.appendChild(option);
 
-                            if ({!! $examen->id_module !!} === module.id) {
-                                option.selected = true;
-                                inscriptionsCount.value = module.inscriptions_count;
-                                updateTotalCapacity();
-                            }
-                        });
-                    })
-                    .catch(error => console.error('Error fetching modules:', error));
-            }
-        }
+                    // Safe comparison with potentially null value
+                    if (`{!! addslashes($examen->modules->first()->lib_elp ?? '') !!}` === module.lib_elp) {
+                        option.selected = true;
+                        inscriptionsCount.value = module.inscriptions_count;
+                        updateTotalCapacity();
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching modules:', error));
+    }
+}
 
         function updateTotalCapacity() {
             let total = 0;
@@ -363,7 +364,7 @@
             const newRoomLabel = document.createElement('label');
             newRoomLabel.setAttribute('for', `additional_salles[${roomCount}]`);
             newRoomLabel.classList.add('block', 'text-gray-700', 'dark:text-gray-300');
-            newRoomLabel.textContent = '@lang('Salle Supplémentaire')';
+            newRoomLabel.textContent = '@lang('Salle Supplémentaire ')';
 
             const newRoomSelect = document.createElement('select');
             newRoomSelect.setAttribute('name', `additional_salles[${roomCount}]`);
@@ -376,7 +377,7 @@
 
             const defaultOption = document.createElement('option');
             defaultOption.value = '';
-            defaultOption.textContent = '@lang('Choisir une salle')';
+            defaultOption.textContent = '@lang('Choisir une salle ')';
             newRoomSelect.appendChild(defaultOption);
 
             salleSelect.querySelectorAll('option').forEach(option => {

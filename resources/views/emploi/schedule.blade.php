@@ -99,7 +99,7 @@
                                 ->where('examen.date', $date)
                                 ->where('examen.heure_debut', '10:15:00')
                                 ->first();
-
+        
                             $afternoonEntry1 = $schedule
                                 ->where('id_enseignant', $enseignant->id)
                                 ->where('examen.date', $date)
@@ -110,8 +110,18 @@
                                 ->where('examen.date', $date)
                                 ->where('examen.heure_debut', '16:15:00')
                                 ->first();
+        
+                            // Check if the teacher is a reservist
+                            $isMorningReservist = $reservistes->where('id_enseignant', $enseignant->id)
+                                ->where('date', $date)
+                                ->where('demi_journee', 'matin')
+                                ->first();
+                            $isAfternoonReservist = $reservistes->where('id_enseignant', $enseignant->id)
+                                ->where('date', $date)
+                                ->where('demi_journee', 'apres-midi')
+                                ->first();
                         @endphp
-
+        
                         <!-- Matinée -->
                         <td>
                             @if ($morningEntry1)
@@ -120,11 +130,13 @@
                             @if ($morningEntry2)
                                 {{ $morningEntry2->salle->name }}
                             @endif
-                            @if (!$morningEntry1 && !$morningEntry2)
+                            @if (!$morningEntry1 && !$morningEntry2 && $isMorningReservist)
+                                R
+                            @elseif (!$morningEntry1 && !$morningEntry2)
                                 -
                             @endif
                         </td>
-
+        
                         <!-- Après-midi -->
                         <td>
                             @if ($afternoonEntry1)
@@ -133,7 +145,9 @@
                             @if ($afternoonEntry2)
                                 {{ $afternoonEntry2->salle->name }}
                             @endif
-                            @if (!$afternoonEntry1 && !$afternoonEntry2)
+                            @if (!$afternoonEntry1 && !$afternoonEntry2 && $isAfternoonReservist)
+                                R
+                            @elseif (!$afternoonEntry1 && !$afternoonEntry2)
                                 -
                             @endif
                         </td>
@@ -141,6 +155,7 @@
                 </tr>
             @endforeach
         </tbody>
+        
     </table>
 </body>
 

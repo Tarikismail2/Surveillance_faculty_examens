@@ -109,7 +109,7 @@
                                     </div>
                                 </td>
                                 <td class="px-4 py-2">
-                                    <a href="{{ route('examens.downloadPDF', ['sessionId' => $examen->id_session, 'codeEtape' => $examen->module->filiere->code_etape]) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                    <a href="{{ route('examens.downloadPDF', ['sessionId' => $examen->id_session, 'codeEtape' =>  optional($examen->modules->first())->getCodeEtape() ]) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                                         Télécharger
                                     </a>
                                 </td>

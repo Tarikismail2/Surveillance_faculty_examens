@@ -14,6 +14,5 @@ class ExamModule extends Model
     protected $fillable = [
         'exam_id',
         'module_id',
-        // Add any additional fields you have in the pivot table
     ];
 }

@@ -15,7 +15,8 @@
                 <div class="mb-4">
                     <form method="GET" action="{{ route('examens.global') }}">
                         @csrf
-                        <label for="session" class="block text-sm font-medium text-gray-700 dark:text-gray-300">@lang('Session')</label>
+                        <label for="session"
+                            class="block text-sm font-medium text-gray-700 dark:text-gray-300">@lang('Session')</label>
                         <select id="session" name="id_session"
                             class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 bg-white dark:bg-gray-800 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                             onchange="this.form.submit()">
@@ -23,28 +24,64 @@
                             @foreach ($sessions as $session)
                                 <option value="{{ $session->id }}"
                                     {{ $selectedSessionId == $session->id ? 'selected' : '' }}>
-                                    {{ $session->type }}  ({{$session->date_debut}} - {{$session->date_fin}})
+                                    {{ $session->type }} ({{ $session->date_debut }} - {{ $session->date_fin }})
                                 </option>
                             @endforeach
                         </select>
                     </form>
                 </div>
 
+                <!-- Download Buttons -->
+                <div class="mt-6 flex gap-4">
+                    <!-- Vérifiez que $selectedSessionId est correctement défini -->
+                    @if (isset($selectedSessionId))
+                        <!-- Download Buttons -->
+                        <div class="mt-6 flex gap-4">
+                            <a href="{{ route('examens.global.pdf', ['sessionId' => $selectedSessionId]) }}"
+                                class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors duration-300 ease-in-out flex items-center space-x-2">
+                                <i class="fas fa-download"></i>
+                                @lang('Télécharger l\'emploi Globale sous forme PDF')
+                            </a>
+                        </div>
+                    @else
+                        <p class="text-center text-red-500">@lang('Please select a session to download the PDF')</p>
+                    @endif
+
+                </div>
+
                 <!-- Global Exam Schedule Table -->
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto mt-6">
                     @if (isset($exams) && count($exams) > 0)
                         <table id="exam-schedule" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-100 dark:bg-gray-800">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">@lang('Date')</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">@lang('Heure Début')</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">@lang('Heure Fin')</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">@lang('Filière')</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">@lang('Module')</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">@lang('locaux')</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">@lang('Surveillants')</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">@lang('Responsable du module')</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">@lang('Session')</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        @lang('Date')</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        @lang('Heure Début')</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        @lang('Heure Fin')</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        @lang('Filière')</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        @lang('Module')</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        @lang('Locaux')</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        @lang('Surveillants')</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        @lang('Responsable du module')</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        @lang('Session')</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
@@ -54,13 +91,25 @@
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $examen->heure_debut }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $examen->heure_fin }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            @if ($examen->module)
-                                                {{ $examen->module->version_etape }}
+                                            @php
+                                                $firstModule = $examen->modules->first();
+                                            @endphp
+                                            @if ($firstModule)
+                                                {{ $firstModule->filiere->version_etape ?? 'N/A' }}
+                                                @if ($firstModule->filiere->type == 'new')
+                                                    {{-- Do something if it's a new filière --}}
+                                                @endif
                                             @else
                                                 N/A
                                             @endif
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $examen->module->lib_elp }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @if ($firstModule)
+                                                {{ $firstModule->lib_elp }}
+                                            @else
+                                                N/A
+                                            @endif
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @if ($examen->sallesSupplementaires && count($examen->Salles) > 0)
                                                 @foreach ($examen->sallesSupplementaires as $sallesSupplementaire)
@@ -71,7 +120,7 @@
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            @if ($examen->enseignants && count($examen->enseignants) > 0)
+                                            @if (!empty($examen->enseignants))
                                                 @foreach ($examen->enseignants as $enseignant)
                                                     {{ $enseignant->name }},
                                                 @endforeach
@@ -80,32 +129,20 @@
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            {{ $examen->enseignant ? $examen->enseignant->name : 'N/A' }}</td>
+                                            {{ $examen->enseignant ? $examen->enseignant->name : 'N/A' }}
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            {{$examen->session->type}}  ({{$examen->session->date_debut}} - {{$examen->session->date_fin}})</td>
+                                            {{ $examen->session->type }} ({{ $examen->session->date_debut }} -
+                                            {{ $examen->session->date_fin }})
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
-                       
-                        <!-- Download Buttons -->
-                        <div class="mt-6 flex gap-4">
-                            <a href="{{ route('examens.global.pdf', ['sessionId' => $selectedSessionId]) }}"
-                               class="flex items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md shadow-lg transition duration-200 transform hover:scale-105">
-                                <i class="fas fa-file-pdf mr-2"></i>
-                                @lang('Download PDF Planification')
-                            </a>
-                            {{-- <a href="{{ route('examens_global.pdf', ['id_session' => $selectedSessionId]) }}"
-                               class="flex items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md shadow-lg transition duration-200 transform hover:scale-105">
-                                <i class="fas fa-file-pdf mr-2"></i>
-                                @lang('Download PDF Surveillants')
-                            </a> --}}
-                        </div>
                     @else
                         <p class="text-center text-gray-500 py-4">@lang('No exams scheduled for this session.')</p>
                     @endif
                 </div>
-
             </div>
         </div>
     </div>

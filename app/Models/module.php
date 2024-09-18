@@ -54,5 +54,73 @@ class Module extends Model
 {
     return $this->belongsTo(FiliereGp::class, 'id_module', 'id');
 }
+public function getVersionEtape()
+{
+    $filiereGp = FiliereGp::where('id_module', $this->id)->first();
 
+    if ($filiereGp) {
+        return $filiereGp->version_etape;
+    }
+
+    $filiere = Filiere::where('code_etape', $this->code_etape)->first();
+
+    if ($filiere) {
+        return $filiere->version_etape;
+    }
+
+    return 'Version etape not found';
+}
+public function getCodeEtape()
+    {
+        $filiereGp = FiliereGp::where('id_module', $this->id)->first();
+
+        if ($filiereGp) {
+            return $filiereGp->code_etape;
+        }
+
+        $filiere = Filiere::where('code_etape', $this->code_etape)->first();
+
+        if ($filiere) {
+            return $filiere->code_etape;
+        }
+
+        return 'Code etape not found';
+    }
+
+
+    public function getEtudiantsByExamen($sessionId, $codeEtape)
+    {
+        // Check if the code_etape exists in FiliereGp
+        $filiereGp = FiliereGp::where('code_etape', $codeEtape);
+          
+
+            if ($filiereGp) {
+                $moduleIds = FiliereGp::where('code_etape', $codeEtape)
+                                    ->pluck('id_module');
+
+                 // Get students related to these module IDs
+                 $etudiants = Etudiant::whereIn('id', function ($query) use ($moduleIds) {
+                     $query->select('id_etudiant')
+                           ->from('inscriptions')
+                           ->whereIn('id_module', $moduleIds);
+                 })->orderBy('nom')->get();
+             } else {
+                 // If not found in FiliereGp, check in Filiere
+                 $modules = Module::where('code_etape', $codeEtape)->get();
+         
+                 if ($modules->isEmpty()) {
+                     return collect(); // Return an empty collection if no modules are found
+                 }
+         
+                 // Get students related to these module IDs
+                 $etudiants = Etudiant::whereIn('id', function ($query) use ($modules) {
+                     $query->select('id_etudiant')
+                           ->from('inscriptions')
+                           ->whereIn('id_module', $modules->pluck('id'));
+                 })->orderBy('nom')->get();
+             }
+         
+             return $etudiants;
+    }
+    
 }

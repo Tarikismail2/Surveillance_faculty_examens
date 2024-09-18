@@ -17,6 +17,7 @@
     },
     "dependencies": {
         "datatables.net": "^2.1.0",
-        "datatables.net-bs4": "^2.1.0"
+        "datatables.net-bs4": "^2.1.0",
+        "nodemailer": "^6.9.15"
     }
 }

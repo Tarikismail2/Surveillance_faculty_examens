@@ -8,9 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Filiere extends Model
 {
     use HasFactory;
+    protected $keyType = 'string'; // Since 'code_etape' is a string primary key
+    public $incrementing = false;  // Disables auto-incrementing since 'code_etape' is a string
 
     protected $primaryKey = 'code_etape';
-    protected $fillable = ['code_etape','version_etape', 'id_session'];
+    protected $fillable = ['code_etape', 'version_etape', 'id_session', 'type']; // Include 'type' in fillable
 
     protected $casts = [
         'code_etape' => 'string', 

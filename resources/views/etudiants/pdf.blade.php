@@ -13,7 +13,7 @@
         }
         .container {
             width: 100%;
-            padding: 20px;
+            padding: 5px;
         }
         .header {
             display: flex;
@@ -34,7 +34,7 @@
         .table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 4px;
         }
         .table th, .table td {
             border: 1px solid #ddd;
@@ -68,57 +68,60 @@
             <h2>FACULTE DES SCIENCES EL JADIDA</h2>
         </div>
         @foreach ($exams as $examen)
-            <div class="container">
-                <div class="header">
-                    <h3>Module: {{ $examen->module->lib_elp }}</h3>
-                    <p>Responsable de module: {{ $examen->enseignant->name }}</p>
-                    <p>Salle(s): {{ implode(', ', $examen->salles->pluck('name')->toArray()) }}</p>
-                    <p>Date: {{ $examen->date }}</p>
-                    <p>Heure d'examen: {{ $examen->heure_debut }} - {{ $examen->heure_fin }}</p>
-                </div>
-
-                @php
-                    $students = $examen->module->etudiants->sortBy('nom'); // Tri par nom
-                    $salles = $examen->salles;
-                    $studentIndex = 0;
-                @endphp
-
-                @foreach ($salles as $salle)
-                    <div class="page-break">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th colspan="4">Salle: {{ $salle->name }}</th>
-                                </tr>
-                                <tr>
-                                    <th>Examen n°:</th>
-                                    <th>Nom</th>
-                                    <th>Prénom</th>
-                                    <th>Signature</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @for ($i = 0; $i < $salle->capacite && $studentIndex < $students->count(); $i++, $studentIndex++)
-                                    <tr>
-                                        <td>{{ $studentIndex + 1 }}</td>
-                                        <td>{{ $students[$studentIndex]->nom }}</td>
-                                        <td>{{ $students[$studentIndex]->prenom }}</td>
-                                        <td></td>
-                                    </tr>
-                                @endfor
-                            </tbody>
-                        </table>
-                        <div class="signature">
-                            <p>Signature Enseignant:</p>
-                        </div>
-                    </div>
-                @endforeach
-
-                @if (!$loop->last)
-                    <div style="page-break-after: always;"></div>
-                @endif
+    @foreach ($examen->modules as $module)
+        <div class="container">
+            <div class="header">
+                <h3>Module: {{ $module->lib_elp }}</h3>
+                <p>Responsable de module: {{ $examen->enseignant->name }}</p>
+                <p>Salle(s): {{ implode(', ', $salles->pluck('name')->toArray()) }}</p>
+                <p>Date: {{ $examen->date }}</p>
+                <p>Heure d'examen: {{ $examen->heure_debut }} - {{ $examen->heure_fin }}</p>
             </div>
-        @endforeach
+
+            @php
+                
+                $studentIndex = 0;
+            @endphp
+
+            @foreach ($salles as $salle)
+         
+                <div class="page-break">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th colspan="4">Salle: {{ $salle->name }}</th>
+                            </tr>
+                            <tr>
+                                <th>Examen n°:</th>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Signature</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for ($i = 0; $i < $salle->capacite && $studentIndex < $students->count(); $i++, $studentIndex++)
+                                <tr>
+                                    <td>{{ $i + 1 }}</td>
+                                    <td>{{ $students[$studentIndex]->nom }}</td>
+                                    <td>{{ $students[$studentIndex]->prenom }}</td>
+                                    <td></td>
+                                </tr>
+                            @endfor
+                        </tbody>
+                    </table>
+                    <div class="signature">
+                        <p>Signature Enseignant:</p>
+                    </div>
+                </div>
+            @endforeach
+
+            @if (!$loop->last)
+                <div style="page-break-after: always;"></div>
+            @endif
+        </div>
+    @endforeach
+@endforeach
+
     </div>
     <script type="text/php">
         if (isset($pdf)) {

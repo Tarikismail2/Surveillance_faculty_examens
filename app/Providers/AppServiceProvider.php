@@ -21,4 +21,10 @@ class AppServiceProvider extends ServiceProvider
     {
         //
     }
+
+    protected $listen = [
+        'Illuminate\Mail\Events\MessageSent' => [
+            'App\Listeners\EmailSentListener',
+        ],
+    ];
 }

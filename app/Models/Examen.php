@@ -94,5 +94,4 @@ class Examen extends Model
     {
         return $this->belongsToMany(Salle::class, 'examen_salle', 'id_examen', 'id_salle'); // Assuming many-to-many relation
     }
-
 }

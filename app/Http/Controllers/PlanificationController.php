@@ -15,6 +15,9 @@ use Dompdf\Options;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Models\EmailLog;
+
+use function PHPUnit\Framework\returnSelf;
 
 class PlanificationController extends Controller
 {
@@ -24,14 +27,17 @@ class PlanificationController extends Controller
         // Get selected session ID from the request
         $selectedSessionId = $request->query('id_session');
 
+        log::info('this the exam id  '.$selectedSessionId   );
         // Fetch exams for the selected session
         $exams = [];
         if ($selectedSessionId) {
             $exams = Examen::where('id_session', $selectedSessionId)
-                ->with(['module.filiere', 'salles', 'sallesSupplementaires', 'enseignant', 'session', 'enseignants'])
+                ->with(['modules.filiere', 'salles', 'sallesSupplementaires', 'enseignant', 'session', 'enseignants', 'modules'])
                 ->get();
+                // return $exams;
         }
-
+        
+        // dd($exams);
         // Fetch all sessions
         $sessions = SessionExam::all();
 
@@ -89,30 +95,91 @@ class PlanificationController extends Controller
     public function downloadGlobalSchedulePDF(Request $request)
     {
         ini_set('max_execution_time', 600);
-        // Fetch data needed for PDF generation
+    
         $selectedSessionId = $request->input('id_session');
-        $exams = Examen::where('id_session', $selectedSessionId)->get();
-
-        // Fetch session details
+        $exams = Examen::with('modules', 'sallesSupplementaires', 'enseignants', 'enseignant', 'session')
+            ->where('id_session', $selectedSessionId)
+            ->get();
         $session = SessionExam::findOrFail($selectedSessionId);
-
-        // Configure Dompdf options
+    
         $options = new DompdfOptions();
         $options->set('defaultFont', 'Arial');
-        $options->set('isRemoteEnabled', true); // Enable remote content (images in base64)
+        $options->set('isRemoteEnabled', true);
         $dompdf = new Dompdf($options);
-        $totalPages = $exams->count();
-
-        // Load HTML view file
-        $html = view('examens.global_pdf', compact(['exams', 'session']))->render();
-
+    
+        $html = view('enseignants.global_pdf', compact(['exams', 'session']))->render();
+    
         $dompdf->loadHtml($html);
-
-        $dompdf->setPaper('A4', 'portrait');
-
+        $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
-
+    
         return $dompdf->stream('global_exam_schedule.pdf', ['Attachment' => 0]);
     }
+    
+    public function getScheduleByDepartmentAndSession($departmentId, $sessionId)
+    {
+        // Récupérer les examens associés à la session et au département
+        $schedule = Examen::where('id_session', $sessionId)
+            ->whereHas('enseignant', function ($query) use ($departmentId) {
+                $query->where('id_department', $departmentId);  // Assurez-vous que la clé de relation est correcte
+            })
+            ->with(['salles', 'enseignant', 'surveillants', 'session'])
+            ->get();
+    
+        return $schedule;
+    }
+    
+    public function sendScheduleEmails(Request $request)
+    {
+        $departmentId = $request->input('id_department');
+        $sessionId = $request->input('id_session');
+        
+        // Récupérer le planning pour ce département et cette session
+        $schedule = $this->getScheduleByDepartmentAndSession($departmentId, $sessionId);
+    
+        // Vérifier s'il y a des emplois du temps à envoyer
+        if ($schedule->isEmpty()) {
+            return redirect()->back()->with('error', 'Aucun emploi du temps disponible pour ce département et cette session.');
+        }
+    
+        // Parcourir les enseignants et leur envoyer un email
+        foreach ($schedule as $entry) {
+            $enseignant = $entry->enseignant;
+    
+            if ($enseignant && $enseignant->email) {
+                $enseignantEmail = $enseignant->email;
+    
+                // Contenu de l'email
+                $subject = "Votre emploi du temps pour la session " . $entry->session->type;
+                $text = "Bonjour " . $enseignant->name . ",\n\nVoici votre emploi du temps pour la session " . $entry->session->type . " :\n"
+                        . "Date: " . $entry->date->format('d/m/Y') . "\n"
+                        . "Heure début: " . $entry->heure_debut->format('H:i') . "\n"
+                        . "Heure fin: " . $entry->heure_fin->format('H:i') . "\n"
+                        . "Salle: " . $entry->salles->pluck('name')->implode(', ') . "\n\n"
+                        . "Cordialement,\nVotre administration.";
+    
+                // Formatage correct des arguments pour exec()
+                $subjectEscaped = escapeshellarg($subject);
+                $textEscaped = escapeshellarg($text);
+                $emailEscaped = escapeshellarg($enseignantEmail);
+    
+                // Utiliser base_path() pour le chemin vers email.js
+                $nodeScriptPath = base_path('email.js');
+                exec("node $nodeScriptPath $emailEscaped $subjectEscaped $textEscaped");
+    
+                // Enregistrer l'email dans la table email_logs
+                EmailLog::create([
+                    'recipient_email' => $enseignantEmail,
+                    'subject' => $subject,
+                    'body' => $text,
+                    'sent_at' => now(),
+                ]);
+            }
+        }
+    
+        return redirect()->back()->with('success', 'Emploi du temps envoyé à tous les enseignants.');
+    }
+    
 
+    
 }

@@ -7,6 +7,7 @@ use App\Models\Department;
 use App\Models\Enseignant;
 use App\Models\ExamenSalleEnseignant;
 use App\Models\SessionExam;
+use App\Models\SurveillantReserviste;
 use Carbon\Carbon;
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -97,9 +98,14 @@ class TimetableController extends Controller
             })
             ->with(['examen', 'salle', 'enseignant'])
             ->get();
-
+    
+        // Retrieve the reservists for the session and dates
+        $reservistes = SurveillantReserviste::whereIn('id_enseignant', $enseignants->pluck('id'))
+            // ->where('id_session', $id_session)
+            ->get();
+    
         // Generate PDF
-        $html = view('emploi.schedule', compact('schedule', 'id_department', 'id_session', 'enseignants', 'dates'))->render();
+        $html = view('emploi.schedule', compact('schedule', 'id_department', 'id_session', 'enseignants', 'dates', 'reservistes'))->render();
     
         $options = new Options();
         $options->set('defaultFont', 'DejaVu Sans');
@@ -111,6 +117,7 @@ class TimetableController extends Controller
     
         return $dompdf->stream('Surveillance_Schedule_by_Department.pdf', ['Attachment' => 0]);
     }
+    
     
 
 }

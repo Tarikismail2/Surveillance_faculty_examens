@@ -6,11 +6,13 @@ use App\Models\Etudiant;
 use App\Models\Examen;
 use App\Models\Filiere;
 use App\Models\Module;
+use App\Models\FiliereGp;
 use App\Models\SessionExam;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Dompdf\Dompdf;
 use Dompdf\Options as DompdfOptions;
+use Illuminate\Support\Facades\Log;
 
 
 class EtudiantController extends Controller
@@ -30,7 +32,14 @@ class EtudiantController extends Controller
                     return $etudiant->nom . ' ' . $etudiant->prenom;
                 })
                 ->addColumn('action', function (Etudiant $etudiant) {
-                    return '<a href="/etudiants/' . $etudiant->id . '/edit" class="text-blue-600 hover:text-blue-800 font-medium">Edit</a>';
+                    return '<a href="/etudiants/' . $etudiant->id . '/edit" class="text-indigo-600 hover:text-indigo-900 flex items-center space-x-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M17.414 2.586a2 2 0 00-2.828 0L5 12.172V15h2.828l9.586-9.586a2 2 0 000-2.828zM4 13H3v4a1 1 0 001 1h4v-1H4v-3z" />
+                                            </svg></a> 
+                       <a href="/etudiants/' . $etudiant->id . '/destroy" class="text-red-600 hover:text-red-900 flex items-center space-x-1"> 
+                                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                                                    <path fill-rule="evenodd" d="M6 8a1 1 0 011-1h6a1 1 0 011 1v9a1 1 0 11-2 0v-1H8v1a1 1 0 11-2 0V8zm3-3a1 1 0 00-1-1V3a1 1 0 112 0v1a1 1 0 00-1 1z" clip-rule="evenodd" />
+                                                                </svg></a>';
                 })
                 ->rawColumns(['action'])
                 ->make(true);
@@ -56,7 +65,7 @@ class EtudiantController extends Controller
             'cin' => 'nullable|string|max:255',
             'cne' => 'required|string|max:255',
             'date_naissance' => 'nullable|date',
-            'session_id' => 'required|exists:session_exams,id', // Valider la session
+            'id_session' => 'required|exists:session_exams,id', // Valider la session
             'modules' => 'required|array',
         ]);
 
@@ -68,7 +77,7 @@ class EtudiantController extends Controller
             'cin' => $validatedData['cin'],
             'cne' => $validatedData['cne'],
             'date_naissance' => $validatedData['date_naissance'],
-            'session_id' => $validatedData['session_id'], // Ajouter session_id
+            'id_session' => $validatedData['id_session'], // Ajouter session_id
         ]);
 
         // Attacher les modules à l'étudiant
@@ -98,6 +107,7 @@ class EtudiantController extends Controller
         return view('etudiants.show', compact('etudiant', 'modules', 'session'));
     }
 
+
     public function edit(Etudiant $etudiant)
     {
         $modules = Module::all(); // Récupère tous les modules
@@ -106,6 +116,7 @@ class EtudiantController extends Controller
 
         return view('etudiants.edit', compact('etudiant', 'modules', 'selectedModules', 'sessions'));
     }
+
 
     public function update(Request $request, Etudiant $etudiant)
     {
@@ -134,6 +145,7 @@ class EtudiantController extends Controller
         return redirect()->route('etudiants.index')->with('success', 'Étudiant mis à jour avec succès.');
     }
 
+
     public function destroy(Etudiant $etudiant)
     {
         $etudiant->modules()->detach(); // Detach all modules before deleting
@@ -141,6 +153,7 @@ class EtudiantController extends Controller
 
         return redirect()->route('etudiants.index')->with('success', 'Étudiant supprimé avec succès.');
     }
+
 
     public function generatePdf($sessionId)
     {
@@ -151,6 +164,8 @@ class EtudiantController extends Controller
         $options->set('isHtml5ParserEnabled', true);
         $options->set('isPhpEnabled', true);
         $dompdf = new Dompdf($options);
+        // dd($sessionId);
+
         // Fetch data needed for PDF generation, filtering by the selected session
         $exams = Examen::with(['module.etudiants', 'salles', 'enseignant'])
             ->where('id_session', $sessionId)
@@ -169,37 +184,6 @@ class EtudiantController extends Controller
         return $dompdf->stream('liste_etudiants.pdf', ['Attachment' => 0]);
     }
 
-    public function downloadPDF($sessionId, $codeEtape)
-    {
-        ini_set('max_execution_time', 600);
-        $options = new DompdfOptions();
-        $options->set('defaultFont', 'Arial');
-        $options->set('isRemoteEnabled', true);
-        $options->set('isHtml5ParserEnabled', true);
-        $options->set('isPhpEnabled', true);
-        $dompdf = new Dompdf($options);
-
-        // Récupérer les examens associés à la session et au code d'étape
-        $exams = Examen::with(['module.etudiants', 'enseignant', 'sallesSupplementaires'])
-            ->whereHas('module', function ($query) use ($codeEtape) {
-                $query->where('code_etape', $codeEtape);
-            })
-            ->where('id_session', $sessionId)
-            ->get();
-
-        // Load HTML view file with data
-        $html = view('etudiants.pdf', ['exams' => $exams])->render();
-
-        // Load HTML to Dompdf
-        $dompdf->loadHtml($html);
-
-        // Render the PDF
-        $dompdf->render();
-
-        // Output the generated PDF to Browser
-        return $dompdf->stream('liste_etudiants_module.pdf', ['Attachment' => 0]);
-    }
-
     public function selectFiliere()
     {
         $filieres = Filiere::orderBy('version_etape')->pluck('version_etape', 'code_etape');
@@ -210,6 +194,71 @@ class EtudiantController extends Controller
         $id_session = request('id_session', '');
 
         return view('etudiants.select_filiere', compact('filieres', 'sessions', 'code_etape', 'id_session'));
+    }
+
+    public function downloadPDF($sessionId, $codeEtape)
+    {
+        ini_set('max_execution_time', 600);
+        $options = new DompdfOptions();
+        $options->set('defaultFont', 'Arial');
+        $options->set('isRemoteEnabled', true);
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isPhpEnabled', true);
+        $dompdf = new Dompdf($options);
+
+        $filiere = Filiere::where('code_etape', $codeEtape)->first();
+
+        if ($filiere && $filiere->type == 'new') {
+            $moduleIds = FiliereGp::where('code_etape', $codeEtape)
+                ->pluck('id_module');
+
+            // Retrieve exams with related modules, teachers, and rooms
+            $exams = Examen::with(['modules.etudiants', 'enseignant'])
+                ->whereHas('modules', function ($query) use ($moduleIds) {
+                    $query->whereIn('modules.id', $moduleIds); // Specify 'modules.id' to avoid ambiguity
+                })
+                ->where('id_session', $sessionId)
+                ->get();
+        } else {
+            $exams = Examen::with(['modules.etudiants', 'enseignant'])
+                ->whereHas('modules', function ($query) use ($codeEtape) {
+                    $query->where('code_etape', $codeEtape);
+                })
+                ->where('id_session', $sessionId)
+                ->get();
+        }
+        // return $exams;
+        $student = $exams->flatMap(function ($exam) {
+            return $exam->modules->flatMap(function ($module) {
+                return $module->etudiants;
+            });
+        });
+        // Ensure all students are correctly retrieved
+        $students = $student->filter(function ($student) {
+            return !empty($student->nom);
+        });
+
+        // Sort students by 'nom' in ascending order
+        $students = $students->sortBy('nom');
+
+        // Optionally reset keys if needed
+        $students = $students->values();
+        $salleNames = $exams->flatMap(function ($exam) {
+            // Ensure `sallesSupplementaires` is a collection
+            return $exam->sallesSupplementaires;
+        });
+// dd($exams);
+        // return $salleNames;
+        $html = view('etudiants.pdf', ['exams' => $exams, "students" => $students, "salles" => $salleNames])->render();
+
+        // Load HTML to Dompdf
+        $dompdf->loadHtml($html);
+
+        // Render the PDF
+        $dompdf->render();
+
+        // Output the generated PDF to Browser
+        return $dompdf->stream('liste_etudiants_module.pdf', ['Attachment' => 0]);
     }
 
     public function downloadStudentsPDF($sessionId, $code_etape)
@@ -240,7 +289,7 @@ class EtudiantController extends Controller
             })
             ->with(['module', 'sallePrincipale', 'sallesSupplementaires'])
             ->get();
-// dd($exams);
+
         $pdf = new Dompdf();
 
         $pdf->loadHtml(view('etudiants.students_pdf', compact('session', 'filiere', 'students', 'exams', 'modules'))->render());
