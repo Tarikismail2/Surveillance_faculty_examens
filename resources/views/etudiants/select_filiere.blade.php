@@ -34,24 +34,51 @@
                             <label for="id_session" class="block text-sm font-medium text-gray-700">Session</label>
                             <select id="id_session" name="id_session" class="form-select mt-1 block w-full" required>
                                 <option value="" disabled selected>Choisissez une session</option>
-                                @foreach ($sessions as $id => $type)
-                                    <option value="{{ $id }}">{{ $type }} </option>
+                                @foreach ($sessions as $session)
+                                    <option value="{{ $session->id }}">
+                                        {{ $session->type }} ({{ \Carbon\Carbon::parse($session->date_debut)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($session->date_fin)->format('d/m/Y') }})
+                                    </option>
                                 @endforeach
                             </select>
-                        </div>
+                        </div>                                             
+
+                        <!-- Filière -->
                         <div>
-                            <label for="code_etape" class="block text-sm font-medium text-gray-700">Filière</label>
-                            <select id="code_etape" name="code_etape" class="form-select mt-1 block w-full" required>
-                                <option value="" disabled selected>Choisissez une filière</option>
-                                @foreach ($filieres as $id => $version_etape)
-                                    <option value="{{ $id }}">{{ $version_etape }}</option> <!-- Use $id instead of $code_etape -->
-                                @endforeach
+                            <label for="filiere" class="block text-sm font-medium text-gray-700">Filière</label>
+                            <select id="filiere" name="code_etape" class="form-select mt-1 block w-full" required>
+                                <option value="" disabled selected>Sélectionnez une filière</option>
+                                
+                                <!-- New Filière -->
+                                <optgroup label="Nouveaux Filières">
+                                    @foreach ($filieres as $filiere)
+                                        @if ($filiere->type === 'new')
+                                            <option value="{{ $filiere->code_etape }}">
+                                                {{ $filiere->version_etape }}
+                                            </option>
+                                        @endif
+                                    @endforeach
+                                </optgroup>
+
+                                <!-- Normal Filière -->
+                                <optgroup label="Filières Normales">
+                                    @foreach ($filieres as $filiere)
+                                        @if ($filiere->type === 'old')
+                                            <option value="{{ $filiere->code_etape }}">
+                                                {{ $filiere->version_etape }}
+                                            </option>
+                                        @endif
+                                    @endforeach
+                                </optgroup>
                             </select>
+                            @error('code_etape')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
+
                     <div class="mt-6">
                         <a id="downloadLink" href="#" class="bg-blue-500 text-white px-4 py-2 rounded">
-                            Download PDF
+                            Télécharger PDF
                         </a>
                     </div>
                 </form>
@@ -61,15 +88,15 @@
 
     <script>
         document.getElementById('downloadForm').addEventListener('change', function() {
-    const sessionId = document.getElementById('id_session').value;
-    const code_etape = document.getElementById('code_etape').value;
-    const downloadLink = document.getElementById('downloadLink');
+            const sessionId = document.getElementById('id_session').value;
+            const codeEtape = document.getElementById('filiere').value;
+            const downloadLink = document.getElementById('downloadLink');
 
-    if (sessionId && code_etape) {
-        downloadLink.href = `{{ url('etudiants') }}/${sessionId}/${code_etape}/download-pdf`;
-    } else {
-        downloadLink.href = '#';
-    }
-});
+            if (sessionId && codeEtape) {
+                downloadLink.href = `{{ url('etudiants') }}/${sessionId}/${codeEtape}/download-pdf`;
+            } else {
+                downloadLink.href = '#';
+            }
+        });
     </script>
 </x-app-layout>

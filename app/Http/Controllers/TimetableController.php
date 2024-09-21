@@ -18,7 +18,7 @@ class TimetableController extends Controller
     public function selectDepartment()
     {
         $departements = Department::orderBy('name')->pluck('name', 'id_department');
-        $sessions = SessionExam::orderBy('type')->pluck('type', 'id');
+        $sessions = SessionExam::select('id', 'type', 'date_debut', 'date_fin')->orderBy('type', 'asc')->get();
 
         return view('emploi.select_department', compact('departements', 'sessions'));
     }
@@ -58,7 +58,7 @@ class TimetableController extends Controller
             ]);
 
         $departements = Department::orderBy('name')->pluck('name', 'id_department');
-        $sessions = SessionExam::orderBy('type')->pluck('type', 'id');
+        $sessions = SessionExam::select('id', 'type', 'date_debut', 'date_fin')->orderBy('type', 'asc')->get();
 
         return view('emploi.select_department', compact(
             'id_department', 

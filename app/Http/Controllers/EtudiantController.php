@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Dompdf\Dompdf;
 use Dompdf\Options as DompdfOptions;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 
@@ -186,15 +187,67 @@ class EtudiantController extends Controller
 
     public function selectFiliere()
     {
-        $filieres = Filiere::orderBy('version_etape')->pluck('version_etape', 'code_etape');
-        $sessions = SessionExam::orderBy('type')->pluck('type', 'id');
+        $filieres = Filiere::select('code_etape', 'version_etape', 'type')
+            ->orderBy('version_etape')
+            ->get();
 
-        // Assuming default values for $code_etape and $id_session
+        // $sessions = SessionExam::orderBy('type')->pluck('type', 'id');
+        $sessions = SessionExam::all(); // Récupère toutes les sessions avec leurs informations
+
+
         $code_etape = request('code_etape', '');
         $id_session = request('id_session', '');
 
         return view('etudiants.select_filiere', compact('filieres', 'sessions', 'code_etape', 'id_session'));
     }
+
+    public function downloadStudentsPDF($sessionId, $code_etape)
+    {
+        // Récupérer la session et la filière
+        $session = SessionExam::findOrFail($sessionId);
+        $filiere = Filiere::where('code_etape', $code_etape)->firstOrFail();
+
+        // Récupérer tous les modules de la filière
+        $modules = Module::where('code_etape', $code_etape)->get();
+
+        // Récupérer les étudiants inscrits dans les modules de la filière pour la session, triés par nom et prénom
+        $students = Etudiant::whereHas('inscriptions', function ($query) use ($code_etape, $sessionId) {
+            $query->whereHas('module', function ($q) use ($code_etape) {
+                $q->where('code_etape', $code_etape);
+            })->where('id_session', $sessionId);
+        })->orderBy('nom')->orderBy('prenom')->get();
+
+        // Vérifier si des étudiants sont trouvés
+        if ($students->isEmpty()) {
+            return response()->json(['message' => 'Aucun étudiant trouvé pour cette filière et session.'], 404);
+        }
+
+        // Récupérer les examens de la session et de la filière avec le module associé
+        $exams = DB::table('examens')
+            ->select('examens.*', 'salles.name as salle_name', 'exam_module.module_id as id_module')
+            ->join('examen_salle', 'examens.id', '=', 'examen_salle.id_examen')
+            ->join('salles', 'examen_salle.id_salle', '=', 'salles.id')
+            ->join('exam_module', 'examens.id', '=', 'exam_module.exam_id')
+            ->where('examens.id_session', $sessionId)
+            ->whereExists(function ($query) use ($code_etape) {
+                $query->select(DB::raw(1))
+                    ->from('modules')
+                    ->whereRaw('exam_module.module_id = modules.id')
+                    ->where('modules.code_etape', '=', $code_etape);
+            })
+            ->get();
+
+        // Générer le PDF avec Dompdf
+        $pdf = new Dompdf();
+        $pdf->loadHtml(view('etudiants.students_pdf', compact('session', 'filiere', 'students', 'exams', 'modules'))->render());
+        $pdf->setPaper('A3', 'portrait');
+        $pdf->render();
+
+        return $pdf->stream('Examen_Etudiants.pdf', ['Attachment' => 0]);
+    }
+
+
+
 
     public function downloadPDF($sessionId, $codeEtape)
     {
@@ -247,7 +300,7 @@ class EtudiantController extends Controller
             // Ensure `sallesSupplementaires` is a collection
             return $exam->sallesSupplementaires;
         });
-// dd($exams);
+
         // return $salleNames;
         $html = view('etudiants.pdf', ['exams' => $exams, "students" => $students, "salles" => $salleNames])->render();
 
@@ -259,45 +312,5 @@ class EtudiantController extends Controller
 
         // Output the generated PDF to Browser
         return $dompdf->stream('liste_etudiants_module.pdf', ['Attachment' => 0]);
-    }
-
-    public function downloadStudentsPDF($sessionId, $code_etape)
-    {
-        // Récupérer la session et la filière
-        $session = SessionExam::findOrFail($sessionId);
-        $filiere = Filiere::where('code_etape', $code_etape)->firstOrFail();
-
-        // Récupérer tous les modules de la filière
-        $modules = Module::where('code_etape', $code_etape)->get();
-
-        // Récupérer les étudiants inscrits dans les modules de la filière pour la session
-        $students = Etudiant::whereHas('inscriptions', function ($query) use ($code_etape, $sessionId) {
-            $query->whereHas('module', function ($q) use ($code_etape) {
-                $q->where('code_etape', $code_etape);
-            })->where('id_session', $sessionId);
-        })->get();
-
-        // Vérifier si des étudiants sont trouvés
-        if ($students->isEmpty()) {
-            return response()->json(['message' => 'Aucun étudiant trouvé pour cette filière et session.'], 404);
-        }
-
-        // Récupérer les examens de la session et de la filière
-        $exams = Examen::where('id_session', $sessionId)
-            ->whereHas('module', function ($query) use ($code_etape) {
-                $query->where('code_etape', $code_etape);
-            })
-            ->with(['module', 'sallePrincipale', 'sallesSupplementaires'])
-            ->get();
-
-        $pdf = new Dompdf();
-
-        $pdf->loadHtml(view('etudiants.students_pdf', compact('session', 'filiere', 'students', 'exams', 'modules'))->render());
-
-        $pdf->setPaper('A4', 'portrait');
-
-        $pdf->render();
-
-        return $pdf->stream('Examen_Etudiants.pdf', ['Attachment' => 0]);
     }
 }

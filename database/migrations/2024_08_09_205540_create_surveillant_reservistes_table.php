@@ -14,12 +14,14 @@ return new class extends Migration
         Schema::create('surveillant_reservistes', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('id_enseignant');
+            $table->unsignedBigInteger('id_session');
             $table->date('date');
             $table->enum('demi_journee', ['matin', 'apres-midi']); // Add this line
             $table->boolean('affecte')->default(false);
             $table->timestamps();
         
             $table->foreign('id_enseignant')->references('id')->on('enseignants')->onDelete('cascade');
+            $table->foreign('id_session')->references('id')->on('session_exams')->onDelete('cascade');
         });
     }
 

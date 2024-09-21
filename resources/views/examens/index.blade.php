@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout> 
     <x-slot name="header">
         <div class="flex justify-between items-center bg-gray-100 p-4 rounded-lg shadow-md">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
@@ -126,39 +126,16 @@
         </div>
     </div>
 
-    <!-- DataTables Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css">
-
-    @push('scripts')
     <script>
-        function confirmDelete() {
-            return confirm("Êtes-vous sûr de vouloir supprimer cet examen ?");
-        }
-
         $(document).ready(function() {
             $('#exams-table').DataTable({
-                "order": [
-                    [0, 'desc']
-                ], // Sort by date in descending order
                 "language": {
-                    "sSearch": "Recherche:",
-                    "sLengthMenu": "Afficher MENU lignes",
-                    "sZeroRecords": "Aucun résultat trouvé",
-                    "sInfo": "Affichage de START à END sur TOTAL lignes",
-                    "sInfoEmpty": "Affichage de 0 à 0 sur 0 lignes",
-                    "sInfoFiltered": "(filtré de MAX lignes au total)",
-                    "oPaginate": {
-                        "sFirst": "Premier",
-                        "sLast": "Dernier",
-                        "sNext": "Suivant",
-                        "sPrevious": "Précédent"
-                    }
+                    "url": "//cdn.datatables.net/plug-ins/1.13.4/i18n/fr-FR.json"
                 }
             });
         });
     </script>
-    @endpush
+
 </x-app-layout>

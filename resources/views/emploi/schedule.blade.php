@@ -43,29 +43,22 @@
     <hr>
     <div class="department-info">
         @php
-            $session = \App\Models\SessionExam::find($id_session);
-            $department = \App\Models\Department::find($id_department);
-            $currentYear = $session ? \Carbon\Carbon::parse($session->date)->year : now()->year;
-            $previousYear = $currentYear - 1;
-        @endphp
-        <p><strong>Année Universitaire:</strong> {{ $previousYear }}/{{ $currentYear }}</p>
-        <p><strong>Département :</strong> {{ $department ? $department->name : 'N/A' }}</p>
+        $session = \App\Models\SessionExam::find($id_session); 
+        $department = \App\Models\Department::find($id_department);
+        $currentYear = $session ? \Carbon\Carbon::parse($session->date_debut)->year : now()->year;
+        $previousYear = $currentYear - 1;
+    @endphp
+    
+    <p><strong>Année Universitaire:</strong> {{ $previousYear }}/{{ $currentYear }}</p>
+    <p><strong>Département :</strong> {{ $department ? $department->name : 'N/A' }}</p>
+    @if ($session)
         @if ($session->type == 'S_N_1' || $session->type == 'S_N_2')
-            @if ($session->type == 'S_N_1')
-                <p><strong>Semestres:</strong> Automne</p>
-            @else
-                <p><strong>Session:</strong> Printemps</p>
-            @endif
-            <p><strong>Session :</strong> Normale</p>
+            <p><strong>Session :</strong> {{ $session->type == 'S_N_1' ? 'Automne' : 'Printemps' }} - Normale</p>
         @elseif($session->type == 'S_R_1' || $session->type == 'S_R_2')
-            @if ($session->type == 'S_R_1')
-                <p><strong>Session:</strong> Automne</p>
-            @else
-                <p><strong>Session:</strong> Printemps</p>
-            @endif
-            <p><strong>Session :</strong> Rattrapage</p>
+            <p><strong>Session :</strong> {{ $session->type == 'S_R_1' ? 'Automne' : 'Printemps' }} - Rattrapage</p>
         @endif
-        <p><strong>Centre d'Examen :</strong> El Jadida</p>
+    @endif
+    <p><strong>Centre d'Examen :</strong> El Jadida</p>    
     </div>
 
     <table>
@@ -99,7 +92,7 @@
                                 ->where('examen.date', $date)
                                 ->where('examen.heure_debut', '10:15:00')
                                 ->first();
-        
+
                             $afternoonEntry1 = $schedule
                                 ->where('id_enseignant', $enseignant->id)
                                 ->where('examen.date', $date)
@@ -110,18 +103,20 @@
                                 ->where('examen.date', $date)
                                 ->where('examen.heure_debut', '16:15:00')
                                 ->first();
-        
+
                             // Check if the teacher is a reservist
-                            $isMorningReservist = $reservistes->where('id_enseignant', $enseignant->id)
+                            $isMorningReservist = $reservistes
+                                ->where('id_enseignant', $enseignant->id)
                                 ->where('date', $date)
                                 ->where('demi_journee', 'matin')
                                 ->first();
-                            $isAfternoonReservist = $reservistes->where('id_enseignant', $enseignant->id)
+                            $isAfternoonReservist = $reservistes
+                                ->where('id_enseignant', $enseignant->id)
                                 ->where('date', $date)
                                 ->where('demi_journee', 'apres-midi')
                                 ->first();
                         @endphp
-        
+
                         <!-- Matinée -->
                         <td>
                             @if ($morningEntry1)
@@ -136,7 +131,7 @@
                                 -
                             @endif
                         </td>
-        
+
                         <!-- Après-midi -->
                         <td>
                             @if ($afternoonEntry1)
@@ -155,7 +150,7 @@
                 </tr>
             @endforeach
         </tbody>
-        
+
     </table>
 </body>
 

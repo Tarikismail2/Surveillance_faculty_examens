@@ -16,7 +16,9 @@ use App\Http\Controllers\SurveillantsReservistesController;
 use App\Http\Controllers\TimetableController;
 use App\Http\Controllers\ContrainteSalleController;
 use App\Http\Controllers\FiliereController;
+use App\Mail\NodeMailer;
 use App\Models\Module;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -107,8 +109,6 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('/test-pdf/{sessionId}', [EtudiantController::class, 'generatePdf'])->name('test.pdf');
     Route::get('/filiere/{filiereId}/modules', [EtudiantController::class, 'getModulesByFiliere'])->name('getModulesByFiliere');
 
-
-
     //route upload
     Route::get('/import/{sessionId}', [ImportController::class, 'showForm'])->name('import.form');
     Route::post('/import/{sessionId}', [ImportController::class, 'import'])->name('import.process');
@@ -119,12 +119,10 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('/examens/schedule', [PlanificationController::class, 'showExams'])->name('examens.schedule');
     Route::get('/global', [PlanificationController::class, 'showGlobalPlan'])->name('examens.global');
 
-    Route::post('/send-schedule-emails', [PlanificationController::class, 'sendScheduleEmails'])->name('sendScheduleEmails');
-
     Route::get('/generate-pdf/{sessionId}', [EnseignantController::class, 'generatePDFEnseignant'])->name('examens.global.pdf');
 
     Route::get('/examens/{sessionId}/{codeEtape}/download-pdf', [EtudiantController::class, 'downloadPDF'])
-    ->name('examens.downloadPDF');
+        ->name('examens.downloadPDF');
 
     //validation des contraintes enseignants
     Route::get('/contraintes_admin', [ContrainteEnseignantController::class, 'index_admin'])->name('contrainte_enseignants.index_admin');
@@ -161,11 +159,13 @@ Route::middleware(['role:admin'])->group(function () {
     Route::put('filiere/{filiere}/modules/{module}', [ModuleController::class, 'updateModule'])->name('modules.update');
     Route::delete('filiere/{filiere}/modules/{module}', [ModuleController::class, 'destroyModule'])->name('modules.destroy');
 
-
-
+    //Route pour afficher emploi des etudiants
     Route::get('/select-filiere', [EtudiantController::class, 'selectFiliere'])->name('selectFiliere');
     Route::get('/etudiants/{sessionId}/{code_etape}/download-pdf', [EtudiantController::class, 'downloadStudentsPDF'])
         ->name('downloadStudentsPDF');
+
+    // Route pour envoyer les emails
+    Route::post('/send-emails', [EnseignantController::class, 'sendEmailsByDepartment'])->name('sendEmailsByDepartment');
 });
 
 require __DIR__ . '/auth.php';

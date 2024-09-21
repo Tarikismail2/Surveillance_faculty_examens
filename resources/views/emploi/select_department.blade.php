@@ -50,67 +50,49 @@
                         </div>
                         <div>
                             <label for="id_session" class="block text-sm font-medium text-gray-700">Session</label>
-                            <select id="id_session" name="id_session" class="form-select mt-1 block w-full">
+                            <select id="id_session" name="id_session" class="form-select mt-1 block w-full" required>
                                 <option value="" disabled selected>Choisissez une session</option>
-                                @foreach ($sessions as $id => $type)
-                                    <option value="{{ $id }}" {{ request('id_session') == $id ? 'selected' : '' }}>
-                                        {{ $type }}
-                                    </option>
-                                @endforeach
+                                @foreach ($sessions as $session)
+                                <option value="{{ $session->id }}">
+                                    {{ $session->type }} ({{ \Carbon\Carbon::parse($session->date_debut)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($session->date_fin)->format('d/m/Y') }})
+                                </option>
+                            @endforeach                            
                             </select>
-                        </div>
+                        </div>                        
                     </div>
                     <div class="mt-6">
-                        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md">Afficher l'emploi du temps</button>
+                        <button type="submit" class="flex items-center px-4 py-2 bg-blue-500 text-white rounded-md transition duration-300 hover:bg-blue-600">
+                            <i class="fas fa-search mr-2"></i>
+                            Afficher l'emploi du temps
+                        </button>
                     </div>
                 </form>
 
                 <!-- Display schedule if available -->
                 @isset($schedule)
                     @if (!$schedule->isEmpty())
-                        <div class="overflow-x-auto mt-6">
-                            <div class="flex justify-end mb-4">
-                                <!-- Formulaire d'envoi d'email -->
-                                <form action="{{ route('sendScheduleEmails') }}" method="POST" class="mt-4">
-                                    @csrf
-                                    <input type="hidden" name="id_department" value="{{ request('id_department') }}">
-                                    <input type="hidden" name="id_session" value="{{ request('id_session') }}">
-                                    <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded-md">
-                                        Envoyer l'emploi du temps par email
-                                    </button>
-                                </form>
-
-                                <form action="{{ route('download-schedule', ['id_department' => request('id_department'), 'id_session' => request('id_session')]) }}" method="GET">
-                                    @csrf
-                                    <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors duration-300 ease-in-out flex items-center space-x-2">
-                                        <i class="fas fa-download"></i>
-                                        <span>Télécharger l'emploi du temps sous forme PDF</span>
-                                    </button>
-                                </form>
-                            </div>
-                            {{-- <table class="min-w-full divide-y divide-gray-200 bg-white shadow-md rounded-lg">
-                                <thead class="bg-gray-100 text-gray-600">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Date</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Heure de début</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Heure de fin</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Salle</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Enseignant</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    @foreach ($schedule as $entry)
-                                        <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $entry->examen->date->format('d/m/Y') }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $entry->examen->heure_debut->format('H:i') }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $entry->examen->heure_fin->format('H:i') }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $entry->salle->name }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $entry->enseignant->name }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div> --}}
+                    <div class="overflow-x-auto mt-6">
+                        <div class="flex justify-end mb-4 space-x-4"> <!-- Ajout de space-x-4 pour espacer les boutons -->
+                            <!-- Formulaire d'envoi d'email -->
+                            <form action="{{ route('sendEmailsByDepartment') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="id_department" value="{{ request('id_department') }}">
+                                <input type="hidden" name="id_session" value="{{ request('id_session') }}">
+                                <button type="submit" class="flex items-center bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors duration-300 ease-in-out">
+                                    <i class="fas fa-paper-plane mr-2"></i>
+                                    Envoyer l'emploi du temps par email
+                                </button>
+                            </form>
+                    
+                            <form action="{{ route('download-schedule', ['id_department' => request('id_department'), 'id_session' => request('id_session')]) }}" method="GET">
+                                @csrf
+                                <button type="submit" class="flex items-center bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors duration-300 ease-in-out">
+                                    <i class="fas fa-download mr-2"></i>
+                                    Télécharger l'emploi du temps sous forme PDF
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                     @else
                         <div class="mt-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
                             <p>Aucune donnée disponible pour le département et la session sélectionnés.</p>

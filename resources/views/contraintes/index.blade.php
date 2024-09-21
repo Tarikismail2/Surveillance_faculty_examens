@@ -29,7 +29,7 @@
                     @endif
 
                     <!-- Formulaire de filtrage -->
-                    <form method="GET" action="{{ route('contrainte_enseignants.index_admin') }}" class="mb-4">
+                    <form method="GET" action="{{ route('contrainte_enseignants.index') }}" class="mb-4">
                         <div class="flex items-center">
                             <label for="id_session"
                                 class="block text-gray-700 text-sm font-bold mb-2 mr-4">Session</label>

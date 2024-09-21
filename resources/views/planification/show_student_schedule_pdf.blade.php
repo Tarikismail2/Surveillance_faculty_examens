@@ -20,14 +20,14 @@
             padding: 20px;
             background-color: #fff;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         .header {
             text-align: center;
             margin-bottom: 30px;
         }
         .header h2 {
-            font-size: 24px;
+            font-size: 26px;
             margin: 0;
             color: #2c3e50;
         }
@@ -36,22 +36,29 @@
             margin: 5px 0;
             color: #7f8c8d;
         }
+        .session-info {
+            font-size: 14px;
+            margin-top: 10px;
+            color: #555;
+        }
         .table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 20px;
         }
         .table th, .table td {
             border: 1px solid #ddd;
             padding: 12px;
             text-align: left;
+            font-size: 14px;
         }
         .table th {
-            background-color: #8f9193;
-            color: #000;
+            background-color:#777;
+            color: #ffffff;
             font-weight: 700;
         }
         .table td {
-            background-color: #fff;
+            background-color: #ffffff;
             color: #333;
         }
         .table tr:nth-child(even) {
@@ -60,9 +67,16 @@
         .table tr:hover {
             background-color: #e9ecef;
         }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 12px;
+            color: #777;
+        }
         @media (max-width: 768px) {
             .table th, .table td {
                 padding: 8px;
+                font-size: 12px;
             }
         }
     </style>
@@ -70,9 +84,22 @@
 <body>
     <div class="container">
         <div class="header">
-            <h2>Emploi du temps des examens</h2>
-            <p>Session : {{ $session_type }}</p>
-            <p>Étudiant : {{ $student_name }}</p>
+            <h2>Emploi du temps de l'étudiant : {{ $student_name }}</h2>
+            <div class="session-info">
+                @php
+                    $currentYear = now()->year;
+                    $previousYear = $currentYear - 1;
+                @endphp
+                <p><strong>Année Universitaire:</strong> {{ $previousYear }}/{{ $currentYear }}</p>
+                <p><strong>Session :</strong> 
+                    @if($session_type == 'S_N_1') Automne, Normale
+                    @elseif($session_type == 'S_N_2') Printemps, Normale
+                    @elseif($session_type == 'S_R_1') Automne, Rattrapage
+                    @elseif($session_type == 'S_R_2') Printemps, Rattrapage
+                    @endif
+                </p>
+                <p><strong>Centre d'Examen :</strong> El Jadida</p>
+            </div>
         </div>
         <table class="table">
             <thead>
@@ -91,13 +118,16 @@
                         <td>{{ $examen->heure_fin }}</td>
                         <td>
                             @foreach ($examen->salles as $salle)
-                                {{ $salle->nom }}@if (!$loop->last), @endif
+                                {{ $salle->name }}@if (!$loop->last), @endif
                             @endforeach
                         </td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
+        <div class="footer">
+            <p>Document généré le {{ now()->format('d/m/Y H:i') }}</p>
+        </div>
     </div>
 </body>
 </html>

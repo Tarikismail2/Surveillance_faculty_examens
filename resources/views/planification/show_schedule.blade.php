@@ -76,7 +76,30 @@
     <div class="container">
         <header>
             <h1>Emploi du Temps de Surveillance de {{ $name_enseignant }}</h1>
-            <h3>Session : {{ $session_type }}</h3>
+            <div class="session-info">
+                @php
+                    $currentYear = $session ? \Carbon\Carbon::parse($session->date)->year : now()->year;
+                    $previousYear = $currentYear - 1;
+                @endphp
+                <p><strong>Année Universitaire:</strong> {{ $previousYear }}/{{ $currentYear }}</p>
+                @if ($session->type == 'S_N_1' || $session->type == 'S_N_2')
+                    @if ($session->type == 'S_N_1')
+                        <p><strong>Semestres:</strong> Automne</p>
+                    @else
+                        <p><strong>Session:</strong> Printemps</p>
+                    @endif
+                    <p><strong>Session :</strong> Normale</p>
+                @elseif($session->type == 'S_R_1' || $session->type == 'S_R_2')
+                    @if ($session->type == 'S_R_1')
+                        <p><strong>Session:</strong> Automne</p>
+                    @else
+                        <p><strong>Session:</strong> Printemps</p>
+                    @endif
+                    <p><strong>Session :</strong> Rattrapage</p>
+                @endif
+                <p><strong>Centre d'Examen :</strong> El Jadida</p>
+            </div>
+        
         </header>
 
         <main>

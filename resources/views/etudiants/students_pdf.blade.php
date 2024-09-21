@@ -26,9 +26,9 @@
             margin: 5px 0;
         }
         table {
-            width: 100%; /* Assurez-vous que la table occupe toute la largeur de l'écran */
-            max-width: 90%; /* Limitez la largeur pour la centrer */
-            margin: 0 auto; /* Centre la table horizontalement */
+            width: 100%;
+            max-width: 90%;
+            margin: 0 auto;
             border-collapse: collapse;
             margin-top: 20px;
         }
@@ -58,10 +58,10 @@
     </style>
 </head>
 <body>
-    <h1>UNIVERSITE CHOUAIB DOUKKALI</h1>
-    <h1>FACULTE DES SCIENCES EL JADIDA</h1>
+    <h1>UNIVERSITÉ CHOUAIB DOUKKALI</h1>
+    <h1>FACULTÉ DES SCIENCES EL JADIDA</h1>
     <hr>
-    <h1>Liste des Etudiants</h1>
+    <h1>Liste des Étudiants</h1>
     <hr>
     <div class="department-info">
         @php
@@ -70,7 +70,7 @@
         @endphp
         <p><strong>Année Universitaire:</strong> {{ $previousYear }}/{{ $currentYear }}</p>
         <p><strong>Session:</strong> {{ $session->type == 'S_N_1' || $session->type == 'S_N_2' ? 'Normale' : 'Rattrapage' }}</p>
-        <p><strong>Centre d'Examen :</strong> El Jadida</p>
+        <p><strong>Centre d'Examen:</strong> El Jadida</p>
     </div>
     <h2>Filière: {{ $filiere->version_etape ?? 'Inconnu' }}</h2>
 
@@ -91,12 +91,13 @@
                     <td>{{ $student->nom }} {{ $student->prenom }}</td>
                     @foreach($modules as $module)
                         @php
+                            // Rechercher l'examen correspondant à ce module
                             $exam = $exams->where('id_module', $module->id)->first();
-                            $salle = $exam ? $exam->sallesSupplementaires->pluck('name')->join(', ') : null;
+                            $salle = $exam ? $exam->salle_name : null; // Utiliser salle_name directement
                         @endphp
                         <td>
-                            @if($salle)
-                                S: {{ $salle }} / N°{{ $loop->parent->iteration }}
+                            @if($exam)
+                                S: {{ $salle }} / N°:{{ $loop->parent->iteration }}
                             @else
                                 -
                             @endif
@@ -106,5 +107,6 @@
             @endforeach
         </tbody>
     </table>
+    
 </body>
 </html>

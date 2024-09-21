@@ -9,12 +9,20 @@ class SurveillantReserviste extends Model
 {
     protected $fillable = [
         'id_enseignant',
+        'id_session',
         'date',
         'demi_journee',
         'affecte',
     ];
+
     public function enseignant()
     {
-        return $this->belongsTo(Enseignant::class, 'id_enseignant'); // Specify the foreign key
+        return $this->belongsTo(Enseignant::class, 'id_enseignant'); 
     }
+
+     // Relation for the session
+     public function session()
+     {
+         return $this->belongsTo(SessionExam::class, 'id_session');
+     }
 }

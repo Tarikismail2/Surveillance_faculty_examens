@@ -1022,17 +1022,17 @@ class ExamenController extends Controller
     //Affectation des surveilants d'une maniere automatique
     protected function canAssignInvigilator($enseignant, $date, $heure_debut, $heure_fin)
     {
-        // Check if the invigilator has already been assigned to this day
+        // Vérifier si l'enseignant a déjà été assigné à deux examens ce jour-là
         $nombreSurveillancesJour = $enseignant->examens()
             ->where('date', $date)
             ->count();
 
-        // If already assigned twice on the same day, they should not be available
+        // Si déjà assigné deux fois dans la même journée, indisponible
         if ($nombreSurveillancesJour >= 2) {
             return false;
         }
 
-        // Check for time conflicts
+        // Vérifier les chevauchements horaires
         $chevauchement = $enseignant->examens()
             ->where('date', $date)
             ->where(function ($query) use ($heure_debut, $heure_fin) {
@@ -1058,7 +1058,7 @@ class ExamenController extends Controller
             $heure_debut = $examen->heure_debut;
             $heure_fin = $examen->heure_fin;
 
-            $responsableModuleId = $examen->module->id_enseignant;
+            $responsableModuleId = $examen->id_enseignant;
 
             // Vérifier si les surveillants ont déjà été affectés à cet examen
             if ($examen->surveillants()->exists()) {
@@ -1067,40 +1067,45 @@ class ExamenController extends Controller
                     ->with('error', 'Les surveillants ont déjà été affectés pour cet examen.');
             }
 
-            // Select available invigilators who are not responsible for the module
             $enseignantsDisponibles = Enseignant::where('id', '!=', $responsableModuleId)
-                ->whereDoesntHave('examens', function ($query) use ($date) {
-                    $query->where('date', $date);
-                })
                 ->inRandomOrder()
                 ->get();
 
             $errors = [];
 
-            foreach ($examen->salles as $salle) {
-                $nombreSurveillants = $this->determineSurveillantsCount($salle->capacite);
-                $surveillantsAffectes = 0;
+            // Récupérer les examens le même jour dans la même salle
+            $examensSimilaires = Examen::where('date', $date)
+                ->whereHas('salles', function ($query) use ($examen) {
+                    $query->where('salles.id', $examen->salles->pluck('id'));
+                })
+                ->get();
 
-                foreach ($enseignantsDisponibles as $enseignant) {
-                    if ($this->canAssignInvigilator($enseignant, $date, $heure_debut, $heure_fin)) {
-                        DB::table('examen_salle_enseignant')->insert([
-                            'id_examen' => $examen->id,
-                            'id_salle' => $salle->id,
-                            'id_enseignant' => $enseignant->id,
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
+            foreach ($examensSimilaires as $examenSimilaire) {
+                foreach ($examenSimilaire->salles as $salle) {
+                    $nombreSurveillants = $this->determineSurveillantsCount($salle->capacite);
+                    $surveillantsAffectes = 0;
 
-                        $surveillantsAffectes++;
+                    foreach ($enseignantsDisponibles as $enseignant) {
+                        if ($this->canAssignInvigilator($enseignant, $date, $examenSimilaire->heure_debut, $examenSimilaire->heure_fin)) {
+                            DB::table('examen_salle_enseignant')->insert([
+                                'id_examen' => $examenSimilaire->id,
+                                'id_salle' => $salle->id,
+                                'id_enseignant' => $enseignant->id,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+
+                            $surveillantsAffectes++;
+                        }
+
+                        if ($surveillantsAffectes >= $nombreSurveillants) {
+                            break;
+                        }
                     }
 
-                    if ($surveillantsAffectes >= $nombreSurveillants) {
-                        break;
+                    if ($surveillantsAffectes < $nombreSurveillants) {
+                        $errors[] = "Il n'y a pas assez de surveillants disponibles pour la salle {$salle->name}.";
                     }
-                }
-
-                if ($surveillantsAffectes < $nombreSurveillants) {
-                    $errors[] = "Il n'y a pas assez de surveillants disponibles pour la salle {$salle->name}.";
                 }
             }
 
@@ -1160,7 +1165,7 @@ class ExamenController extends Controller
         }
     }
 
-
+    // Creation des surveillants reservistes
     protected function createReservistsForSession($sessionId)
     {
         $examDates = Examen::where('id_session', $sessionId)
