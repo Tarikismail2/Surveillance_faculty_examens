@@ -45,13 +45,13 @@
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
-                        
+
                         <!-- Filière -->
                         <div class="form-group">
                             <label for="filiere"
                                 class="block text-gray-700 dark:text-gray-300">@lang('Filière')</label>
                             <select
-                                class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                class="form-select select2 mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 id="filiere" name="code_etape" required>
                                 <option value="">@lang('Sélectionnez une filière')</option>
 
@@ -318,24 +318,36 @@
                 const newSalleDiv = document.createElement('div');
                 newSalleDiv.className = 'mt-2 flex items-center';
 
-                const newSalleSelect = salleSelect.cloneNode(true);
+                const newSalleSelect = salleSelect.cloneNode(true); // Cloner le select de salle
                 newSalleSelect.name = `additional_salles[${salleCount}]`;
                 newSalleSelect.id = `additional_salle_${salleCount}`;
-                newSalleSelect.addEventListener('change', updateRemainingInscriptions);
+
+                // Ré-initialiser Select2 pour la nouvelle salle après l'ajout
+                $(newSalleSelect).select2({
+                    placeholder: "@lang('Choisir une salle')",
+                    allowClear: true
+                });
 
                 const removeButton = document.createElement('button');
                 removeButton.type = 'button';
-                removeButton.innerText = '@lang('Supprimer ')';
+                removeButton.innerText = '@lang('Supprimer')';
                 removeButton.className =
                     'ml-2 py-1 px-2 bg-red-500 hover:bg-red-700 text-white font-semibold rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75';
                 removeButton.addEventListener('click', function() {
                     additionalSallesDiv.removeChild(newSalleDiv);
-                    updateRemainingInscriptions();
+                    updateRemainingInscriptions
+                (); // Mettre à jour le nombre d'inscriptions restantes après la suppression
                 });
 
                 newSalleDiv.appendChild(newSalleSelect);
                 newSalleDiv.appendChild(removeButton);
                 additionalSallesDiv.appendChild(newSalleDiv);
+
+                // Appliquer Select2 après l'ajout de la nouvelle salle
+                $(newSalleSelect).select2({
+                    placeholder: "@lang('Choisir une salle')",
+                    allowClear: true
+                });
             });
 
             function updateRemainingInscriptions() {
@@ -393,6 +405,65 @@
             $('#id_enseignant').select2({
                 placeholder: "@lang('Choisir un enseignant')", // Placeholder par défaut
                 allowClear: true // Permet de désélectionner
+            });
+        });
+    </script>
+
+    <script>
+        $(document).ready(function() {
+            // Appliquer Select2 pour la filière
+            $('#filiere').select2({
+                placeholder: "@lang('Sélectionnez une filière')",
+                allowClear: true
+            });
+
+            // Appliquer Select2 pour le module
+            $('#module').select2({
+                placeholder: "@lang('Sélectionnez un module')",
+                allowClear: true
+            });
+
+            // Lorsque la filière change
+            $('#filiere').on('change', function() {
+                const code_etape = $(this).val();
+                $('#module').empty().append(
+                '<option value="">@lang('Sélectionnez un module')</option>'); // Réinitialiser le sélecteur de modules
+
+                if (code_etape) {
+                    fetch(`/examens/getModulesByFiliere/${code_etape}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            data.forEach(module => {
+                                // Ajouter les modules avec le nombre d'inscriptions
+                                $('#module').append(
+                                    `<option value="${module.lib_elp}" data-inscriptions="${module.inscriptions_count}">${module.lib_elp} (${module.inscriptions_count} @lang('inscrits'))</option>`
+                                    );
+                            });
+                            $('#module').trigger('change'); // Mettre à jour Select2
+                        })
+                        .catch(error => console.error('Error fetching modules:', error));
+                }
+            });
+
+            // Lorsque le module change
+            $('#module').on('change', function() {
+                const selectedModule = $(this).find(':selected');
+                const inscriptionsCount = selectedModule.data('inscriptions') ||
+                0; // Récupérer les inscriptions
+
+                // Mettre à jour la valeur du champ caché
+                $('#inscriptions_count').val(inscriptionsCount);
+            });
+
+            // Appliquer Select2 pour les autres champs (si nécessaire)
+            $('#id_salle').select2({
+                placeholder: "@lang('Choisir une salle')",
+                allowClear: true
+            });
+
+            $('#id_enseignant').select2({
+                placeholder: "@lang('Choisir un enseignant')",
+                allowClear: true
             });
         });
     </script>

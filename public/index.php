@@ -2,18 +2,26 @@
 
 use Illuminate\Http\Request;
 
-// set_time_limit(600);
+// Set the maximum execution time to 10 minutes
+set_time_limit(600);
 
-define('LARAVEL_START', microtime(true));
-
-// Determine if the application is in maintenance mode...
-if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
+// Check if the application is in maintenance mode
+if (file_exists($maintenance = __DIR__ . '/../storage/framework/maintenance.php')) {
     require $maintenance;
 }
 
-// Register the Composer autoloader...
-require __DIR__.'/../vendor/autoload.php';
+// Autoload classes and bootstrap the application
+require __DIR__ . '/../vendor/autoload.php';
+$app = require_once __DIR__ . '/../bootstrap/app.php';
 
-// Bootstrap Laravel and handle the request...
-(require_once __DIR__.'/../bootstrap/app.php')
-    ->handleRequest(Request::capture());
+// Handle the incoming request
+$kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
+$response = $kernel->handle(
+    $request = Request::capture()
+);
+
+// Send the response to the browser
+$response->send();
+
+// Terminate the kernel
+$kernel->terminate($request, $response);

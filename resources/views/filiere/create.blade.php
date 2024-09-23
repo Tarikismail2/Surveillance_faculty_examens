@@ -73,9 +73,9 @@
         <div class="grid grid-cols-1 gap-4 p-2">
             @foreach($filieres as $filiere)
                 <div class="flex items-center filiere-item">
-                    <input type="checkbox" id="filiere_{{ $filiere->id }}" name="filieres[]" value="{{ $filiere->code_etape }}"
+                    <input type="checkbox" id="filiere_{{ $filiere->code_etape }}" name="filieres[]" value="{{ $filiere->code_etape }}"
                         class="mr-2 leading-tight">
-                    <label for="filiere_{{ $filiere->id }}" class="text-gray-700">
+                    <label for="filiere_{{ $filiere->code_etape }}" class="text-gray-700">
                         {{ $filiere->version_etape }}
                     </label>
                 </div>

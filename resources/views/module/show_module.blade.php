@@ -8,15 +8,24 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                <!-- Informations sur le Module -->
-                <div class="mb-8">
-                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Code Module</h3>
-                    <p class="text-lg text-gray-600">{{ $module->code_elp }}</p>
-                </div>
+            <div class="flex justify-between">
+            <!-- First Column: Module Information -->
+            <div class="w-1/2">
+
                 <div class="mb-8">
                     <h3 class="text-xl font-semibold text-gray-700 mb-2">Nom du Module</h3>
                     <p class="text-lg text-gray-600">{{ $module->lib_elp }}</p>
                 </div>
+            </div>
+
+            <!-- Second Column: Add Student Button -->
+            <div class="w-1/2 text-right">
+                <a href="{{ route('etudiants.create', ['id_module' => $module->id ]) }}" 
+                   class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                    Ajouter Étudiant
+                </a>
+            </div>
+        </div>
 
                 <!-- Table DataTables pour les Étudiants Inscrits -->
                 <div>
@@ -48,7 +57,7 @@
             $('#students-table').DataTable({
                 processing: true,
                 serverSide: true,
-                ajax: '{{ route('modules.students', $module->id) }}',
+                ajax: '{{ route('modules.students',[ $module->lib_elp , $module->code_etape ]) }}',
                 columns: [
                     { data: 'nom', name: 'nom' },
                     { data: 'prenom', name: 'prenom' }

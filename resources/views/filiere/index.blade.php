@@ -12,17 +12,9 @@
             </a>
         </div>
     </x-slot>
-
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
-
-                @if (session('success'))
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-                        <strong class="font-bold">{{ session('success') }}</strong>
-                    </div>
-                @endif
-
                 <div class="overflow-x-auto">
                     <table id="filiereTable" class="min-w-full bg-white dark:bg-gray-800 shadow-md rounded-lg">
                         <thead>
@@ -55,18 +47,26 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap4.min.css">
     
     <script>
-        $(document).ready(function() {
-            $('#filiereTable').DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: '{{ route('filiere.index') }}',
-                columns: [
-                    { data: 'code_etape', name: 'code_etape' },
-                    { data: 'version_etape', name: 'version_etape' },
-                    { data: 'action', name: 'action', orderable: false, searchable: false }
-                ],
-                "order": [[0, 'asc']]
-            });
-        });
+       $(document).ready(function() {
+    const id_session = '{{ request()->id_session }}';  // Fetch the id_session from the request
+    
+    $('#filiereTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '{{ route('filiere.index', ['id_session' => ':id_session']) }}'.replace(':id_session', id_session),
+            data: function (d) {
+                d.id_session = id_session;  // Pass the id_session to the server
+            }
+        },
+        columns: [
+            { data: 'code_etape', name: 'code_etape' },
+            { data: 'version_etape', name: 'version_etape' },
+            { data: 'action', name: 'action', orderable: false, searchable: false }
+        ],
+        "order": [[0, 'asc']]
+    });
+});
+
     </script>
 </x-app-layout>

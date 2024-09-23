@@ -86,7 +86,7 @@ class ExamenController extends Controller
             'id_session' => 'required|exists:session_exams,id',
             'allocation_mode' => 'required|in:manual,automatic',
             'id_salle' => 'required_if:allocation_mode,manual|nullable|exists:salles,id',
-            'additional_salles.*' => 'nullable|exists:salfles,id',
+            'additional_salles.*' => 'nullable|exists:salles,id',
             'inscriptions_count' => 'required|integer|min:1',
         ]);
 
@@ -1034,16 +1034,18 @@ class ExamenController extends Controller
 
         // Vérifier les chevauchements horaires
         $chevauchement = $enseignant->examens()
-            ->where('date', $date)
-            ->where(function ($query) use ($heure_debut, $heure_fin) {
+        ->where('date', $date)
+        ->where(function ($query) use ($heure_debut, $heure_fin) {
+            $query->where(function ($query) use ($heure_debut, $heure_fin) {
                 $query->whereBetween('heure_debut', [$heure_debut, $heure_fin])
-                    ->orWhereBetween('heure_fin', [$heure_debut, $heure_fin])
-                    ->orWhere(function ($query) use ($heure_debut, $heure_fin) {
-                        $query->where('heure_debut', '<=', $heure_debut)
-                            ->where('heure_fin', '>=', $heure_fin);
-                    });
+                      ->orWhereBetween('heure_fin', [$heure_debut, $heure_fin]);
             })
-            ->exists();
+            ->orWhere(function ($query) use ($heure_debut, $heure_fin) {
+                $query->where('heure_debut', '<=', $heure_debut)
+                      ->where('heure_fin', '>=', $heure_fin);
+            });
+        })
+        ->exists();    
 
         return !$chevauchement;
     }
@@ -1076,9 +1078,10 @@ class ExamenController extends Controller
             // Récupérer les examens le même jour dans la même salle
             $examensSimilaires = Examen::where('date', $date)
                 ->whereHas('salles', function ($query) use ($examen) {
-                    $query->where('salles.id', $examen->salles->pluck('id'));
+                    $query->whereIn('salles.id', $examen->salles->pluck('id'));
                 })
                 ->get();
+
 
             foreach ($examensSimilaires as $examenSimilaire) {
                 foreach ($examenSimilaire->salles as $salle) {

@@ -1,31 +1,74 @@
+<!-- resources/views/layouts/guest.blade.php -->
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ config('app.name', 'Laravel') }} - @yield('title')</title>
 
-        <title>{{ config('app.name', 'SurveilUCD') }}</title>
+    <!-- Styles -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-        
+    <!-- Custom styles -->
+    <style>
+        body {
+            background-color: #f0f2f5;
+        }
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .card {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .header-logo {
+            max-height: 3rem;
+        }
+        .header-logo-container {
+            margin-left: 4%;
+        }
+        .nav-container {
+            margin-right: 4%;
+        }
+    </style>
+</head>
+<body>
 
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-gray-900">
-            <div>
-                <a href="/">
-                    <img src="{{ asset('images/fslogo.png') }}" alt="Logo" class="w-20 h-20 fill-current text-gray-500">
-                </a>
-            </div>
-
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white dark:bg-gray-800 shadow-md overflow-hidden sm:rounded-lg">
-                {{ $slot }}
-            </div>
+    <!-- Header Section -->
+    <header class="d-flex justify-content-between align-items-center py-3 bg-white shadow-sm">
+        <div class="d-flex align-items-center header-logo-container">
+            <a href="{{ route('welcome') }}" class="d-flex align-items-center text-decoration-none">
+                <img src="{{ asset('images/fslogo.png') }}" alt="Logo" class="header-logo">
+                <span class="text-xl font-semibold ms-2 text-dark">SurveilUCD</span>
+            </a>
         </div>
-    </body>
+        <nav class="d-flex align-items-center nav-container">
+            @auth
+                <a href="{{ url('/dashboard') }}" class="btn btn-outline-dark me-2">Dashboard</a>
+            @else
+                <div class="d-flex">
+                    <a href="{{ route('login') }}" class="btn btn-outline-dark me-2">Log in</a>
+                    @if (Route::has('register'))
+                        <a href="{{ route('register') }}" class="btn btn-outline-dark">Register</a>
+                    @endif
+                </div>
+            @endauth
+        </nav>
+    </header>
+
+    <!-- Main Content Section -->
+    <main class="login-container">
+        @yield('content')
+    </main>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>
