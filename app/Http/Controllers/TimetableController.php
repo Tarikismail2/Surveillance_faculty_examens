@@ -108,7 +108,7 @@ class TimetableController extends Controller
 
         // Retrieve the reservists for the session and dates
         $reservistes = SurveillantReserviste::whereIn('id_enseignant', $enseignants->pluck('id'))
-            // ->where('id_session', $id_session)
+            ->where('id_session', $id_session)
             ->get();
 
         // Generate PDF

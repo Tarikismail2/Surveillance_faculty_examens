@@ -78,37 +78,37 @@ class ExamenController extends Controller
     {
         // Retrieve the selected session by ID
         $selected_session = SessionExam::find($id);
-    
+
         // Check if the session exists
         if (!$selected_session) {
             // Redirect back with an error message if the session is not found
             return redirect()->back()->withErrors('The selected session was not found.');
         }
-    
+
         // Get all filieres
         $filieres = Filiere::all();
         $enseignants = Enseignant::all();
-    
+
         // Get all module IDs that are already scheduled for exams in this session
         $scheduled_module_ids = DB::table('examens')
             ->join('exam_module', 'examens.id', '=', 'exam_module.exam_id')
             ->where('examens.id_session', $selected_session->id)
             ->pluck('exam_module.module_id')
             ->toArray();
-    
+
         // Filter modules for each filiere, removing those that are already scheduled
         $filieres->each(function ($filiere) use ($scheduled_module_ids) {
             $filiere->modules = $filiere->modules->whereNotIn('id', $scheduled_module_ids);
         });
-    
+
         $salles = Salle::all();
         $departments = Department::all();
         $examen = new Examen();
-    
+
         // Return the create view with the filieres and session
-        return view('examens.create', compact('salles', 'selected_session', 'filieres', 'departments', 'enseignants', 'examen','scheduled_module_ids'));
+        return view('examens.create', compact('salles', 'selected_session', 'filieres', 'departments', 'enseignants', 'examen', 'scheduled_module_ids'));
     }
-    
+
 
 
     public function store(Request $request)
@@ -746,7 +746,7 @@ class ExamenController extends Controller
     public function getModulesByFiliere($filiereId)
     {
         $filiere = Filiere::where('code_etape', $filiereId)->first();
-        
+
         if ($filiere) {
             if ($filiere->type === 'new') {
                 // Query for 'new' filiere type, excluding modules with scheduled exams
@@ -757,7 +757,7 @@ class ExamenController extends Controller
                     ->select('modules.id', 'modules.lib_elp', DB::raw('COUNT(inscriptions.id) as inscriptions_count'))
                     ->groupBy('modules.id', 'modules.lib_elp') // Group by modules.id to avoid ambiguity
                     ->get();
-                
+
                 Log::info('Modules selected for new filiere are:', $modules->toArray());
             } else {
                 // Query for 'old' filiere type, excluding modules with scheduled exams
@@ -768,14 +768,14 @@ class ExamenController extends Controller
                     ->groupBy('modules.id', 'modules.lib_elp') // Group by modules.id to avoid ambiguity
                     ->get();
             }
-    
+
             return response()->json($modules);
         } else {
             // Return an empty response or an error if the filiere is not found
             return response()->json([], 404);
         }
     }
-    
+
 
     public function getEnseignantsByDepartment($departmentId)
     {
@@ -1093,41 +1093,49 @@ class ExamenController extends Controller
     public function assignInvigilators($examenId)
     {
         DB::beginTransaction();
-
+    
         try {
             $examen = Examen::findOrFail($examenId);
             $date = $examen->date;
             $heure_debut = $examen->heure_debut;
             $heure_fin = $examen->heure_fin;
-
             $responsableModuleId = $examen->id_enseignant;
-
-            // Vérifier si les surveillants ont déjà été affectés à cet examen
+    
             if ($examen->surveillants()->exists()) {
                 DB::rollBack();
                 return redirect()->route('examens.showForm', ['examen' => $examen->id])
                     ->with('error', 'Les surveillants ont déjà été affectés pour cet examen.');
             }
-
+    
+            // Ajout d'une requête pour filtrer les enseignants en fonction de la disponibilité
             $enseignantsDisponibles = Enseignant::where('id', '!=', $responsableModuleId)
-                ->inRandomOrder()
-                ->get();
-
+            ->whereDoesntHave('examens', function ($query) use ($date, $heure_debut, $heure_fin) {
+                $query->where('date', $date)
+                    ->where(function ($query) use ($heure_debut, $heure_fin) {
+                        $query->whereBetween('heure_debut', [$heure_debut, $heure_fin])
+                              ->orWhereBetween('heure_fin', [$heure_debut, $heure_fin])
+                              ->orWhere(function ($query) use ($heure_debut, $heure_fin) {
+                                  $query->where('heure_debut', '<=', $heure_debut)
+                                        ->where('heure_fin', '>=', $heure_fin);
+                              });
+                    });
+            })
+            ->inRandomOrder()
+            ->get();
+    
             $errors = [];
-
             // Récupérer les examens le même jour dans la même salle
             $examensSimilaires = Examen::where('date', $date)
                 ->whereHas('salles', function ($query) use ($examen) {
                     $query->whereIn('salles.id', $examen->salles->pluck('id'));
                 })
                 ->get();
-
-
+    
             foreach ($examensSimilaires as $examenSimilaire) {
                 foreach ($examenSimilaire->salles as $salle) {
                     $nombreSurveillants = $this->determineSurveillantsCount($salle->capacite);
                     $surveillantsAffectes = 0;
-
+    
                     foreach ($enseignantsDisponibles as $enseignant) {
                         if ($this->canAssignInvigilator($enseignant, $date, $examenSimilaire->heure_debut, $examenSimilaire->heure_fin)) {
                             DB::table('examen_salle_enseignant')->insert([
@@ -1137,26 +1145,25 @@ class ExamenController extends Controller
                                 'created_at' => now(),
                                 'updated_at' => now(),
                             ]);
-
                             $surveillantsAffectes++;
                         }
-
+    
                         if ($surveillantsAffectes >= $nombreSurveillants) {
                             break;
                         }
                     }
-
+    
                     if ($surveillantsAffectes < $nombreSurveillants) {
                         $errors[] = "Il n'y a pas assez de surveillants disponibles pour la salle {$salle->name}.";
                     }
                 }
             }
-
+    
             if (!empty($errors)) {
                 DB::rollBack();
                 return back()->withErrors($errors);
             }
-
+    
             DB::commit();
             return redirect()->route('examens.showForm', ['examen' => $examen->id])
                 ->with('success', 'Les surveillants ont été assignés automatiquement avec succès.');
@@ -1165,6 +1172,7 @@ class ExamenController extends Controller
             return back()->withErrors(['error' => 'Une erreur est survenue lors de l\'assignation des surveillants : ' . $e->getMessage()]);
         }
     }
+    
 
     protected function determineSurveillantsCount($capacite)
     {
@@ -1214,62 +1222,66 @@ class ExamenController extends Controller
         $examDates = Examen::where('id_session', $sessionId)
             ->distinct()
             ->pluck('date');
-
+    
         foreach ($examDates as $date) {
-            $this->createReservists($date, '08:00:00');
-            $this->createReservists($date, '13:00:00');
+            $this->createReservists($date, '08:00:00', $sessionId);
+            $this->createReservists($date, '13:00:00', $sessionId);
         }
     }
 
-    protected function createReservists($date, $heure_debut)
-    {
-        $isMorning = (new \DateTime($heure_debut))->format('H') < 12;
-        $demiJournee = $isMorning ? 'matin' : 'apres-midi';
+    protected function createReservists($date, $heure_debut, $sessionId)
+{
+    $isMorning = (new \DateTime($heure_debut))->format('H') < 12;
+    $demiJournee = $isMorning ? 'matin' : 'apres-midi';
 
-        // Vérifier si les réservistes existent déjà pour cette date et demi-journée
-        $reservistsExist = SurveillantReserviste::where('date', $date)
-            ->where('demi_journee', $demiJournee)
-            ->exists();
-
-        if (!$reservistsExist) {
-            // Récupérer tous les enseignants disponibles pour cette date et demi-journée
-            $enseignantsDisponibles = Enseignant::whereNotIn('id', function ($query) use ($date, $demiJournee) {
-                $query->select('id_enseignant')
-                    ->from('surveillant_reservistes')
-                    ->where('date', $date)
-                    ->where('demi_journee', $demiJournee);
-            })
-                ->whereNotIn('id', function ($query) use ($date) {
-                    $query->select('id_enseignant')
-                        ->from('examens')
-                        ->where('date', $date);
-                })
-                ->get();
-
-            // Filtrer les enseignants réservistes pour l'autre demi-journée
-            $enseignantsAutresDemiJournee = SurveillantReserviste::where('date', $date)
-                ->where('demi_journee', $demiJournee === 'matin' ? 'apres-midi' : 'matin')
-                ->pluck('id_enseignant');
-
-            // Exclure les enseignants déjà réservistes pour l'autre demi-journée
-            $enseignantsDisponibles = $enseignantsDisponibles->filter(function ($enseignant) use ($enseignantsAutresDemiJournee) {
-                return !$enseignantsAutresDemiJournee->contains($enseignant->id);
-            });
-
-            // Éviter les doublons et limiter à un nombre raisonnable
-            $enseignantsÀAjouter = $enseignantsDisponibles->unique('id')->random(min(10, $enseignantsDisponibles->count()));
-
-            foreach ($enseignantsÀAjouter as $enseignant) {
-                // Ajouter chaque enseignant comme réserviste
-                SurveillantReserviste::create([
-                    'date' => $date,
-                    'demi_journee' => $demiJournee,
-                    'id_enseignant' => $enseignant->id,
-                    'affecte' => false,
-                ]);
-            }
-        }
+    // Vérifier si les réservistes existent déjà pour cette date et demi-journée
+    if (SurveillantReserviste::where('date', $date)
+        ->where('demi_journee', $demiJournee)
+        ->exists()
+    ) {
+        return; // Sortir si les réservistes existent déjà
     }
+
+    // Récupérer tous les enseignants disponibles pour cette date et demi-journée
+    $enseignantsDisponibles = Enseignant::whereNotIn('id', function ($query) use ($date, $demiJournee) {
+        $query->select('id_enseignant')
+            ->from('surveillant_reservistes')
+            ->where('date', $date)
+            ->where('demi_journee', $demiJournee);
+    })
+    ->whereNotIn('id', function ($query) use ($date) {
+        $query->select('id_enseignant')
+            ->from('examens')
+            ->where('date', $date);
+    })
+    ->get();
+
+    // Filtrer les enseignants réservistes pour l'autre demi-journée
+    $enseignantsAutresDemiJournee = SurveillantReserviste::where('date', $date)
+        ->where('demi_journee', $demiJournee === 'matin' ? 'apres-midi' : 'matin')
+        ->pluck('id_enseignant');
+
+    // Exclure les enseignants déjà réservistes pour l'autre demi-journée
+    $enseignantsDisponibles = $enseignantsDisponibles->reject(function ($enseignant) use ($enseignantsAutresDemiJournee) {
+        return $enseignantsAutresDemiJournee->contains($enseignant->id);
+    });
+
+    // Limiter à un nombre raisonnable sans dépasser le nombre disponible
+    $nombreAAjouter = min(10, $enseignantsDisponibles->count());
+    $enseignantsÀAjouter = $enseignantsDisponibles->random($nombreAAjouter);
+
+    foreach ($enseignantsÀAjouter as $enseignant) {
+        // Ajouter chaque enseignant comme réserviste
+        SurveillantReserviste::create([
+            'date' => $date,
+            'demi_journee' => $demiJournee,
+            'id_enseignant' => $enseignant->id,
+            'id_session' => $sessionId, // Utilisation de l'ID de session ici
+            'affecte' => false,
+        ]);
+    }
+}
+
 
     public function generatePdfForEnseignant($idEnseignant)
     {
