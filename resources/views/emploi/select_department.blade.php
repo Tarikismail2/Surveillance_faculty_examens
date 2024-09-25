@@ -74,13 +74,14 @@
                     <div class="overflow-x-auto mt-6">
                         <div class="flex justify-end mb-4 space-x-4"> <!-- Ajout de space-x-4 pour espacer les boutons -->
                             <!-- Formulaire d'envoi d'email -->
-                            <form action="{{ route('sendEmailsByDepartment') }}" method="POST">
+                            <form action="{{ route('sendEmailsByDepartment') }}" method="POST" id="emailForm">
                                 @csrf
                                 <input type="hidden" name="id_department" value="{{ request('id_department') }}">
                                 <input type="hidden" name="id_session" value="{{ request('id_session') }}">
                                 <button type="submit" class="flex items-center bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors duration-300 ease-in-out">
                                     <i class="fas fa-paper-plane mr-2"></i>
                                     Envoyer l'emploi du temps par email
+                                    <i class="fas fa-spinner fa-spin ml-2 hidden" id="loadingIcon"></i> <!-- Icône de chargement -->
                                 </button>
                             </form>
                     
@@ -102,4 +103,31 @@
             </div>
         </div>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- Script pour activer Select2 -->
+    <script>
+        $(document).ready(function() {
+            // Appliquer Select2 à la liste déroulante des enseignants
+            $('#id_session').select2({
+                placeholder: "@lang('Choisir une session')", // Placeholder par défaut
+                allowClear: true // Permet de désélectionner
+            });
+            $('#id_department').select2({
+                placeholder: "@lang('Choisir une département')", // Placeholder par défaut
+                allowClear: true // Permet de désélectionner
+            });
+
+            // Afficher l'icône de chargement lors de l'envoi de l'email
+            $('#emailForm').on('submit', function() {
+                $('#loadingIcon').removeClass('hidden'); // Afficher l'icône de chargement
+            });
+        });
+    </script>
 </x-app-layout>

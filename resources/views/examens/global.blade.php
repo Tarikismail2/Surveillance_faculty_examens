@@ -20,7 +20,7 @@
                         <select id="session" name="id_session"
                             class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 bg-white dark:bg-gray-800 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                             onchange="this.form.submit()">
-                            <option value="">@lang('Select a session')</option>
+                            <option value="">@lang('Choisir une session')</option>
                             @foreach ($sessions as $session)
                                 <option value="{{ $session->id }}"
                                     {{ $selectedSessionId == $session->id ? 'selected' : '' }}>
@@ -169,4 +169,21 @@
             });
         });
     </script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<!-- Script pour activer Select2 -->
+<script>
+    $(document).ready(function() {
+        $('#session').select2({
+            placeholder: "@lang('Choisir une session')",
+            allowClear: true 
+        });
+    });
+</script>
 </x-app-layout>

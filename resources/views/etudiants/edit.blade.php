@@ -13,6 +13,18 @@ use Carbon\Carbon;
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-sm rounded-lg p-6 border border-gray-200">
+                
+                <!-- Affichage des erreurs globales -->
+                @if ($errors->any())
+                    <div class="bg-red-100 text-red-700 p-4 rounded-lg mb-6">
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <!-- Formulaire d'édition d'étudiant -->
                 <form action="{{ route('etudiants.update', $etudiant->id) }}" method="POST">
                     @csrf
@@ -49,8 +61,8 @@ use Carbon\Carbon;
                             <select id="session_id" name="session_id"
                                 class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
                                 @foreach($sessions as $session)
-                                    <option value="{{ $session->id }}" {{ $etudiant->id_session == $session->id ? 'selected' : '' }}>
-                                        {{ $session->type }}  ( {{ $session->date_debut }} - {{ $session->date_fin }})
+                                    <option value="{{ $session->id }}" {{ $etudiant->session_id == $session->id ? 'selected' : '' }}>
+                                        {{ $session->type }}  ( {{ $session->date_debut }} - {{ $session->date_fin }} )
                                     </option>
                                 @endforeach
                             </select>
@@ -59,21 +71,22 @@ use Carbon\Carbon;
                             @enderror
                         </div>
 
-                        <!-- Sélection des modules -->
+                        <!-- Sélection des modules avec barre de recherche et scroll -->
                         <div class="mb-4 col-span-2">
-                            <label for="modules" class="block text-gray-700 font-semibold">Modules</label>
-                            <div class="space-y-2">
-                                @foreach ($modules->chunk(10) as $chunk)
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                        @foreach ($chunk as $module)
-                                            <div class="flex items-center">
-                                                <input type="checkbox" id="module-{{ $module->id }}" name="modules[]"
-                                                    value="{{ $module->id }}"
-                                                    {{ $etudiant->modules->contains($module->id) ? 'checked' : '' }}
-                                                    class="mr-2 form-checkbox text-indigo-600 focus:ring-indigo-500 focus:border-indigo-500">
-                                                <label for="module-{{ $module->id }}" class="text-gray-700">{{ $module->lib_elp }}</label>
-                                            </div>
-                                        @endforeach
+                            <label for="moduleSearch" class="block text-gray-700 font-semibold">Recherche de modules</label>
+                            <input type="text" id="moduleSearch" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                placeholder="Recherchez un module...">
+
+                            <label for="modules" class="block text-gray-700 font-semibold mt-4">Modules</label>
+                            <!-- Conteneur avec scroll -->
+                            <div id="modulesList" class="space-y-2 overflow-y-auto h-48 border border-gray-300 rounded-md p-2">
+                                @foreach ($modules as $module)
+                                    <div class="flex items-center module-item">
+                                        <input type="checkbox" id="module-{{ $module->id }}" name="modules[]"
+                                            value="{{ $module->id }}"
+                                            {{ $etudiant->modules->contains($module->id) ? 'checked' : '' }}
+                                            class="mr-2 form-checkbox text-indigo-600 focus:ring-indigo-500 focus:border-indigo-500">
+                                        <label for="module-{{ $module->id }}" class="text-gray-700">{{ $module->lib_elp }}</label>
                                     </div>
                                 @endforeach
                             </div>
@@ -89,4 +102,21 @@ use Carbon\Carbon;
             </div>
         </div>
     </div>
+
+    <!-- JavaScript pour la barre de recherche des modules -->
+    <script>
+        document.getElementById('moduleSearch').addEventListener('input', function() {
+            const searchValue = this.value.toLowerCase();
+            const modules = document.querySelectorAll('.module-item');
+
+            modules.forEach(module => {
+                const moduleName = module.querySelector('label').textContent.toLowerCase();
+                if (moduleName.includes(searchValue)) {
+                    module.style.display = 'block';
+                } else {
+                    module.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </x-app-layout>

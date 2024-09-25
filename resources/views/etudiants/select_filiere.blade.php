@@ -25,7 +25,7 @@
                         </ul>
                     </div>
                 @endif
-    
+
                 <!-- Form for selecting department and session -->
                 <form id="downloadForm">
                     @csrf
@@ -36,18 +36,20 @@
                                 <option value="" disabled selected>Choisissez une session</option>
                                 @foreach ($sessions as $session)
                                     <option value="{{ $session->id }}">
-                                        {{ $session->type }} ({{ \Carbon\Carbon::parse($session->date_debut)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($session->date_fin)->format('d/m/Y') }})
+                                        {{ $session->type }}
+                                        ({{ \Carbon\Carbon::parse($session->date_debut)->format('d/m/Y') }} -
+                                        {{ \Carbon\Carbon::parse($session->date_fin)->format('d/m/Y') }})
                                     </option>
                                 @endforeach
                             </select>
-                        </div>                                             
+                        </div>
 
                         <!-- Filière -->
                         <div>
                             <label for="filiere" class="block text-sm font-medium text-gray-700">Filière</label>
                             <select id="filiere" name="code_etape" class="form-select mt-1 block w-full" required>
                                 <option value="" disabled selected>Sélectionnez une filière</option>
-                                
+
                                 <!-- New Filière -->
                                 <optgroup label="Nouveaux Filières">
                                     @foreach ($filieres as $filiere)
@@ -86,16 +88,32 @@
         </div>
     </div>
 
-    <script>
-        document.getElementById('downloadForm').addEventListener('change', function() {
-            const sessionId = document.getElementById('id_session').value;
-            const codeEtape = document.getElementById('filiere').value;
-            const downloadLink = document.getElementById('downloadLink');
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-            if (sessionId && codeEtape) {
-                downloadLink.href = `{{ url('etudiants') }}/${sessionId}/${codeEtape}/download-pdf`;
-            } else {
-                downloadLink.href = '#';
+    <script>
+        $(document).ready(function() {
+            $('#id_session').select2({
+                placeholder: "Choisir une session",
+                allowClear: true
+            }).on('change', updateDownloadLink);
+
+            $('#filiere').select2({
+                placeholder: "Choisir une filière",
+                allowClear: true
+            }).on('change', updateDownloadLink);
+
+            function updateDownloadLink() {
+                const sessionId = $('#id_session').val();
+                const codeEtape = $('#filiere').val();
+                const downloadLink = $('#downloadLink');
+
+                if (sessionId && codeEtape) {
+                    downloadLink.attr('href', `{{ url('etudiants') }}/${sessionId}/${codeEtape}/download-pdf`);
+                } else {
+                    downloadLink.attr('href', '#');
+                }
             }
         });
     </script>

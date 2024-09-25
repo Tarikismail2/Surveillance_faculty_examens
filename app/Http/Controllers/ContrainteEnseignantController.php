@@ -27,7 +27,7 @@ class ContrainteEnseignantController extends Controller
 
     public function index_admin(Request $request)
     {
-        $sessions = SessionExam::all(); // Récupérer toutes les sessions
+        $sessions = SessionExam::all();
         $contrainteQuery = ContrainteEnseignant::query();
     
         if ($request->has('id_session') && $request->input('id_session')) {
@@ -41,8 +41,8 @@ class ContrainteEnseignantController extends Controller
     
     public function create()
     {
-        $enseignants = Enseignant::all(); // Récupérer tous les enseignants
-        $sessions = SessionExam::all(); // Récupérer toutes les sessions
+        $enseignants = Enseignant::all();
+        $sessions = SessionExam::all();
 
         return view('contraintes.create', compact('enseignants', 'sessions'));
     }
@@ -52,6 +52,7 @@ class ContrainteEnseignantController extends Controller
         // Validation initiale
         $validator = Validator::make($request->all(), [
             'id_enseignant' => 'required|exists:enseignants,id',
+            'email' => 'required|email|exists:enseignants,email', // Validation de l'email
             'id_session' => 'required|exists:session_exams,id',
             'date' => 'required|date',
             'heure_debut' => 'required|date_format:H:i',
@@ -92,20 +93,28 @@ class ContrainteEnseignantController extends Controller
             }
     
             if (!$is_valid_hour) {
-                $validator->errors()->add('heure_debut', 'Les heures doivent être dans les plages 08:00-12:30 ou 14:00-18:30 et l\'heure de fin doit être après l\'heure de début.');
+                $validator->errors()->add('heure_debut', 'Les heures doivent être dans les plages 08:00-12:30 ou 14:00-18:30 et l\'heure de fin doit être supérieure à l\'heure de début.');
             }
         });
     
-        // Vérification des erreurs de validation
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
     
-        // Enregistrement de la contrainte
-        ContrainteEnseignant::create($request->all());
+        // Création de la contrainte
+        ContrainteEnseignant::create([
+            'id_enseignant' => $request->input('id_enseignant'),
+            'email' => $request->input('email'),
+            'id_session' => $request->input('id_session'),
+            'date' => $request->input('date'),
+            'heure_debut' => $request->input('heure_debut'),
+            'heure_fin' => $request->input('heure_fin'),
+            'validee' => $request->input('validee'),
+        ]);
     
         return redirect()->route('contrainte_enseignants.index')->with('success', 'Contrainte créée avec succès.');
     }
+    
 
     public function valider($id)
     {

@@ -61,18 +61,55 @@ class ExamenController extends Controller
         return view('examens.index', compact('examens', 'modules', 'filieres', 'session'));
     }
 
+    // public function create($id)
+    // {
+    //     $salles = Salle::all();
+    //     $enseignants = Enseignant::all();
+    //     $selected_session = SessionExam::findOrFail($id);
+    //     $filieres = Filiere::where('id_session', $id)->get();
+    //     $departments = Department::all();
+
+    //     $examen = new Examen();
+
+    //     return view('examens.create', compact('salles', 'selected_session', 'filieres', 'departments', 'enseignants', 'examen'));
+    // }
+
     public function create($id)
     {
-        $salles = Salle::all();
+        // Retrieve the selected session by ID
+        $selected_session = SessionExam::find($id);
+    
+        // Check if the session exists
+        if (!$selected_session) {
+            // Redirect back with an error message if the session is not found
+            return redirect()->back()->withErrors('The selected session was not found.');
+        }
+    
+        // Get all filieres
+        $filieres = Filiere::all();
         $enseignants = Enseignant::all();
-        $selected_session = SessionExam::findOrFail($id);
-        $filieres = Filiere::where('id_session', $id)->get();
+    
+        // Get all module IDs that are already scheduled for exams in this session
+        $scheduled_module_ids = DB::table('examens')
+            ->join('exam_module', 'examens.id', '=', 'exam_module.exam_id')
+            ->where('examens.id_session', $selected_session->id)
+            ->pluck('exam_module.module_id')
+            ->toArray();
+    
+        // Filter modules for each filiere, removing those that are already scheduled
+        $filieres->each(function ($filiere) use ($scheduled_module_ids) {
+            $filiere->modules = $filiere->modules->whereNotIn('id', $scheduled_module_ids);
+        });
+    
+        $salles = Salle::all();
         $departments = Department::all();
-
         $examen = new Examen();
-
-        return view('examens.create', compact('salles', 'selected_session', 'filieres', 'departments', 'enseignants', 'examen'));
+    
+        // Return the create view with the filieres and session
+        return view('examens.create', compact('salles', 'selected_session', 'filieres', 'departments', 'enseignants', 'examen','scheduled_module_ids'));
     }
+    
+
 
     public function store(Request $request)
     {
@@ -709,33 +746,36 @@ class ExamenController extends Controller
     public function getModulesByFiliere($filiereId)
     {
         $filiere = Filiere::where('code_etape', $filiereId)->first();
+        
         if ($filiere) {
             if ($filiere->type === 'new') {
-                // Query for 'new' filiere type
+                // Query for 'new' filiere type, excluding modules with scheduled exams
                 $modules = Module::join('filiere_gp', 'modules.id', '=', 'filiere_gp.id_module')
                     ->leftJoin('inscriptions', 'modules.id', '=', 'inscriptions.id_module')
                     ->where('filiere_gp.code_etape', $filiereId)
-                    // ->whereDoesntHave('examens')
-                    ->select('modules.lib_elp', DB::raw('COUNT(inscriptions.id) as inscriptions_count'))
-                    ->groupBy('modules.lib_elp')
+                    ->whereDoesntHave('examens') // Exclude modules with existing exams
+                    ->select('modules.id', 'modules.lib_elp', DB::raw('COUNT(inscriptions.id) as inscriptions_count'))
+                    ->groupBy('modules.id', 'modules.lib_elp') // Group by modules.id to avoid ambiguity
                     ->get();
-                Log::info('Modules selected this this new filiere are:', $modules->toArray());
+                
+                Log::info('Modules selected for new filiere are:', $modules->toArray());
             } else {
-                // Query for 'old' filiere type
+                // Query for 'old' filiere type, excluding modules with scheduled exams
                 $modules = Module::leftJoin('inscriptions', 'modules.id', '=', 'inscriptions.id_module')
                     ->where('code_etape', $filiere->code_etape)
-                    // ->whereDoesntHave('examens')
-                    ->select('modules.lib_elp', DB::raw('COUNT(inscriptions.id) as inscriptions_count'))
-                    ->groupBy('modules.lib_elp')
+                    ->whereDoesntHave('examens') // Exclude modules with existing exams
+                    ->select('modules.id', 'modules.lib_elp', DB::raw('COUNT(inscriptions.id) as inscriptions_count'))
+                    ->groupBy('modules.id', 'modules.lib_elp') // Group by modules.id to avoid ambiguity
                     ->get();
             }
-
+    
             return response()->json($modules);
         } else {
             // Return an empty response or an error if the filiere is not found
             return response()->json([], 404);
         }
     }
+    
 
     public function getEnseignantsByDepartment($departmentId)
     {
@@ -1034,18 +1074,18 @@ class ExamenController extends Controller
 
         // Vérifier les chevauchements horaires
         $chevauchement = $enseignant->examens()
-        ->where('date', $date)
-        ->where(function ($query) use ($heure_debut, $heure_fin) {
-            $query->where(function ($query) use ($heure_debut, $heure_fin) {
-                $query->whereBetween('heure_debut', [$heure_debut, $heure_fin])
-                      ->orWhereBetween('heure_fin', [$heure_debut, $heure_fin]);
+            ->where('date', $date)
+            ->where(function ($query) use ($heure_debut, $heure_fin) {
+                $query->where(function ($query) use ($heure_debut, $heure_fin) {
+                    $query->whereBetween('heure_debut', [$heure_debut, $heure_fin])
+                        ->orWhereBetween('heure_fin', [$heure_debut, $heure_fin]);
+                })
+                    ->orWhere(function ($query) use ($heure_debut, $heure_fin) {
+                        $query->where('heure_debut', '<=', $heure_debut)
+                            ->where('heure_fin', '>=', $heure_fin);
+                    });
             })
-            ->orWhere(function ($query) use ($heure_debut, $heure_fin) {
-                $query->where('heure_debut', '<=', $heure_debut)
-                      ->where('heure_fin', '>=', $heure_fin);
-            });
-        })
-        ->exists();    
+            ->exists();
 
         return !$chevauchement;
     }

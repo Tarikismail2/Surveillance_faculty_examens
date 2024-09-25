@@ -40,8 +40,9 @@
                         <i class="fas fa-arrow-left"></i>
                         <span>Retour aux sessions</span>
                     </a>
-                    <form action="{{ route('examens.assignInvigilatorsToAll') }}" method="POST">
-                        @csrf
+                    <form action="{{ route('examens.assignInvigilatorsToAll') }}" method="POST" 
+                    onsubmit="return confirm('{{ __('Êtes-vous sûr de vouloir faire Affectation des surveillants sur les locaux ? Vous-Êtes finir la programmation de toutes les examens!') }}');">
+                    @csrf
                         <input type="hidden" name="id_session" value="{{ $session->id }}">
                         <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors duration-300 ease-in-out flex items-center space-x-2">
                             <i class="fas fa-user-check"></i>
@@ -97,7 +98,7 @@
                                             </svg>
                                         </a>
                                         <form action="{{ route('examens.destroy', $examen->id) }}" method="POST"
-                                            class="inline" onsubmit="return confirmDelete();">
+                                            class="inline" onsubmit="return confirm('{{ __('Êtes-vous sûr de vouloir supprimer cette examen ?') }}');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-red-600 hover:text-red-900 flex items-center space-x-1">

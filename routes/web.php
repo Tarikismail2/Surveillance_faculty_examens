@@ -17,7 +17,9 @@ use App\Http\Controllers\TimetableController;
 use App\Http\Controllers\ContrainteSalleController;
 use App\Http\Controllers\FiliereController;
 use App\Mail\NodeMailer;
+use App\Models\Examen;
 use App\Models\Module;
+use App\Models\SessionExam;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
@@ -171,6 +173,25 @@ Route::middleware(['role:admin'])->group(function () {
         ->name('downloadStudentsPDF');
     // Route pour envoyer les emails
     Route::post('/send-emails', [EnseignantController::class, 'sendEmailsByDepartment'])->name('sendEmailsByDepartment');
+
+
+
+    Route::get('/api/modules/{filiereId}', function($filiereId) {
+        // Get the currently selected session
+        $selected_session = SessionExam::find(1); // Adjust this
+    
+        // Get modules for the filiere that do not have exams scheduled
+        $scheduled_modules = Examen::where('id_session', $selected_session->id)
+            ->pluck('id_module')
+            ->toArray();
+    
+        $modules = Module::where('code_etape', $filiereId)
+            ->whereNotIn('id', $scheduled_modules)
+            ->get();
+    
+        return response()->json(['modules' => $modules]);
+    });
+    
 });
 
 require __DIR__ . '/auth.php';

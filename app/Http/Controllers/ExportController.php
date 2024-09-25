@@ -20,66 +20,58 @@ class ExportController extends Controller
     public function selectEnseignant(Request $request)
     {
         // Récupérer les sessions et leurs types
-        $sessions = SessionExam::orderBy('type')->pluck('type', 'id');
-
+        $sessions = SessionExam::select('id', 'type', 'date_debut', 'date_fin')->orderBy('type', 'asc')->get();
+    
         // Récupérer les enseignants
         $enseignants = Enseignant::orderBy('name')->pluck('name', 'id');
-
-        // Récupérer les dates de début et de fin pour chaque session
-        $sessionDates = SessionExam::get()->mapWithKeys(function ($session) {
-            return [
-                $session->id => [
-                    'start' => \Carbon\Carbon::parse($session->date_debut)->format('d/m/Y'),
-                    'end' => \Carbon\Carbon::parse($session->date_fin)->format('d/m/Y'),
-                ],
-            ];
-        });
-
-        return view('planification.select_enseignant', compact('sessions', 'enseignants', 'sessionDates'));
+    
+        return view('planification.select_enseignant', compact('sessions', 'enseignants'));
     }
-
+    
     public function displaySchedule(Request $request)
     {
-        // Valider les entrées utilisateur
+        // Validate user input
         $request->validate([
             'id_enseignant' => 'required|exists:enseignants,id',
             'id_session' => 'required|exists:session_exams,id',
-            'email' => 'required|email|exists:enseignants,email',
+            'email' => 'required|email',
         ]);
-
+    
         $idSession = $request->input('id_session');
         $idEnseignant = $request->input('id_enseignant');
         $email = $request->input('email');
-
-        // Vérifier si l'enseignant existe
+    
+        // Check if the enseignant exists
         $enseignant = Enseignant::where('id', $idEnseignant)->where('email', $email)->first();
+    
         if (!$enseignant) {
             return redirect()->back()->with('error', 'Enseignant non trouvé ou email incorrect.');
         }
-
-        // Récupérer et trier l'emploi du temps
+    
+        // Retrieve and sort the schedule
         $schedule = ExamenSalleEnseignant::where('id_enseignant', $idEnseignant)
             ->whereHas('examen', function ($query) use ($idSession) {
                 $query->where('id_session', $idSession);
             })
             ->with(['examen', 'salle'])
             ->get()
-            ->sortBy([fn($a, $b) => $a->examen->date <=> $b->examen->date, fn($a, $b) => $a->examen->heure_debut <=> $b->examen->heure_debut]);
-
-        // Si aucun emploi du temps n'a été trouvé
-        if ($schedule->isEmpty()) {
-            return redirect()->back()->with('error', 'Aucune donnée disponible pour les informations fournies.');
-        }
+            ->sortBy([
+                fn($a, $b) => $a->examen->date <=> $b->examen->date,
+                fn($a, $b) => $a->examen->heure_debut <=> $b->examen->heure_debut,
+            ]);
+    
+        $sessions = SessionExam::select('id', 'type', 'date_debut', 'date_fin')->orderBy('type', 'asc')->get();
 
         return view('planification.select_enseignant', [
-            'sessions' => SessionExam::orderBy('type')->pluck('type', 'id'),
-            'enseignants' => Enseignant::all()->pluck('name', 'id'),
-            'id_session' => $idSession,
+            'sessions' => $sessions,
+            'enseignants' => Enseignant::orderBy('name')->pluck('name', 'id'),
+            'schedule' => $schedule,
             'selectedEnseignant' => $enseignant->name,
             'selectedEnseignantId' => $enseignant->id,
-            'schedule' => $schedule,
+            'id_session' => $idSession,
         ]);
     }
+    
 
     public function downloadSurveillancePDF(Request $request)
     {
@@ -153,22 +145,22 @@ class ExportController extends Controller
             'id_session' => 'nullable|exists:session_exams,id',
             'id_etudiant' => 'nullable|exists:etudiants,id',
         ]);
-
+    
         // Fetch all sessions and students for dropdowns
-        $sessions = SessionExam::all()->pluck('type', 'id');
+        $sessions = SessionExam::select('id', 'type', 'date_debut', 'date_fin')->orderBy('type')->get();
         $students = Etudiant::orderBy('nom')->orderBy('prenom')->get()->mapWithKeys(function ($student) {
             return [$student->id => $student->nom . ' ' . $student->prenom];
         });
-
+    
         // Get selected session and student from the request
         $selectedSession = $request->input('id_session');
         $selectedStudent = $request->input('id_etudiant');
-
+    
         $examens = [];
         // Fetch exams if both session and student are selected
         if ($selectedSession && $selectedStudent) {
             $examens = DB::table('examens')
-                ->join('exam_module', 'examens.id', '=', 'exam_module.examen_id')
+                ->join('exam_module', 'examens.id', '=', 'exam_module.exam_id')
                 ->join('modules', 'exam_module.module_id', '=', 'modules.id')
                 ->join('inscriptions', 'modules.id', '=', 'inscriptions.id_module')
                 ->join('etudiants', 'etudiants.id', '=', 'inscriptions.id_etudiant')
@@ -179,11 +171,10 @@ class ExportController extends Controller
                 ->select('examens.*', 'modules.lib_elp as module_nom')
                 ->get();
         }
-
+    
         return view('planification.select_student', compact('sessions', 'students', 'selectedSession', 'selectedStudent', 'examens'));
     }
-
-
+    
     public function displayStudentSchedule(Request $request)
     {
         // Validate the input fields
@@ -192,17 +183,17 @@ class ExportController extends Controller
             'cne' => 'nullable|exists:etudiants,cne',
             'id_etudiant' => 'nullable|exists:etudiants,id',
         ]);
-
+    
         // Determine the selected student based on CNE or ID
         $selectedStudent = $request->filled('cne')
             ? Etudiant::where('cne', $request->input('cne'))->firstOrFail()->id
             : $request->input('id_etudiant');
-
+    
         $selectedSession = $request->input('id_session');
-
-        $cne = $request->input('cne');
-        $etudiant = Etudiant::where('cne', $cne)->first();
-
+    
+        // Fetch the student by CNE if provided
+        $etudiant = $request->filled('cne') ? Etudiant::where('cne', $request->input('cne'))->first() : null;
+    
         // Fetch the exams for the selected student and session
         $examens = DB::table('examens')
             ->join('exam_module', 'examens.id', '=', 'exam_module.exam_id')
@@ -218,18 +209,17 @@ class ExportController extends Controller
             ->orderBy('examens.heure_debut', 'asc')
             ->select('examens.*', 'modules.lib_elp as module_nom')
             ->get();
-
+    
         // Fetch all students and sessions for dropdowns
         $students = Etudiant::orderBy('nom')->orderBy('prenom')->get()->mapWithKeys(function ($student) {
             return [$student->id => $student->nom . ' ' . $student->prenom];
         });
-
-        $sessions = SessionExam::orderBy('type')->pluck('type', 'id');
-
-        return view('planification.select_student', compact('sessions', 'students', 'selectedSession', 'selectedStudent', 'examens','etudiant'));
+    
+        $sessions = SessionExam::select('id', 'type', 'date_debut', 'date_fin')->orderBy('type', 'asc')->get();
+    
+        return view('planification.select_student', compact('sessions', 'students', 'selectedSession', 'selectedStudent', 'examens', 'etudiant'));
     }
-
-
+    
 
     public function downloadStudentSchedulePDF(Request $request)
     {

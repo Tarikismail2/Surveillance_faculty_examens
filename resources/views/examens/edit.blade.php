@@ -11,24 +11,24 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg p-6">
                 @if ($errors->any())
-                <div class="mb-4">
-                    <div class="font-medium text-red-600">@lang('Whoops! Quelque chose s\'est mal passé.')</div>
-                    <ul class="mt-3 list-disc list-inside text-sm text-red-600">
-                        @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
+                    <div class="mb-4">
+                        <div class="font-medium text-red-600">@lang('Whoops! Quelque chose s\'est mal passé.')</div>
+                        <ul class="mt-3 list-disc list-inside text-sm text-red-600">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
                 @endif
 
                 @if (session('success'))
-                <div class="mb-4">
-                    <ul class="mt-3 list-disc list-inside text-sm text-green-600">
-                        @foreach (session('success') as $successful)
-                        <li>{{ $successful }}</li>
-                        @endforeach
-                    </ul>
-                </div>
+                    <div class="mb-4">
+                        <ul class="mt-3 list-disc list-inside text-sm text-green-600">
+                            @foreach (session('success') as $successful)
+                                <li>{{ $successful }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
                 @endif
 
                 <form action="{{ route('examens.update', $examen->id) }}" method="POST">
@@ -44,47 +44,47 @@
                                 class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 required>
                             @error('date')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
-                                   <!-- Filière -->
-                                   <div class="form-group">
-                        <label for="filiere" class="block text-gray-700 dark:text-gray-300">@lang('Filière')</label>
-                        <select class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            id="filiere" name="code_etape" required>
-                            <option value="">@lang('Sélectionnez une filière')</option>
-                            <!-- New Filière -->
-                            <optgroup label="@lang('Nouveaux Filières')">
-                                @foreach ($filieres as $filiere)
-                                    @if ($filiere->type === 'new')
-                                        <option 
-                                            value="{{ $filiere->code_etape }}" 
-                                            {{ old('code_etape', $code) == $filiere->code_etape ? 'selected' : '' }}>
-                                            {{ $filiere->version_etape }}
-                                        </option>
-                                    @endif
-                                @endforeach
-                            </optgroup>
+                        <!-- Filière -->
+                        <div class="form-group">
+                            <label for="filiere"
+                                class="block text-gray-700 dark:text-gray-300">@lang('Filière')</label>
+                            <select
+                                class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                id="filiere" name="code_etape" required>
+                                <option value="">@lang('Sélectionnez une filière')</option>
+                                <!-- New Filière -->
+                                <optgroup label="@lang('Nouveaux Filières')">
+                                    @foreach ($filieres as $filiere)
+                                        @if ($filiere->type === 'new')
+                                            <option value="{{ $filiere->code_etape }}"
+                                                {{ old('code_etape', $code) == $filiere->code_etape ? 'selected' : '' }}>
+                                                {{ $filiere->version_etape }}
+                                            </option>
+                                        @endif
+                                    @endforeach
+                                </optgroup>
 
-                            <!-- Normal Filière -->
-                            <optgroup label="@lang('Filières Normales')">
-                                @foreach ($filieres as $filiere)
-                                    @if ($filiere->type === 'old')
-                                        <option 
-                                            value="{{ $filiere->code_etape }}" 
-                                            {{ old('code_etape', $firstModuleCodeEtape) == $filiere->code_etape ? 'selected' : '' }}>
-                                            {{ $filiere->version_etape }}
-                                        </option>
-                                    @endif
-                                @endforeach
-                            </optgroup>
+                                <!-- Normal Filière -->
+                                <optgroup label="@lang('Filières Normales')">
+                                    @foreach ($filieres as $filiere)
+                                        @if ($filiere->type === 'old')
+                                            <option value="{{ $filiere->code_etape }}"
+                                                {{ old('code_etape', $firstModuleCodeEtape) == $filiere->code_etape ? 'selected' : '' }}>
+                                                {{ $filiere->version_etape }}
+                                            </option>
+                                        @endif
+                                    @endforeach
+                                </optgroup>
 
-                                </select>
-                                @error('code_etape')
-                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
+                            </select>
+                            @error('code_etape')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
 
                         <!-- Heure de Début -->
                         <div class="form-group">
@@ -108,7 +108,7 @@
                                 </option>
                             </select>
                             @error('heure_debut')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -123,7 +123,7 @@
                                 <!-- Les modules seront remplis dynamiquement -->
                             </select>
                             @error('id_module')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -149,7 +149,7 @@
                                 </option>
                             </select>
                             @error('heure_fin')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -161,14 +161,14 @@
                                 class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                 <option value="">@lang('Choisir un enseignant')</option>
                                 @foreach ($enseignants as $enseignant)
-                                <option value="{{ $enseignant->id }}"
-                                    {{ old('id_enseignant', $examen->id_enseignant) == $enseignant->id ? 'selected' : '' }}>
-                                    {{ $enseignant->name }}
-                                </option>
+                                    <option value="{{ $enseignant->id }}"
+                                        {{ old('id_enseignant', $examen->id_enseignant) == $enseignant->id ? 'selected' : '' }}>
+                                        {{ $enseignant->name }}
+                                    </option>
                                 @endforeach
                             </select>
                             @error('id_enseignant')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -183,40 +183,39 @@
                                     ({{ $selected_session->date_debut }} - {{ $selected_session->date_fin }})</option>
                             </select>
                             @error('id_session')
-                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
                         <!-- Salles supplémentaires -->
-                        <div id="additional-rooms" class="space-y-4">
-                            @foreach ($additionalSalles as $index => $salleId)
-                            @php
-                            $salle = $salles->firstWhere('id', $salleId);
-                            @endphp
-                            <div
-                                class="flex items-center space-x-4 p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800">
-                                <div class="w-full">
-                                    <label for="additional_salles[{{ $index }}]"
-                                        class="block text-gray-700 dark:text-gray-300 text-sm font-medium">@lang('Salle Supplémentaire')</label>
-                                    <select name="additional_salles[{{ $index }}]"
-                                        id="additional_salles[{{ $index }}]"
-                                        class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm additional-salle-select">
-                                        <option value="">@lang('Choisir une salle')</option>
-                                        @foreach ($salles as $salleOption)
-                                        <option value="{{ $salleOption->id }}"
-                                            {{ $salleOption->id == $salle->id ? 'selected' : '' }}
-                                            data-capacite="{{ $salleOption->capacite }}">
-                                            {{ $salleOption->name }} (Capacité: {{ $salleOption->capacite }})
-                                        </option>
-                                        @endforeach
-                                    </select>
-                                    <p class="text-red-500 text-xs mt-1"></p>
-                                </div>
-                                <button type="button"
-                                    class="remove-room bg-red-500 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 hover:bg-red-600 transition">@lang('Supprimer')</button>
-                            </div>
-                            @endforeach
-                        </div>
+<div id="additional-rooms" class="space-y-4">
+    @foreach ($additionalSalles as $index => $salleId)
+        @php
+            $salle = $salles->firstWhere('id', $salleId);
+        @endphp
+        <div class="flex items-center space-x-4 p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800">
+            <div class="w-full">
+                <label for="additional_salles[{{ $index }}]" class="block text-gray-700 dark:text-gray-300 text-sm font-medium">
+                    @lang('Salle Supplémentaire')
+                </label>
+                <select name="additional_salles[{{ $index }}]" id="additional_salles[{{ $index }}]"
+                    class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm additional-salle-select">
+                    <option value="">@lang('Choisir une salle')</option>
+                    @foreach ($salles as $salleOption)
+                        <option value="{{ $salleOption->id }}" {{ $salleOption->id == $salle->id ? 'selected' : '' }} data-capacite="{{ $salleOption->capacite }}">
+                            {{ $salleOption->name }} (Capacité: {{ $salleOption->capacite }})
+                        </option>
+                    @endforeach
+                </select>
+                <p class="text-red-500 text-xs mt-1"></p>
+            </div>
+            <button type="button" class="remove-room bg-red-500 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 hover:bg-red-600 transition">
+                @lang('Supprimer')
+            </button>
+        </div>
+    @endforeach
+</div>
+
 
                         <div class="form-group mt-6">
                             <button type="button" id="add-room-button"
@@ -260,169 +259,258 @@
 </x-app-layout>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const filiereSelect = document.getElementById('filiere');
-        const moduleSelect = document.getElementById('module');
-        const salleSelect = document.getElementById('id_salle');
-        const inscriptionsCount = document.getElementById('inscriptions_count');
-        const totalCapacity = document.getElementById('total_capacity');
-        const addRoomButton = document.getElementById('add-room-button');
-        const additionalRoomsDiv = document.getElementById('additional-rooms');
 
-        function updateModuleOptions() {
-    const code_etape = filiereSelect.value;
-    moduleSelect.innerHTML = '<option value="">@lang('Sélectionnez un module')</option>';
+   document.addEventListener('DOMContentLoaded', () => {
+    const departementSelect = document.getElementById('departement');
+    const enseignantSelect = document.getElementById('enseignant');
+    const filiereSelect = document.getElementById('filiere');
+    const moduleSelect = document.getElementById('module');
+    const salleSelect = document.getElementById('id_salle');
+    const inscriptionsCount = document.getElementById('inscriptions_count');
+    const remainingInscriptions = document.getElementById('remaining_inscriptions');
+    const addSalleButton = document.getElementById('add_salle_button');
+    const additionalSallesDiv = document.getElementById('additional_salles');
+    const allocationModeSelect = document.getElementById('allocation_mode');
+    const manualAllocationDiv = document.getElementById('manual_allocation');
+    const automaticAllocationDiv = document.getElementById('automatic_allocation');
+    const automaticAllocationSummary = document.getElementById('automatic_allocation_summary');
+    const selectedSalles = new Set();
 
-    if (code_etape) {
-        fetch(`/examens/getModulesByFiliere/${code_etape}`)
-            .then(response => response.json())
-            .then(data => {
-                data.forEach(module => {
-                    const option = document.createElement('option');
-                    option.value = module.lib_elp;
-                    option.textContent =
-                        `${module.lib_elp} (${module.inscriptions_count} @lang('inscrits'))`;
-                    option.setAttribute('data-inscriptions', module.inscriptions_count);
-                    moduleSelect.appendChild(option);
+    // Récupérer les modules pour une filière
+    filiereSelect.addEventListener('change', function () {
+        const code_etape = this.value;
+        moduleSelect.innerHTML = '<option value="">@lang('Sélectionnez un module')</option>';
 
-                    // Safe comparison with potentially null value
-                    if (`{!! addslashes($examen->modules->first()->lib_elp ?? '') !!}` === module.lib_elp) {
-                        option.selected = true;
-                        inscriptionsCount.value = module.inscriptions_count;
-                        updateTotalCapacity();
-                    }
-                });
-            })
-            .catch(error => console.error('Error fetching modules:', error));
-    }
-}
+        if (code_etape) {
+            fetch(`/examens/getModulesByFiliere/${code_etape}`)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(module => {
+                        const option = document.createElement('option');
+                        option.value = module.lib_elp;
+                        option.textContent = `${module.lib_elp} (${module.inscriptions_count} @lang('inscrits'))`;
+                        option.setAttribute('data-inscriptions', module.inscriptions_count);
+                        option.setAttribute('data-capacite', module.capacite);
+                        moduleSelect.appendChild(option);
+                    });
+                    $('#module').trigger('change'); // Mettre à jour Select2 après le chargement
+                })
+                .catch(error => console.error('Error fetching modules:', error));
+        }
+    });
 
-        function updateTotalCapacity() {
-            let total = 0;
+    // Mettre à jour le nombre d'inscriptions pour le module sélectionné
+    moduleSelect.addEventListener('change', function () {
+        const selectedModule = moduleSelect.options[moduleSelect.selectedIndex];
+        const inscriptions = selectedModule.getAttribute('data-inscriptions') || 0;
+        inscriptionsCount.value = inscriptions;
+        updateRemainingInscriptions();
+    });
 
-            // Add capacity of the primary room
-            const primaryRoom = salleSelect.options[salleSelect.selectedIndex];
-            const primaryRoomCapacity = parseInt(primaryRoom.getAttribute('data-capacite')) || 0;
-            total += primaryRoomCapacity;
+    // Fonction pour mettre à jour les inscriptions restantes en fonction de la capacité
+    function updateRemainingInscriptions() {
+        let totalCapacity = 0;
 
-            // Add capacity of additional rooms
-            const additionalRoomSelects = additionalRoomsDiv.querySelectorAll('select.additional-salle-select');
-            additionalRoomSelects.forEach(select => {
-                const roomOption = select.options[select.selectedIndex];
-                const roomCapacity = parseInt(roomOption.getAttribute('data-capacite')) || 0;
-                total += roomCapacity;
-            });
-
-            totalCapacity.value = total;
-
-            // Calculer la différence entre les inscriptions et la capacité totale
-            const inscriptions = parseInt(inscriptionsCount.value) || 0;
-            const remaining = inscriptions - total;
-
-            // Mettre à jour la valeur de totalCapacity avec le signe moins si nécessaire
-            totalCapacity.value = remaining;
+        const mainSalleCapacity = salleSelect.options[salleSelect.selectedIndex]?.getAttribute('data-capacite');
+        if (mainSalleCapacity) {
+            totalCapacity += parseInt(mainSalleCapacity);
         }
 
-        function isRoomAlreadySelected(roomId) {
-            const allSelectedRoomIds = [
-                salleSelect.value,
-                ...Array.from(additionalRoomsDiv.querySelectorAll('select.additional-salle-select'))
-                .map(select => select.value)
-            ];
-            return allSelectedRoomIds.includes(roomId);
-        }
-
-        filiereSelect.addEventListener('change', updateModuleOptions);
-
-        // Update module options on page load
-        updateModuleOptions();
-
-        moduleSelect.addEventListener('change', function() {
-            const selectedModule = moduleSelect.options[moduleSelect.selectedIndex];
-            const inscriptions = selectedModule.getAttribute('data-inscriptions') || 0;
-            inscriptionsCount.value = inscriptions;
-            updateTotalCapacity();
-        });
-
-        salleSelect.addEventListener('change', updateTotalCapacity);
-
-        additionalRoomsDiv.addEventListener('change', function(event) {
-            if (event.target.classList.contains('additional-salle-select')) {
-                updateTotalCapacity();
+        const additionalSalleSelects = additionalSallesDiv.querySelectorAll('select');
+        additionalSalleSelects.forEach(salleSelect => {
+            const capacity = salleSelect.options[salleSelect.selectedIndex]?.getAttribute('data-capacite');
+            if (capacity) {
+                totalCapacity += parseInt(capacity);
             }
         });
 
-        addRoomButton.addEventListener('click', function() {
-            const roomCount = additionalRoomsDiv.children.length;
+        const inscriptions = parseInt(inscriptionsCount.value) || 0;
+        const remaining = inscriptions - totalCapacity;
+        remainingInscriptions.value = remaining;
+    }
 
-            const newRoomDiv = document.createElement('div');
-            newRoomDiv.classList.add('flex', 'mb-4', 'additional-room');
+    // Fonction pour filtrer les salles disponibles
+    function getSelectedSalles() {
+        const selectedSalles = [];
+        const mainSalleValue = salleSelect.value;
+        if (mainSalleValue) selectedSalles.push(mainSalleValue);
 
-            const newRoomSelectDiv = document.createElement('div');
-            newRoomSelectDiv.classList.add('w-5/6');
-
-            const newRoomLabel = document.createElement('label');
-            newRoomLabel.setAttribute('for', `additional_salles[${roomCount}]`);
-            newRoomLabel.classList.add('block', 'text-gray-700', 'dark:text-gray-300');
-            newRoomLabel.textContent = '@lang('Salle Supplémentaire ')';
-
-            const newRoomSelect = document.createElement('select');
-            newRoomSelect.setAttribute('name', `additional_salles[${roomCount}]`);
-            newRoomSelect.setAttribute('id', `additional_salles[${roomCount}]`);
-            newRoomSelect.classList.add('form-select', 'mt-1', 'block', 'w-full', 'py-2', 'px-3',
-                'border', 'border-gray-300', 'dark:border-gray-600', 'dark:bg-gray-700',
-                'dark:text-white', 'rounded-md', 'shadow-sm', 'focus:outline-none',
-                'focus:ring-indigo-500', 'focus:border-indigo-500', 'sm:text-sm',
-                'additional-salle-select');
-
-            const defaultOption = document.createElement('option');
-            defaultOption.value = '';
-            defaultOption.textContent = '@lang('Choisir une salle ')';
-            newRoomSelect.appendChild(defaultOption);
-
-            salleSelect.querySelectorAll('option').forEach(option => {
-                if (option.value !== salleSelect.value && !isRoomAlreadySelected(option
-                        .value)) {
-                    const newOption = option.cloneNode(true);
-                    newRoomSelect.appendChild(newOption);
-                }
-            });
-
-            const newRoomError = document.createElement('p');
-            newRoomError.classList.add('text-red-500', 'text-xs', 'mt-1');
-            newRoomSelectDiv.appendChild(newRoomError);
-
-            const removeButton = document.createElement('button');
-            removeButton.type = 'button';
-            removeButton.classList.add('remove-room', 'w-1/6', 'bg-red-500', 'text-white', 'font-bold',
-                'py-2', 'px-4', 'rounded', 'focus:outline-none', 'focus:shadow-outline', 'mt-7',
-                'ml-4');
-            removeButton.textContent = '@lang('Supprimer')';
-
-            newRoomSelectDiv.appendChild(newRoomLabel);
-            newRoomSelectDiv.appendChild(newRoomSelect);
-
-            newRoomDiv.appendChild(newRoomSelectDiv);
-            newRoomDiv.appendChild(removeButton);
-
-            additionalRoomsDiv.appendChild(newRoomDiv);
-
-            removeButton.addEventListener('click', function() {
-                newRoomDiv.remove();
-                updateTotalCapacity();
-            });
-
-            newRoomSelect.addEventListener('change', updateTotalCapacity);
+        const additionalSalleSelects = additionalSallesDiv.querySelectorAll('select');
+        additionalSalleSelects.forEach(select => {
+            if (select.value) selectedSalles.push(select.value);
         });
 
-        // Add remove event listeners to existing rooms on page load
-        const existingRooms = additionalRoomsDiv.querySelectorAll('.additional-room');
-        existingRooms.forEach(roomDiv => {
-            const removeButton = roomDiv.querySelector('.remove-room');
-            removeButton.addEventListener('click', function() {
-                roomDiv.remove();
-                updateTotalCapacity();
+        return selectedSalles;
+    }
+
+    function filterAvailableSalles() {
+        const selectedSalles = getSelectedSalles();
+
+        // Désactiver les salles déjà sélectionnées dans la salle principale
+        Array.from(salleSelect.options).forEach(option => {
+            option.disabled = selectedSalles.includes(option.value) && option.value !== salleSelect.value;
+        });
+
+        // Désactiver les salles déjà sélectionnées dans les salles additionnelles
+        const additionalSalleSelects = additionalSallesDiv.querySelectorAll('select');
+        additionalSalleSelects.forEach(select => {
+            Array.from(select.options).forEach(option => {
+                option.disabled = selectedSalles.includes(option.value) && option.value !== select.value;
             });
+        });
+    }
+
+    salleSelect.addEventListener('change', function () {
+        filterAvailableSalles();
+        updateRemainingInscriptions();
+    });
+
+    addSalleButton.addEventListener('click', function () {
+        const salleCount = additionalSallesDiv.children.length;
+        const newSalleDiv = document.createElement('div');
+        newSalleDiv.className = 'mt-2 flex items-center';
+
+        const newSalleSelect = salleSelect.cloneNode(true); // Cloner le select de salle
+        newSalleSelect.name = `additional_salles[${salleCount}]`;
+        newSalleSelect.id = `additional_salle_${salleCount}`;
+
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.innerText = '@lang('Supprimer')';
+        removeButton.className = 'ml-2 py-1 px-2 bg-red-500 hover:bg-red-700 text-white font-semibold rounded-md shadow-md';
+        removeButton.addEventListener('click', function () {
+            additionalSallesDiv.removeChild(newSalleDiv);
+            filterAvailableSalles(); // Correction ici
+            updateRemainingInscriptions(); // Mise à jour après suppression
+        });
+
+        newSalleDiv.appendChild(newSalleSelect);
+        newSalleDiv.appendChild(removeButton);
+        additionalSallesDiv.appendChild(newSalleDiv);
+
+        // Appliquer Select2 après l'ajout de la nouvelle salle
+        $(newSalleSelect).select2({
+            placeholder: "@lang('Choisir une salle')",
+            allowClear: true
+        });
+
+        newSalleSelect.addEventListener('change', function () {
+            filterAvailableSalles();
+            updateRemainingInscriptions();
+        });
+
+        filterAvailableSalles(); // Appliquer les restrictions après l'ajout d'une nouvelle salle
+    });
+
+    filterAvailableSalles();
+
+    // Gestion du mode d'affectation (manuel ou automatique)
+    allocationModeSelect.addEventListener('change', function () {
+        if (this.value === 'manual') {
+            manualAllocationDiv.classList.remove('hidden');
+            automaticAllocationDiv.classList.add('hidden');
+        } else {
+            manualAllocationDiv.classList.add('hidden');
+            automaticAllocationDiv.classList.remove('hidden');
+        }
+    });
+
+    // Initialisation de l'affichage
+    allocationModeSelect.dispatchEvent(new Event('change'));
+});
+
+</script>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<!-- Script pour activer Select2 -->
+<script>
+    $(document).ready(function() {
+        // Appliquer Select2 à la liste déroulante des enseignants
+        $('#id_enseignant').select2({
+            placeholder: "@lang('Choisir un enseignant')", // Placeholder par défaut
+            allowClear: true // Permet de désélectionner
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        // Appliquer Select2 pour la filière
+        $('#filiere').select2({
+            placeholder: "@lang('Sélectionnez une filière')",
+            allowClear: true
+        });
+
+        // Appliquer Select2 pour le module
+        $('#module').select2({
+            placeholder: "@lang('Sélectionnez un module')",
+            allowClear: true
+        });
+
+        // Lorsque la filière change
+        $('#filiere').on('change', function() {
+            const code_etape = $(this).val();
+            $('#module').empty().append(
+                '<option value="">@lang('Sélectionnez un module')</option>'
+            ); // Réinitialiser le sélecteur de modules
+
+            if (code_etape) {
+                fetch(`/examens/getModulesByFiliere/${code_etape}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(module => {
+                            // Ajouter les modules avec le nombre d'inscriptions
+                            $('#module').append(
+                                `<option value="${module.lib_elp}" data-inscriptions="${module.inscriptions_count}">${module.lib_elp} (${module.inscriptions_count} @lang('inscrits'))</option>`
+                            );
+                        });
+                        $('#module').trigger('change'); // Mettre à jour Select2
+                    })
+                    .catch(error => console.error('Error fetching modules:', error));
+            }
+        });
+
+        // Lorsque le module change
+        $('#module').on('change', function() {
+            const selectedModule = $(this).find(':selected');
+            const inscriptionsCount = selectedModule.data('inscriptions') ||
+                0; // Récupérer les inscriptions
+
+            // Mettre à jour la valeur du champ caché
+            $('#inscriptions_count').val(inscriptionsCount);
+        });
+
+        // Appliquer Select2 pour les autres champs (si nécessaire)
+        $(document).ready(function() {
+    // Initialiser Select2 sur les champs de salles supplémentaires
+    $('.additional-salle-select').select2({
+        placeholder: "@lang('Sélectionnez une salle')",
+        allowClear: true,
+        theme: "classic"
+    });
+
+    // Initialisation de Select2 pour les nouvelles salles ajoutées dynamiquement
+    $('#add-room-button').on('click', function() {
+        // Ajouter une nouvelle salle via JS (vous avez déjà le code pour ça)
+        // Initialiser Select2 sur le nouveau champ ajouté
+        $('.additional-salle-select').last().select2({
+            placeholder: "@lang('Sélectionnez une salle')",
+            allowClear: true,
+            theme: "classic"
+        });
+    });
+});
+
+        $('#id_enseignant').select2({
+            placeholder: "@lang('Choisir un enseignant')",
+            allowClear: true
         });
     });
 </script>

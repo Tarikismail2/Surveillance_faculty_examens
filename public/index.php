@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 
 // Set the maximum execution time to 10 minutes
-set_time_limit(600);
+ini_set('max_execution_time', 600);
 
 // Check if the application is in maintenance mode
 if (file_exists($maintenance = __DIR__ . '/../storage/framework/maintenance.php')) {

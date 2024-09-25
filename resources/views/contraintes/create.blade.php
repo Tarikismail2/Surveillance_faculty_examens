@@ -44,6 +44,13 @@
                         </select>
                     </div>
 
+                    <div class="mb-6">
+                        <label for="email" class="block text-sm font-medium text-gray-700">Email :</label>
+                        <input type="email" id="email" name="email"
+                            class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            value="{{ old('email') }}" required>
+                    </div>
+
                     <div class="mb-4">
                         <label for="id_session" class="block text-gray-700 text-sm font-bold mb-2">Session</label>
                         <select id="id_session" name="id_session"
@@ -51,7 +58,7 @@
                             required>
                             <option value="">Sélectionner une session</option>
                             @foreach ($sessions as $session)
-                                <option value="{{ $session->id }}">{{ $session->type }} ({{ $session->date_debut }} - {{$session->date_fin}})</option>
+                                <option value="{{ $session->id }}">{{ $session->type }} ({{ $session->date_debut }} - {{ $session->date_fin }})</option>
                             @endforeach
                         </select>
                     </div>
@@ -65,10 +72,9 @@
 
                     <!-- Heure de Début -->
                     <div class="mb-4">
-                        <label for="heure_debut" class="block text-gray-700 text-sm font-bold mb-2">Heure de
-                            Début</label>
+                        <label for="heure_debut" class="block text-gray-700 text-sm font-bold mb-2">Heure de Début</label>
                         <select name="heure_debut" id="heure_debut"
-                            class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                             required>
                             <option value="">@lang('Sélectionnez une heure de début')</option>
                             <option value="08:30">08:30</option>
@@ -81,21 +87,20 @@
                     <div class="mb-4">
                         <label for="heure_fin" class="block text-gray-700 text-sm font-bold mb-2">Heure de Fin</label>
                         <select name="heure_fin" id="heure_fin"
-                        class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        required>
-                        <option value="">@lang('Sélectionnez une heure de fin')</option>
-                        <option value="10:00">10:00</option>
-                        <option value="11:45">11:45</option>
-                        <option value="16:00">16:00</option>
-                        <option value="17:45">17:45</option>
-                    </select>
+                            class="form-select mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            required>
+                            <option value="">@lang('Sélectionnez une heure de fin')</option>
+                            <option value="10:00">10:00</option>
+                            <option value="11:45">11:45</option>
+                            <option value="16:00">16:00</option>
+                            <option value="17:45">17:45</option>
+                        </select>
                     </div>
 
-                    <div class="mb-4">
-                        {{-- <label for="validee" class="block text-gray-700 text-sm font-bold mb-2">Validée</label> --}}
+                    <div class="mb-4" hidden>
                         <select id="validee" name="validee"
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            required hidden>
+                            required>
                             <option value="0">Non</option>
                         </select>
                     </div>
@@ -109,4 +114,22 @@
             </div>
         </div>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#id_enseignant').select2({
+                placeholder: "@lang('Choisir un enseignant')",
+                allowClear: true
+            });
+
+            $('#id_session').select2({
+                placeholder: "@lang('Choisir une session')",
+                allowClear: true
+            });
+        });
+    </script>
 </x-app-layout>

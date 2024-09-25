@@ -21,71 +21,59 @@ class EtudiantController extends Controller
     public function index(Request $request)
     {
         $sessions = SessionExam::all();
-        $selectedSessionId = $request->input('session_id'); // Récupérer l'ID de la session sélectionnée
+        $selectedSessionId = $request->input('session_id');
 
-        if ($request->ajax()) {
-            if (!$selectedSessionId) {
-                return response()->json(['data' => []]);
-            }
-            $query = Etudiant::where('id_session', $selectedSessionId);
-            return DataTables::of($query)
-                ->addColumn('fullName', function (Etudiant $etudiant) {
-                    return $etudiant->nom . ' ' . $etudiant->prenom;
-                })
-                ->addColumn('action', function (Etudiant $etudiant) {
-                    return '<a href="/etudiants/' . $etudiant->id . '/edit" class="text-indigo-600 hover:text-indigo-900 flex items-center space-x-1">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                                <path d="M17.414 2.586a2 2 0 00-2.828 0L5 12.172V15h2.828l9.586-9.586a2 2 0 000-2.828zM4 13H3v4a1 1 0 001 1h4v-1H4v-3z" />
-                                            </svg></a> 
-                       <a href="/etudiants/' . $etudiant->id . '/destroy" class="text-red-600 hover:text-red-900 flex items-center space-x-1"> 
-                                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                                                    <path fill-rule="evenodd" d="M6 8a1 1 0 011-1h6a1 1 0 011 1v9a1 1 0 11-2 0v-1H8v1a1 1 0 11-2 0V8zm3-3a1 1 0 00-1-1V3a1 1 0 112 0v1a1 1 0 00-1 1z" clip-rule="evenodd" />
-                                                                </svg></a>';
-                })
-                ->rawColumns(['action'])
-                ->make(true);
-        }
+        // Récupérer les étudiants de la session sélectionnée, ou un tableau vide si aucune session sélectionnée
+        $etudiants = $selectedSessionId ? Etudiant::where('id_session', $selectedSessionId)->get() : [];
 
-        return view('etudiants.index', compact('sessions', 'selectedSessionId'));
+        return view('etudiants.index', compact('sessions', 'selectedSessionId', 'etudiants'));
     }
 
     public function create()
     {
-        $modules = Module::all(); // Récupérer tous les modules
-        $sessions = SessionExam::all(); // Récupérer toutes les sessions
+        $modules = Module::all(); // Fetch all modules
+        $sessions = SessionExam::all(); // Fetch all sessions
+
         return view('etudiants.create', compact('modules', 'sessions'));
     }
 
     public function store(Request $request)
-    {
-        // Valider les données du formulaire
-        $validatedData = $request->validate([
-            'code_etudiant' => 'required|string|max:255',
-            'nom' => 'required|string|max:255',
-            'prenom' => 'required|string|max:255',
-            'cin' => 'nullable|string|max:255',
-            'cne' => 'required|string|max:255',
-            'date_naissance' => 'nullable|date',
-            'id_session' => 'required|exists:session_exams,id', // Valider la session
-            'modules' => 'required|array',
+{
+    // Validation des données
+    $request->validate([
+        'nom' => 'required|string|max:255',
+        'prenom' => 'required|string|max:255',
+        'code_etudiant' => 'required|string|unique:etudiants',
+        'cin' => 'nullable|string|max:255',
+        'cne' => 'required|string|max:255',
+        'date_naissance' => 'required|date',
+        'id_session' => 'required|exists:session_exams,id', // Assurez-vous que id_session est requis et valide
+        'modules' => 'required|array', // Valider que 'modules' est un tableau
+        'modules.*' => 'required|exists:modules,id', // Vérifier que chaque module existe
+    ]);
+
+    // Création de l'étudiant
+    $etudiant = Etudiant::create([
+        'nom' => $request->nom,
+        'prenom' => $request->prenom,
+        'code_etudiant' => $request->code_etudiant,
+        'cin' => $request->cin,
+        'cne' => $request->cne,
+        'date_naissance' => $request->date_naissance,
+        'id_session' => $request->id_session, // Assurez-vous que id_session est bien inclus ici
+    ]);
+
+    // Insertion des inscriptions pour chaque module
+    foreach ($request->modules as $moduleId) {
+        DB::table('inscriptions')->insert([
+            'id_etudiant' => $etudiant->id, // Utiliser l'id de l'étudiant créé
+            'id_module' => $moduleId,
+            'id_session' => $request->id_session, // Assurez-vous d'inclure id_session
         ]);
-
-        // Créer l'étudiant avec session_id
-        $etudiant = Etudiant::create([
-            'code_etudiant' => $validatedData['code_etudiant'],
-            'nom' => $validatedData['nom'],
-            'prenom' => $validatedData['prenom'],
-            'cin' => $validatedData['cin'],
-            'cne' => $validatedData['cne'],
-            'date_naissance' => $validatedData['date_naissance'],
-            'id_session' => $validatedData['id_session'], // Ajouter session_id
-        ]);
-
-        // Attacher les modules à l'étudiant
-        $etudiant->modules()->sync($validatedData['modules']);
-
-        return redirect()->route('etudiants.index')->with('success', 'Étudiant créé avec succès.');
     }
+
+    return redirect()->route('etudiants.index')->with('success', 'Étudiant créé avec succès.');
+}
 
     public function deleteModules(Request $request)
     {
@@ -108,43 +96,51 @@ class EtudiantController extends Controller
         return view('etudiants.show', compact('etudiant', 'modules', 'session'));
     }
 
-
     public function edit(Etudiant $etudiant)
     {
-        $modules = Module::all(); // Récupère tous les modules
+        $modules = Module::all();
         $selectedModules = $etudiant->modules->pluck('id')->toArray();
-        $sessions = SessionExam::all(); // Récupère toutes les sessions
+        $sessions = SessionExam::all();
 
         return view('etudiants.edit', compact('etudiant', 'modules', 'selectedModules', 'sessions'));
     }
 
-
     public function update(Request $request, Etudiant $etudiant)
     {
         // Valider les données du formulaire
-        $request->validate([
+        $validatedData = $request->validate([
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
             'cin' => 'nullable|string|max:255',
             'cne' => 'nullable|string|max:255',
             'date_naissance' => 'nullable|date',
-            'session_id' => 'required|exists:session_exams,id', // Valider la session (correctement nommée)
+            'session_id' => 'required|exists:session_exams,id',
             'modules' => 'nullable|array',
             'modules.*' => 'exists:modules,id',
         ]);
 
-        // Mettre à jour l'étudiant avec session_id
-        $etudiant->update($request->only(['nom', 'prenom', 'cin', 'cne', 'date_naissance', 'session_id']));
+        try {
+            // Mettre à jour l'étudiant avec les données validées
+            $etudiant->update($validatedData);
 
-        // Synchroniser les modules
-        if ($request->has('modules')) {
-            $etudiant->modules()->sync($request->input('modules'));
-        } else {
-            $etudiant->modules()->sync([]); // Désassocier tous les modules si aucun n'est sélectionné
+            // Synchroniser les modules avec l'ajout de l'id_session
+            if ($request->has('modules')) {
+                foreach ($request->input('modules') as $moduleId) {
+                    // Créer ou mettre à jour l'inscription
+                    $etudiant->modules()->attach($moduleId, ['id_session' => $validatedData['session_id']]);
+                }
+            } else {
+                // Désassocier tous les modules si aucun n'est sélectionné
+                $etudiant->modules()->sync([]);
+            }
+
+            return redirect()->route('etudiants.index')->with('success', 'Étudiant mis à jour avec succès.');
+        } catch (\Exception $e) {
+            // Gestion des erreurs
+            return redirect()->back()->withErrors(['update_error' => 'Erreur lors de la mise à jour de l\'étudiant : ' . $e->getMessage()]);
         }
-
-        return redirect()->route('etudiants.index')->with('success', 'Étudiant mis à jour avec succès.');
     }
+
 
 
     public function destroy(Etudiant $etudiant)

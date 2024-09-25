@@ -250,7 +250,7 @@
                         <!-- Boutons -->
                         <div class="flex items-center justify-end mt-4">
                             <a href="{{ route('examens.index', ['sessionId' => $selected_session->id]) }}"
-                                class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center">
+                                class="inline-flex items-center bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-md transition focus:outline-none focus:ring-2 focus:ring-gray-500">
                                 <i class="fas fa-arrow-left mr-2"></i> @lang('Retour')
                             </a>
                             <button type="submit"
@@ -263,6 +263,7 @@
             </div>
         </div>
     </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const departementSelect = document.getElementById('departement');
@@ -278,76 +279,46 @@
             const manualAllocationDiv = document.getElementById('manual_allocation');
             const automaticAllocationDiv = document.getElementById('automatic_allocation');
             const automaticAllocationSummary = document.getElementById('automatic_allocation_summary');
+            const selectedSalles = new Set();
+            const scheduledModuleIds = @json($scheduled_module_ids);
 
+            // Fetch modules when the filiere is changed
             filiereSelect.addEventListener('change', function() {
                 const code_etape = this.value;
-                moduleSelect.innerHTML = '<option value="">@lang('Sélectionnez un module ')</option>';
+                moduleSelect.innerHTML = '<option value="">@lang('Sélectionnez un module')</option>';
 
                 if (code_etape) {
                     fetch(`/examens/getModulesByFiliere/${code_etape}`)
                         .then(response => response.json())
                         .then(data => {
-                            data.forEach(module => {
+                            // Debugging: Log fetched modules
+                            console.log('Fetched Modules:', data);
+
+                            if (data.length === 0) {
+                                // Si aucun module disponible
                                 const option = document.createElement('option');
-                                option.value = module.lib_elp;
-                                option.textContent =
-                                    `${module.lib_elp} (${module.inscriptions_count} @lang('inscrits'))`;
-                                option.setAttribute('data-inscriptions', module
-                                    .inscriptions_count);
-                                option.setAttribute('data-capacite', module.capacite);
+                                option.textContent = '@lang('Aucun module disponible')';
+                                option.disabled = true;
                                 moduleSelect.appendChild(option);
-                            });
+                            } else {
+                                data.forEach(module => {
+                                    const option = document.createElement('option');
+                                    option.value = module.id;
+                                    option.textContent =
+                                        `${module.lib_elp} (${module.inscriptions_count} @lang('inscrits'))`;
+                                    moduleSelect.appendChild(option);
+                                });
+                            }
                         })
                         .catch(error => console.error('Error fetching modules:', error));
                 }
             });
 
+            // Update inscription count when a module is selected
             moduleSelect.addEventListener('change', function() {
                 const selectedModule = moduleSelect.options[moduleSelect.selectedIndex];
                 const inscriptions = selectedModule.getAttribute('data-inscriptions') || 0;
                 inscriptionsCount.value = inscriptions;
-                updateRemainingInscriptions();
-            });
-
-            salleSelect.addEventListener('change', function() {
-                updateRemainingInscriptions();
-            });
-
-            addSalleButton.addEventListener('click', function() {
-                const salleCount = additionalSallesDiv.children.length;
-                const newSalleDiv = document.createElement('div');
-                newSalleDiv.className = 'mt-2 flex items-center';
-
-                const newSalleSelect = salleSelect.cloneNode(true); // Cloner le select de salle
-                newSalleSelect.name = `additional_salles[${salleCount}]`;
-                newSalleSelect.id = `additional_salle_${salleCount}`;
-
-                // Ré-initialiser Select2 pour la nouvelle salle après l'ajout
-                $(newSalleSelect).select2({
-                    placeholder: "@lang('Choisir une salle')",
-                    allowClear: true
-                });
-
-                const removeButton = document.createElement('button');
-                removeButton.type = 'button';
-                removeButton.innerText = '@lang('Supprimer')';
-                removeButton.className =
-                    'ml-2 py-1 px-2 bg-red-500 hover:bg-red-700 text-white font-semibold rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75';
-                removeButton.addEventListener('click', function() {
-                    additionalSallesDiv.removeChild(newSalleDiv);
-                    updateRemainingInscriptions
-                (); // Mettre à jour le nombre d'inscriptions restantes après la suppression
-                });
-
-                newSalleDiv.appendChild(newSalleSelect);
-                newSalleDiv.appendChild(removeButton);
-                additionalSallesDiv.appendChild(newSalleDiv);
-
-                // Appliquer Select2 après l'ajout de la nouvelle salle
-                $(newSalleSelect).select2({
-                    placeholder: "@lang('Choisir une salle')",
-                    allowClear: true
-                });
             });
 
             function updateRemainingInscriptions() {
@@ -370,9 +341,82 @@
 
                 const inscriptions = parseInt(inscriptionsCount.value) || 0;
                 const remaining = inscriptions - totalCapacity;
-
                 remainingInscriptions.value = remaining;
             }
+
+            function getSelectedSalles() {
+                const selectedSalles = [];
+                const mainSalleValue = salleSelect.value;
+                if (mainSalleValue) selectedSalles.push(mainSalleValue);
+
+                const additionalSalleSelects = additionalSallesDiv.querySelectorAll('select');
+                additionalSalleSelects.forEach(select => {
+                    if (select.value) selectedSalles.push(select.value);
+                });
+
+                return selectedSalles;
+            }
+
+            function filterAvailableSalles() {
+                const selectedSalles = getSelectedSalles();
+
+                // Désactiver les salles déjà sélectionnées dans la salle principale
+                Array.from(salleSelect.options).forEach(option => {
+                    option.disabled = selectedSalles.includes(option.value) && option.value !== salleSelect
+                        .value;
+                });
+
+                // Désactiver les salles déjà sélectionnées dans les salles additionnelles
+                const additionalSalleSelects = additionalSallesDiv.querySelectorAll('select');
+                additionalSalleSelects.forEach(select => {
+                    Array.from(select.options).forEach(option => {
+                        option.disabled = selectedSalles.includes(option.value) && option.value !==
+                            select.value;
+                    });
+                });
+            }
+
+            salleSelect.addEventListener('change', function() {
+                filterAvailableSalles();
+                updateRemainingInscriptions();
+            });
+
+            addSalleButton.addEventListener('click', function() {
+                const salleCount = additionalSallesDiv.children.length;
+                const newSalleDiv = document.createElement('div');
+                newSalleDiv.className = 'mt-2 flex items-center';
+
+                const newSalleSelect = salleSelect.cloneNode(true); // Cloner le select de salle
+                newSalleSelect.name = `additional_salles[${salleCount}]`;
+                newSalleSelect.id = `additional_salle_${salleCount}`;
+
+                const removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.innerText = '@lang('Supprimer')';
+                removeButton.className =
+                    'ml-2 py-1 px-2 bg-red-500 hover:bg-red-700 text-white font-semibold rounded-md shadow-md';
+                removeButton.addEventListener('click', function() {
+                    additionalSallesDiv.removeChild(newSalleDiv);
+                    filterAvailableSalles
+                (); // Mettre à jour les options disponibles après suppression
+                });
+
+                newSalleDiv.appendChild(newSalleSelect);
+                newSalleDiv.appendChild(removeButton);
+                additionalSallesDiv.appendChild(newSalleDiv);
+
+                // Appliquer Select2 après l'ajout de la nouvelle salle
+                $(newSalleSelect).select2({
+                    placeholder: "@lang('Choisir une salle')",
+                    allowClear: true
+                });
+
+                newSalleSelect.addEventListener('change', filterAvailableSalles);
+
+                filterAvailableSalles(); // Appliquer les restrictions après l'ajout d'une nouvelle salle
+            });
+
+            filterAvailableSalles();
 
             // Gestion du mode d'affectation (manuel ou automatique)
             allocationModeSelect.addEventListener('change', function() {
@@ -427,7 +471,8 @@
             $('#filiere').on('change', function() {
                 const code_etape = $(this).val();
                 $('#module').empty().append(
-                '<option value="">@lang('Sélectionnez un module')</option>'); // Réinitialiser le sélecteur de modules
+                    '<option value="">@lang('Sélectionnez un module')</option>'
+                    ); // Réinitialiser le sélecteur de modules
 
                 if (code_etape) {
                     fetch(`/examens/getModulesByFiliere/${code_etape}`)
@@ -437,7 +482,7 @@
                                 // Ajouter les modules avec le nombre d'inscriptions
                                 $('#module').append(
                                     `<option value="${module.lib_elp}" data-inscriptions="${module.inscriptions_count}">${module.lib_elp} (${module.inscriptions_count} @lang('inscrits'))</option>`
-                                    );
+                                );
                             });
                             $('#module').trigger('change'); // Mettre à jour Select2
                         })
@@ -449,7 +494,7 @@
             $('#module').on('change', function() {
                 const selectedModule = $(this).find(':selected');
                 const inscriptionsCount = selectedModule.data('inscriptions') ||
-                0; // Récupérer les inscriptions
+                    0; // Récupérer les inscriptions
 
                 // Mettre à jour la valeur du champ caché
                 $('#inscriptions_count').val(inscriptionsCount);

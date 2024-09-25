@@ -142,7 +142,13 @@
             color: #DC2626;
             /* Tailwind red-800 */
         }
-    </style>
+        .select2-container {
+    width: 100% !important;
+}
+
+.select2-selection {
+    min-height: 40px; /* Ajustez selon la hauteur souhaitée */
+}
     </style>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">

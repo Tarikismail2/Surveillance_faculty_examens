@@ -191,7 +191,9 @@ class EnseignantController extends Controller
             'schedule' => $schedule, 
             'enseignants' => $enseignants, 
             'dates' => $dates, 
-            'reservistes' => $reservistes
+            'reservistes' => $reservistes,
+            'id_session' => $idSession,
+            'id_department' => $idDepartment
         ])->render());
     
         $pdf->setPaper('A4', 'portrait');

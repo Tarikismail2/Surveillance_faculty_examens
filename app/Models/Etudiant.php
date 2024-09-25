@@ -16,6 +16,7 @@ class Etudiant extends Model
         'cin',
         'cne',
         'date_naissance',
+        'id_session'
     ];
     protected $casts = [
         'date_naissance' => 'datetime', // Ensure date_naissance is cast to DateTime
@@ -60,4 +61,5 @@ class Etudiant extends Model
     {
         return $this->belongsTo(Module::class, 'id_module');
     }
+
 }

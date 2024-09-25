@@ -1,14 +1,41 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Sélectionnez un étudiant et une session') }}
+            {{ __('Remplir les champs') }}
         </h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                <form action="{{ route('displayStudentSchedule') }}" method="GET" class="space-y-6">
+
+                <!-- Affichage des erreurs -->
+                @if ($errors->any())
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <strong class="font-bold">Erreur :</strong>
+                        <ul class="list-disc pl-5">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <!-- Affichage du message de succès -->
+                @if (session('success'))
+                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                <!-- Message d'instruction si aucune sélection -->
+                @if (!old('id_session') || !old('id_etudiant'))
+                    <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative" role="alert">
+                        <strong class="font-bold">Info :</strong> Veuillez remplir les champs pour afficher l'emploi du temps.
+                    </div>
+                @endif
+
+                <form id="studentScheduleForm" action="{{ route('displayStudentSchedule') }}" method="GET" class="space-y-6">
                     @csrf
 
                     <!-- Sélection de la session -->
@@ -17,10 +44,13 @@
                         <div class="relative">
                             <select name="id_session" id="id_session"
                                 class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                @foreach ($sessions as $id => $session)
-                                    <option value="{{ $id }}"
-                                        {{ old('id_session', $selectedSession) == $id ? 'selected' : '' }}>
-                                        {{ $session }}</option>
+                                <option value="" disabled selected>Choisissez une session</option>
+                                @foreach ($sessions as $session)
+                                    <option value="{{ $session->id }}">
+                                        {{ $session->type }} 
+                                        ({{ \Carbon\Carbon::parse($session->date_debut)->format('d/m/Y') }} - 
+                                        {{ \Carbon\Carbon::parse($session->date_fin)->format('d/m/Y') }})
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
@@ -33,9 +63,6 @@
                             <input type="text" id="cne" name="cne"
                                 class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                                 value="{{ old('cne') }}">
-                            @error('cne')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
                         </div>
                     </div>
 
@@ -46,13 +73,12 @@
                             <select name="id_etudiant" id="id_etudiant"
                                 class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                                 @foreach ($students as $id => $fullName)
-                                    <option value="{{ $id }}" {{ old('id_etudiant', $selectedStudent) == $id ? 'selected' : '' }}>
-                                        {{ $fullName }}</option>
+                                    <option value="{{ $id }}"
+                                        {{ old('id_etudiant', $selectedStudent) == $id ? 'selected' : '' }}>
+                                        {{ $fullName }}
+                                    </option>
                                 @endforeach
                             </select>
-                            @error('id_etudiant')
-                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                            @enderror
                         </div>
                     </div>
 
@@ -66,12 +92,13 @@
 
                 @if (!empty($examens))
                     <div class="mt-6 bg-gray-50 p-4 rounded-lg shadow-sm">
-                        <h2 class="text-lg font-medium text-gray-900">Emploi du temps de : {{ $etudiant->nom ?? 'Inconnu' }} {{ $etudiant->prenom ?? '' }}</h2>
+                        <h2 class="text-lg font-medium text-gray-900">Emploi du temps de :
+                            {{ $etudiant->nom ?? 'Inconnu' }} {{ $etudiant->prenom ?? '' }}</h2>
                         <form action="{{ route('downloadStudentSchedulePDF') }}" method="GET" class="mt-6">
                             <input type="hidden" name="id_session" value="{{ $selectedSession }}">
                             <input type="hidden" name="id_etudiant" value="{{ $selectedStudent }}">
                             <button type="submit"
-                                class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                                class="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300" id="downloadBtn">
                                 <i class="fas fa-file-download"></i> Télécharger en PDF
                             </button>
                         </form>
@@ -93,10 +120,25 @@
     <script>
         $(document).ready(function() {
             // Appliquer Select2 à la liste déroulante des étudiants
-            $('#id_etudiant').select2({
-                placeholder: "Choisir un étudiant", // Placeholder par défaut
+            $('#id_etudiant, #id_session').select2({
+                placeholder: "Choisir une option", // Placeholder par défaut
                 allowClear: true // Permet de désélectionner
             });
+
+            // Gérer la désactivation du bouton de téléchargement
+            function toggleDownloadButton() {
+                // Vérifie si l'étudiant ou la session a changé
+                const hasExams = {!! json_encode(!empty($examens)) !!};
+                $('#downloadBtn').prop('disabled', !hasExams);
+            }
+
+            // Écouteurs d'événements pour détecter les changements dans les sélections
+            $('#id_etudiant, #id_session').on('change', function() {
+                toggleDownloadButton();
+            });
+
+            // Initialiser l'état du bouton de téléchargement au chargement
+            toggleDownloadButton();
         });
     </script>
 </x-app-layout>
