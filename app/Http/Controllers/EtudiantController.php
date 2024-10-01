@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Inscription;
 use App\Models\Etudiant;
 use App\Models\Examen;
 use App\Models\Filiere;
@@ -9,11 +10,16 @@ use App\Models\Module;
 use App\Models\FiliereGp;
 use App\Models\SessionExam;
 use Illuminate\Http\Request;
+use App\Imports\StudentsImport;
+use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 use Dompdf\Dompdf;
 use Dompdf\Options as DompdfOptions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session; // Import for session handling
+use PhpOffice\PhpSpreadsheet\IOFactory; // Import for reading Excel files
+
 
 
 class EtudiantController extends Controller
@@ -29,51 +35,76 @@ class EtudiantController extends Controller
         return view('etudiants.index', compact('sessions', 'selectedSessionId', 'etudiants'));
     }
 
-    public function create()
+    // i changed this one  ============================
+    public function create($id_module)
     {
-        $modules = Module::all(); // Fetch all modules
-        $sessions = SessionExam::all(); // Fetch all sessions
 
-        return view('etudiants.create', compact('modules', 'sessions'));
+        Log::info("id module " . $id_module);
+        $modules = Module::findOrFail($id_module); // Récupérer tous les modules
+        Log::info("id_session " . $modules->id_session);
+        $filiere = Filiere::where('code_etape', $modules->code_etape)->first();
+        Log::info("id_session " . $filiere);
+        $session = SessionExam::where('id', $modules->id_session)->first();
+
+        if (!$session) {
+            Log::info("session empty");
+        } else {
+            Log::info("session empty" .  $session->type);
+        }
+        return view('etudiants.create', compact('modules', 'session', 'filiere'));
     }
 
-    public function store(Request $request)
-{
-    // Validation des données
-    $request->validate([
-        'nom' => 'required|string|max:255',
-        'prenom' => 'required|string|max:255',
-        'code_etudiant' => 'required|string|unique:etudiants',
-        'cin' => 'nullable|string|max:255',
-        'cne' => 'required|string|max:255',
-        'date_naissance' => 'required|date',
-        'id_session' => 'required|exists:session_exams,id', // Assurez-vous que id_session est requis et valide
-        'modules' => 'required|array', // Valider que 'modules' est un tableau
-        'modules.*' => 'required|exists:modules,id', // Vérifier que chaque module existe
-    ]);
+    public function store(Request $request, $id_module)
+    {
 
-    // Création de l'étudiant
-    $etudiant = Etudiant::create([
-        'nom' => $request->nom,
-        'prenom' => $request->prenom,
-        'code_etudiant' => $request->code_etudiant,
-        'cin' => $request->cin,
-        'cne' => $request->cne,
-        'date_naissance' => $request->date_naissance,
-        'id_session' => $request->id_session, // Assurez-vous que id_session est bien inclus ici
-    ]);
-
-    // Insertion des inscriptions pour chaque module
-    foreach ($request->modules as $moduleId) {
-        DB::table('inscriptions')->insert([
-            'id_etudiant' => $etudiant->id, // Utiliser l'id de l'étudiant créé
-            'id_module' => $moduleId,
-            'id_session' => $request->id_session, // Assurez-vous d'inclure id_session
+        // Validate the form data
+        $validatedData = $request->validate([
+            'code_etudiant' => 'required|string|max:255',
+            'nom' => 'required|string|max:255',
+            'prenom' => 'required|string|max:255',
+            'cin' => 'nullable|string|max:255',
+            'cne' => 'required|string|max:255',
+            'date_naissance' => 'nullable|date',
         ]);
-    }
+        // dd($validatedData);
+        $module = Module::findOrFail($id_module);
+        // dd($module->code_etape );
+        $id_session = $module->id_session; // Ensure id_session is retrieved directly
 
-    return redirect()->route('etudiants.index')->with('success', 'Étudiant créé avec succès.');
-}
+        // Check if a student with the same CNE or CIN already exists
+        $existingEtudiant = Etudiant::where('cne', '!=', $validatedData['cne'])
+            ->where('cin', '!=', $validatedData['cin'])
+            ->where('id_session', '!=', $id_session)
+            ->first();
+
+        // dd($existingEtudiant);
+        if ($existingEtudiant) {
+            // Return an error if the student exists
+            return redirect()->back()->withErrors(['error' => 'Étudiant déjà inscrit avec ce CNE ou CIN.']);
+        }
+
+        try {
+            // Create the student
+            $etudiant = Etudiant::create([
+                'code_etudiant' => $validatedData['code_etudiant'],
+                'nom' => $validatedData['nom'],
+                'prenom' => $validatedData['prenom'],
+                'cin' => $validatedData['cin'],
+                'cne' => $validatedData['cne'],
+                'date_naissance' => $validatedData['date_naissance'],
+                'id_session' => $id_session, // Ensure id_session is passed here
+            ]);
+
+            $etudiant->modules()->attach($module->id, ['id_session' => $id_session]); // Include 'id_session' in the pivot table
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+        }
+
+        return redirect()->route('modules.show', [
+            'id_module' => $module->code_elp,
+            'code_etape' => $module->code_etape
+        ])->with('success', 'Étudiant créé avec succès.');
+    }
 
     public function deleteModules(Request $request)
     {
@@ -308,5 +339,93 @@ class EtudiantController extends Controller
 
         // Output the generated PDF to Browser
         return $dompdf->stream('liste_etudiants_module.pdf', ['Attachment' => 0]);
+    }
+
+
+    public function Etudiants_import($id_module)
+    {
+
+        // dd($id_module);
+        $module = Module::FindOrFail($id_module);
+
+        // dd($module);
+        return view('etudiants.Import_Etudiant', compact('module'));
+    }
+
+
+
+
+    public function import(Request $request, $sessionId, $moduleId, $filiereId)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls|max:2048',
+        ]);
+
+        ini_set('memory_limit', '512M');
+        ini_set('max_execution_time', '600');
+
+        if ($request->file('file')->isValid()) {
+            try {
+                $fileName = time() . '.' . $request->file('file')->extension();
+                $request->file('file')->move(public_path('uploads'), $fileName);
+
+                $filePath = public_path('uploads') . '/' . $fileName;
+
+                // Import students starting from row 35
+                Excel::import(new StudentsImport($sessionId, $moduleId, $filiereId), $filePath);
+
+                return back()->with('success', 'Importation terminée avec succès.');
+            } catch (\Exception $e) {
+                return back()->withErrors(['error' => $e->getMessage()]);
+            }
+        }
+
+        return back()->withErrors(['error' => 'Le fichier n\'a pas pu être téléchargé.']);
+    }
+
+
+
+
+    private function processBatch(array $batch, $sessionId, $moduleId, $filiereId)
+    {
+        $etudiants = [];
+        $inscriptions = [];
+
+        foreach ($batch as $row) {
+            // Parse date of birth
+            $dateNaissance = null;
+            if (isset($row[3]) && !empty($row[3])) {
+                $dateNaissanceObj = \DateTime::createFromFormat('d/m/Y', $row[3]);
+
+                // Ensure $dateNaissanceObj is a valid DateTime object
+                if ($dateNaissanceObj) {
+                    $dateNaissance = $dateNaissanceObj->format('Y-m-d');
+                } else {
+                    // Handle invalid date formats
+                    $dateNaissance = null;
+                }
+            }
+
+            $etudiants[] = [
+                'code_etudiant' => $row[0],
+                'nom' => $row[1],
+                'prenom' => $row[2],
+                'date_naissance' => $dateNaissance,
+                'id_session' => $sessionId,
+            ];
+
+            // Add the inscription for this student to the module/filiere
+            $inscriptions[] = [
+                'code_etudiant' => $row[0],
+                'id_module' => $moduleId,
+                'id_session' => $sessionId,
+            ];
+        }
+
+        // Insert students
+        Etudiant::upsert($etudiants, ['code_etudiant'], ['nom', 'prenom', 'date_naissance']);
+
+        // Insert inscriptions
+        Inscription::insert($inscriptions);
     }
 }

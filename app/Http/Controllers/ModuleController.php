@@ -28,7 +28,7 @@ class ModuleController extends Controller
     public function storeModule(Request $request)
     {
         // Log the received parameters
-        Log::info('code elp: ' . $request->code_elp . ', lib elp: ' . $request->lib_elp . ', id_session: ' . $request->id_session . ', code_etape: ' . $request->code_etape);
+        // Log::info('code elp: ' . $request->code_elp . ', lib elp: ' . $request->lib_elp . ', id_session: ' . $request->id_session . ', code_etape: ' . $request->code_etape);
     
         // Validate the request data
         $request->validate([
@@ -61,6 +61,8 @@ class ModuleController extends Controller
             'code_etape' => $request->code_etape,
         ]);
     
+
+     
         // Redirect back to the Filiere's show page with a success message
    // Redirect back to the Filiere's show page with a success message
         return redirect()->route('filiere.show', [
@@ -71,40 +73,69 @@ class ModuleController extends Controller
     }
     
     
-
-    public function editModule($filiere_id, $module_id)
+// i changed this one
+    public function editModule($id_module)
     {
         // Find the Filiere and Module by their IDs
-        $filiere = Filiere::findOrFail($filiere_id);
-        $module = Module::findOrFail($module_id);
+        $module = Module::findOrFail($id_module);
+     // This retrieves the first Filiere that matches the session of the module
+$filiere = Filiere::where('id_session', $module->id_session)->first();
+$session = SessionExam::findOrFail($module->id_session);
+
+        // dd($module,$filiere);
 
         // Return the edit view with the Filiere and Module data
-        return view('module.edit_module', compact('filiere', 'module'));
+        return view('module.edit_module', compact('filiere', 'module','session'));
     }
 
-    public function updateModule(Request $request, $filiere_id, $module_id)
-    {
-        // Validate the request data
-        $request->validate([
-            'code_elp' => 'required|string|max:255',
-            'lib_elp' => 'required|string|max:255',
-            'version_etape' => 'required|string|max:255',
-            'code_etape' => 'required|string|max:255',
-        ]);
+    // i changed this one
+    public function updateModule(Request $request, $id_module)
+{
+// dd($id_module);
+    // Validate the request data
+    $request->validate([
+        'code_elp' => 'required|string|max:255',
+        'lib_elp' => 'required|string|max:255',
+        'id_session' => 'required|integer',
+        'code_etape' => 'required|string|max:255',
+    ]);
 
-        // Find the Module by ID and update it with the request data
-        $module = Module::findOrFail($module_id);
-        $module->update($request->only([
-            'code_elp',
-            'lib_elp',
-            'version_etape',
-            'code_etape'
-        ]));
+    // Find the module by its ID
+    $module = Module::findOrFail($id_module);
 
-        // Redirect back to the Filiere's show page with a success message
-        return redirect()->route('filiere.show', $filiere_id)
-            ->with('success', 'Module mis à jour avec succès.');
+    // Find the Filiere based on code_etape
+    $filiere = Filiere::where('code_etape', $request->code_etape)->first();
+
+    // Check if the Filiere was found
+    if (!$filiere) {
+        return redirect()->back()->with('error', 'Aucune filière trouvée avec ce code étape.');
     }
+
+    // Check if a different module with the same 'code_elp' already exists in the same Filiere
+    $existingModule = $filiere->modules()
+        ->where('code_elp', $request->code_elp)
+        ->where('id', '!=', $id_module) // Ensure we exclude the current module
+        ->first();
+
+    if ($existingModule) {
+        return redirect()->back()->with('error', 'Un autre module avec ce code existe déjà.');
+    }
+
+    // Update the module's data
+    $module->update([
+        'code_elp' => $request->code_elp,
+        'lib_elp' => $request->lib_elp,
+        'id_session' => $request->id_session,
+        'code_etape' => $request->code_etape,
+    ]);
+    // dd($module);
+    // Redirect back to the Filiere's show page with a success message
+    return redirect()->route('filiere.show', [
+        'code_etape' => $request->code_etape,
+        'id_session' => $request->id_session,
+    ])->with('success', 'Module mis à jour avec succès.');
+}
+
 
     public function destroyModule(Request $request,$code_etape, $code_elp)
     {

@@ -35,7 +35,7 @@ class FiliereController extends Controller
                             <path d="M17.414 2.586a2 2 0 00-2.828 0L5 12.172V15h2.828l9.586-9.586a2 2 0 000-2.828zM4 13H3v4a1 1 0 001 1h4v-1H4v-3z" />
                         </svg>
                     </a>
-                    <form action="' . route('filiere.destroy', $filiere->code_etape) . '" method="POST" style="display:inline;" onsubmit="return confirm(\'Are you sure?\')">
+                    <form action="' . route('filiere.destroy', ['code_etape' => $filiere->code_etape, 'id_session' => $id_session]) . '" method="POST" style="display:inline;" onsubmit="return confirm(\'Are you sure?\')">
                         ' . csrf_field() . '
                         ' . method_field('DELETE') . '
                         <button type="submit" class="text-red-600 hover:text-red-900 ml-4" title="Delete">
@@ -101,6 +101,7 @@ class FiliereController extends Controller
         return view('filiere.create', compact('sessions', 'filieres'));
     }
 
+    // i changed this 
  public function store(Request $request)
 {
     // Validate request data
@@ -127,8 +128,10 @@ class FiliereController extends Controller
     if (!empty($validatedData['filieres'])) {
         // Gather all modules related to the selected codes in one query
         $moduleIds = Module::whereIn('code_etape', $validatedData['filieres'])
-            ->pluck('id')
-            ->toArray();
+        ->where('id_session', $validatedData['id_session']) 
+        ->pluck('id')
+        ->toArray();
+
 
         // Check if there are any modules found
         if (empty($moduleIds)) {
@@ -155,9 +158,9 @@ class FiliereController extends Controller
 
     // Check if any modules were added and provide feedback
     if ($modulesAdded) {
-        return redirect()->route('filiere.index')->with('success', 'Filière créée avec succès.');
+        return redirect()->route('filiere.index',['id_session'=> $filiere->id_session])->with('success', 'Filière créée avec succès.');
     } else {
-        return redirect()->route('filiere.index')->with('error', 'Aucun module ajouté.');
+        return redirect()->route('filiere.index',['id_session'=> $filiere->id_session])->with('error', 'Aucun module ajouté.');
     }
 }
 
@@ -196,85 +199,88 @@ class FiliereController extends Controller
             return view('filiere.edit', compact('filiere','distinctCodeEtapes','sessions','filieres'));
     }
 
+    // i changed this one
     public function update(Request $request, $code_etape, $id_session)
+    {
+        try {
+            // Validate request data
+            $validatedData = $request->validate([
+                'code_etape' => 'required|string|max:255',
+                'version_etape' => 'required|string|max:255',
+                'id_session' => 'required|exists:session_exams,id',
+                'filieres' => 'nullable|array',
+                'filieres.*' => 'string|distinct'
+            ]);
+    
+            // Fetch the Filiere to update
+            $filiere = Filiere::where('code_etape', $code_etape)
+                              ->where('id_session', $id_session)
+                              ->firstOrFail();
+    
+            // Update the Filiere
+            $filiere->update([
+                'code_etape' => $validatedData['code_etape'],
+                'version_etape' => $validatedData['version_etape'],
+                'id_session' => $validatedData['id_session'],
+            ]);
+    
+            // Get all the module IDs based on the selected filières
+            $moduleIds = !empty($validatedData['filieres']) ? 
+                         Module::whereIn('code_etape', $validatedData['filieres'])
+                                ->pluck('id')->toArray() : [];
+    
+            // First, remove any FiliereGp records that are no longer selected
+            FiliereGp::where('id_session', $id_session)
+                ->where('code_etape', $code_etape)
+                ->whereNotIn('id_module', $moduleIds)
+                ->delete();
+    
+            // Now, add any new selected filière module IDs
+            if (!empty($moduleIds)) {
+                foreach ($moduleIds as $moduleId) {
+                    // Check if the module already exists for this filière and session
+                    $existingFiliereGp = FiliereGp::where('id_session', $id_session)
+                                                  ->where('id_module', $moduleId)
+                                                  ->first();
+                    
+                    // If it doesn't exist, create a new entry
+                    if (!$existingFiliereGp) {
+                        FiliereGp::create([
+                            'id_module' => $moduleId,
+                            'id_session' => $filiere->id_session,
+                            'version_etape' => $filiere->version_etape,
+                            'code_etape' => $filiere->code_etape
+                        ]);
+                    }
+                }
+            }
+    
+        } catch (\Exception $e) {
+            Log::error('Error updating FiliereGp: ' . $e->getMessage());
+            return redirect()->route('filiere.index', $id_session)
+                             ->with('error', 'Erreur lors de la mise à jour de la Filière.');
+        }
+    
+        // Return success message
+        return redirect()->route('filiere.index', $id_session)
+                         ->with('success', 'Filière mise à jour avec succès.');
+    }
+    
+
+// ichanged this 
+public function destroy($id_session, $code_etape)
 {
-    try {
-      // Validate request data
-    $validatedData = $request->validate([
-        'code_etape' => 'required|string|max:255',
-        'version_etape' => 'required|string|max:255',
-        'id_session' => 'required|exists:session_exams,id',
-        'filieres' => 'nullable|array',
-        'filieres.*' => 'string|distinct' // Ensure each item in the array is a string and unique
-    ]);
-// dd($validatedData);
-    // Fetch the Filiere to update
-    $filiere = Filiere::where('code_etape', $code_etape)
-                      ->where('id_session', $id_session)
+//    dd($id_session);
+    $filiere = Filiere::where('id_session', $id_session)
+                      ->where('code_etape', $code_etape)
                       ->firstOrFail();
 
-    // Update the Filiere
-    $filiere->update([
-        'code_etape' => $validatedData['code_etape'],
-        'version_etape' => $validatedData['version_etape'],
-        'id_session' => $validatedData['id_session'],
-        // You may want to keep the type as is, depending on your requirements
-    ]);
-// dd($filiere);
-    // Initialize a flag to check if any modules were added
-    $modulesAdded = false;
+ 
+    $filiere->delete();
 
-    // Check and handle the FiliereGp entries if 'filieres' are provided
-    if (!empty($validatedData['filieres'])) {
-        // Gather all modules related to the selected codes in one query
-        $moduleIds = Module::whereIn('code_etape', $validatedData['filieres'])
-            ->pluck('id')
-            ->toArray();
-// dd($moduleIds);
-        // Check if there are any modules found
-        if (empty( $moduleIds )) {
-            return redirect()->route('filiere.index')->with('error', 'Aucun module trouvé pour les codes fournis.');
-        }
-// First, delete existing records that match the criteria
-FiliereGp::where('id_session', $id_session)
-    ->whereIn('id_module',  $moduleIds )
-    ->delete();
-
-// Then, create new records for each module ID
-foreach ($moduleIds as $moduleId) {
-    // Check if the module ID is valid or exists in your intended context
-    if ($moduleId) {
-        FiliereGp::create([
-            'id_module' => $moduleId,
-            'id_session' => $filiere->id_session,
-            'version_etape' => $filiere->version_etape,
-            'code_etape' => $filiere->code_etape
-        ]);
-    }
-    $modulesAdded = true;
-}
-        
-    }
-    } catch (\Exception $e) {
-        Log::error('Error updating FiliereGp: ' . $e->getMessage());
-    }
     
-    
-
-    // Check if any modules were added or updated and provide feedback
-    if ($modulesAdded) {
-        return redirect()->route('filiere.index',$id_session)->with('success', 'Filière mise à jour avec succès.');
-    } else {
-        return redirect()->route('filiere.index',$id_session)->with('error', 'Aucun module ajouté ou mis à jour.');
-    }
+    return redirect()->route('filiere.index', ['id_session' => $id_session])
+                     ->with('success', 'Filière supprimée avec succès.');
 }
 
-
-    public function destroy($id)
-    {
-        $filiere = Filiere::findOrFail($id);
-        $filiere->delete();
-
-        return redirect()->route('filiere.index')->with('success', 'Filière supprimée avec succès.');
-    }
 }

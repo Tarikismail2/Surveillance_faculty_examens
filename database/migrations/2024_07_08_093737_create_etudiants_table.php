@@ -14,8 +14,8 @@ return new class extends Migration
             $table->string('nom');
             $table->string('prenom');
             $table->string('cin')->nullable(); 
-            $table->string('cne');
-            $table->date('date_naissance');
+            $table->string('cne')->nullable(); ;
+            $table->date('date_naissance')->nullable(); ;
             $table->unsignedBigInteger('id_session');
             $table->foreign('id_session')->references('id')->on('session_exams')->onDelete('cascade');
             $table->timestamps();

@@ -101,8 +101,15 @@ Route::middleware(['role:admin'])->group(function () {
 
     // route etudiants 
     Route::get('/etudiants', [EtudiantController::class, 'index'])->name('etudiants.index');
-    Route::get('/etudiants/create', [EtudiantController::class, 'create'])->name('etudiants.create');
-    Route::post('/etudiants', [EtudiantController::class, 'store'])->name('etudiants.store');
+    // Route::get('/filiere/module/Ajout_etudiant/etudiant_import', [EtudiantController::class, 'Etudiants_import'])->name('etudiant.import');
+    Route::get('/filiere/module/{id_module}/Ajout_etudiant/etudiant_import', [EtudiantController::class, 'Etudiants_import'])->name('etudiant.import');
+    Route::post('/import/{id_session}/{id_module}/{code_etape}', [EtudiantController::class, 'import'])->name('import.store');
+
+    // i chnaged this route 
+    Route::get('/etudiants/create/{id_module}', [EtudiantController::class, 'create'])->name('etudiants.create');
+    // i changed this one 
+    Route::post('/etudiants/store/{id_module}', [EtudiantController::class, 'store'])->name('etudiants.store'); 
+
     Route::get('/etudiants/{etudiant}/edit', [EtudiantController::class, 'edit'])->name('etudiants.edit');
     Route::put('/etudiants/{etudiant}', [EtudiantController::class, 'update'])->name('etudiants.update');
     Route::get('/etudiants/{etudiant}', [EtudiantController::class, 'show'])->name('etudiants.show');
@@ -145,14 +152,20 @@ Route::middleware(['role:admin'])->group(function () {
 
     // Define routes for Filiere
     Route::get('/filiere', [FiliereController::class, 'index_session'])->name('filiere.indexSession');
-    Route::get('/filiere/{id_session}/index', [FiliereController::class, 'index'])->name('filiere.index');
+
+    // i changed this 
+    Route::get('/filiere/index/{id_session}', [FiliereController::class, 'index'])->name('filiere.index');
+    
     Route::get('/filiere/create', [FiliereController::class, 'create'])->name('filiere.create');
     Route::post('/filiere', [FiliereController::class, 'store'])->name('filiere.store');
     Route::get('/filiere/show/{code_etape}/{id_session}', [FiliereController::class, 'show'])->name('filiere.show');
 
-    Route::get('/filiere/{code_etape}/s/{id_session}/edit', [FiliereController::class, 'edit'])->name('filiere.edit');
-    route::put('/filiere/{code_etape}/{id_session}/update', [FiliereController::class, 'update'])->name('filiere.update');
-    Route::delete('/filiere/{filiere}', [FiliereController::class, 'destroy'])->name('filiere.destroy');
+    Route::get('/filiere/{code_etape}/session/{id_session}/edit', [FiliereController::class, 'edit'])->name('filiere.edit');
+    // i changed this
+    Route::put('/filiere/{code_etape}/session{id_session}/update', [FiliereController::class, 'update'])->name('filiere.update');
+
+    // i changed this one 
+    Route::delete('/filiere/{id_session}/{code_etape}', [FiliereController::class, 'destroy'])->name('filiere.destroy');
 
     // Define routes for module management
     Route::get('filiere/filiere/modules/create/{code_etape}/{session_id}', [ModuleController::class, 'create'])->name('modules.create');
@@ -162,19 +175,19 @@ Route::middleware(['role:admin'])->group(function () {
     Route::get('modules/{id_module}/{code_etape}', [ModuleController::class, 'show_module'])->name('modules.show');
 
     route::get('modules/{lib_elp}/{code_etape}/students', [ModuleController::class, 'students'])->name('modules.students');
-    Route::get('filiere/{filiere}/modules/{module}/edit', [ModuleController::class, 'editModule'])->name('modules.edit');
-    Route::put('filiere/{filiere}/modules/{module}', [ModuleController::class, 'updateModule'])->name('modules.update');
-    Route::delete('filiere/{code_etape}/modules/{code_elp}', [ModuleController::class, 'destroyModule'])->name('modules.destroy');
+    Route::get('filiere/modules/edit/{id_module}', [ModuleController::class, 'editModule'])->name('modules.edit');
+  // ichanged this one 
+    Route::put('filiere/modules/{id_module}/update', [ModuleController::class, 'updateModule'])->name('modules.update');
+
+    Route::delete('filiere/{code_etape}/modules/{code_elp}/delete', [ModuleController::class, 'destroyModule'])->name('modules.destroy');
 
 
     //Route pour afficher emploi des etudiants
     Route::get('/select-filiere', [EtudiantController::class, 'selectFiliere'])->name('selectFiliere');
     Route::get('/etudiants/{sessionId}/{code_etape}/download-pdf', [EtudiantController::class, 'downloadStudentsPDF'])
-        ->name('downloadStudentsPDF');
+              ->name('downloadStudentsPDF');
     // Route pour envoyer les emails
     Route::post('/send-emails', [EnseignantController::class, 'sendEmailsByDepartment'])->name('sendEmailsByDepartment');
-
-
 
     Route::get('/api/modules/{filiereId}', function($filiereId) {
         // Get the currently selected session

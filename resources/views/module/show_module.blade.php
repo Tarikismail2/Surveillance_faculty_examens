@@ -22,9 +22,14 @@
             <div class="w-1/2 text-right">
                 <a href="{{ route('etudiants.create', ['id_module' => $module->id ]) }}" 
                    class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                    Ajouter Étudiant
+                    Ajouter Étudiant  
+                </a>
+                <a href="{{ route('etudiant.import', ['id_module' => $module->id ]) }}" 
+                   class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" style="background-color: blue;">
+                    Importer plusieurs etudiants
                 </a>
             </div>
+            
         </div>
 
                 <!-- Table DataTables pour les Étudiants Inscrits -->

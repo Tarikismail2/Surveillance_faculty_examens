@@ -4,10 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Étudiants') }}
             </h2>
-            <a href="{{ route('etudiants.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center">
-                <i class="fas fa-plus mr-2"></i>
-                {{ __('Ajouter étudiant') }}
-            </a>
+
         </div>
     </x-slot>
 
