@@ -28,7 +28,7 @@ class TimetableController extends Controller
         $validator = Validator::make($request->all(), [
             'id_department' => 'required|exists:departments,id_department',
             'id_session' => 'required|exists:session_exams,id',
-            'id_enseignant' => 'required|exists:enseignants,id', // Ajouté pour valider l'enseignant
+            // 'id_enseignant' => 'required|exists:enseignants,id', // Ajouté pour valider l'enseignant
         ]);
 
         if ($validator->fails()) {
