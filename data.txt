@@ -1,5 +1,10 @@
-//les donnees concernant les departements
-INSERT INTO `departments` (`id_department`, `name`, `created_at`, `updated_at`) VALUES
+INSERT INTO users ( name, email, email_verified_at, password, role, remember_token, created_at, updated_at) 
+VALUES ('Riffi said', 'Riffi@gmail.com', NULL, '12345678', 'admin', NULL, NULL, NULL)
+
+-- login:Riffi@gmail.com 
+-- password: 12345678
+-- les donnees concernant les departements
+INSERT INTO departments (id_department, name, created_at, updated_at) VALUES
 (1, 'Informatique', NULL, NULL),
 (2, 'Mathématiques', NULL, NULL),
 (3, 'Physique', NULL, NULL),
@@ -8,8 +13,8 @@ INSERT INTO `departments` (`id_department`, `name`, `created_at`, `updated_at`) 
 (6, 'Géologie', NULL, NULL),
 (7, 'Langue', NULL, NULL);
 
-//les donnees concernant les enseignants
-INSERT INTO `enseignants` (`id`, `name`, `email`, `id_department`, `created_at`, `updated_at`) VALUES
+-- les donnees concernant les enseignants
+INSERT INTO enseignants (id, name, email, id_department, created_at, updated_at) VALUES
 (1, 'BALOUKI S', 'emailhggd1@gmail.com', 6, NULL, NULL),
 (2, 'EL HABAZI', 'emaiasdl12@gmail.com', 4, NULL, NULL),
 (3, 'SALHI ANAS', 'email13@gmail.com', 5, NULL, NULL),
@@ -280,8 +285,8 @@ INSERT INTO `enseignants` (`id`, `name`, `email`, `id_department`, `created_at`,
 (268, 'ZEROUAL', 'email1123@gmail.com', 5, NULL, NULL);
 
 
-//les donnees concernant les locaux
-INSERT INTO `salles` (`id`, `name`, `capacite`, `created_at`, `updated_at`) VALUES
+-- les donnees concernant les locaux
+INSERT INTO salles (id, name, capacite, created_at, updated_at) VALUES
 (1, 'NO', 100, NULL, NULL),
 (2, 'F', 80, NULL, NULL),
 (3, 'B', 80, NULL, NULL),

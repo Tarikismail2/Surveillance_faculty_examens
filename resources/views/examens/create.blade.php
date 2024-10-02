@@ -217,15 +217,17 @@
                         <!-- Mode d'affectation des salles -->
 
                         <!-- Affectation Automatique -->
-                        <div id="automatic_allocation" class="grid grid-cols-1 gap-6 hidden">
-                            <div class="form-group">
-                                <label for="automatic_allocation_summary"
-                                    class="block text-gray-700 dark:text-gray-300">@lang('Résumé de l\'affectation automatique')</label>
-                                <textarea id="automatic_allocation_summary" name="automatic_allocation_summary" rows="4"
-                                    class="form-input mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                    readonly hidden></textarea>
-                            </div>
-                        </div>
+<div id="automatic_allocation" class="grid grid-cols-1 gap-6 hidden">
+    <div class="form-group">
+        <!-- Label hidden -->
+        <label for="automatic_allocation_summary" class="hidden">@lang('Résumé de l\'affectation automatique')</label>
+        <!-- Textarea hidden and readonly -->
+        <textarea id="automatic_allocation_summary" name="automatic_allocation_summary" rows="4"
+            class="hidden"
+            readonly></textarea>
+    </div>
+</div>
+
 
                         <!-- Inscriptions et Capacité Totale -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
